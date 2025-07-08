@@ -1,17 +1,19 @@
 import { useRef, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type LogInProps = {
-    onSubmit: (username: string, password: string) => void;
+type RegisterProps = 
+{
+    onSubmit: (regUsername: string, regPassword: string) => void
 };
 
-export default function LogIn({ onSubmit }: LogInProps) 
+export default function Register({onSubmit}: RegisterProps) 
 {
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
 
-    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    function handleSubmit(event: FormEvent<HTMLFormElement>) 
+    {
         event.preventDefault();
 
         const enteredUsername = usernameRef.current!.value;
@@ -19,26 +21,27 @@ export default function LogIn({ onSubmit }: LogInProps)
 
         event.currentTarget.reset();
         onSubmit(enteredUsername, enteredPassword);
+        // Registration logic
     }
 
     return (
         <form onSubmit={handleSubmit}>
             <div>
                 <p>
-                    <label htmlFor='username'>Your username</label>
-                    <input id='username' type='text' ref={usernameRef} />
+                    <label htmlFor='regUsername'>Choose your username</label>
+                    <input id='regUsername' type='text' ref={usernameRef} />
                 </p>
                 <p>
-                    <label htmlFor='password'>Your password</label>
-                    <input id='password' type='password' ref={passwordRef} />
+                    <label htmlFor='regPassword'>Choose your password</label>
+                    <input id='regPassword' type='password' ref={passwordRef} />
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
                     <div>
-                        <button type="submit">Log in</button>
+                        <button type="submit">Register</button>
                     </div>
                     <div>
-                        <label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}>Not yet with us?</label>
-                        <button type="button" onClick={() => navigate('/register')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}>Join us!</button>
+                        <label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}>Already have an account?</label>
+                        <button type="button" onClick={() => navigate('/login')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}>Log in</button>
                     </div>
                 </div>
             </div>
