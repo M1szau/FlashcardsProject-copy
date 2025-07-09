@@ -38,4 +38,11 @@ export async function getFlashcards()
     return db.data.flashcards;
 }
 
+export async function getFlashcardsByUser(username)
+{
+    await db.read();
+    return db.data.flashcards.filter(card => card.owner === username);
+}
+
+
 export default db;
