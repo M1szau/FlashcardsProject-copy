@@ -41,7 +41,7 @@ export default function Register({onSubmit}: RegisterProps)
                     </div>
                     <div>
                         <label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}>Already have an account?</label>
-                        <button type="button" onClick={() => navigate('/login')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}>Log in</button>
+                        <button type="button" onClick={() => navigate('/')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}>Log in</button>
                     </div>
                 </div>
             </div>

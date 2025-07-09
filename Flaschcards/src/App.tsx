@@ -1,5 +1,6 @@
 
-import {BrowserRouter, Routes, Route} from 'react-router-dom'
+import { Navigate, BrowserRouter, Routes, Route} from 'react-router-dom'
+
 
 import Header from './components/Header.tsx';
 import Img from './assets/logo.png';
@@ -13,6 +14,7 @@ export default function App()
     return (
         <BrowserRouter>
             <Routes>
+                <Route path = "/" element = {<Navigate to ="/login" replace />} />
                 <Route path="/login" element={
                     <main>
                         <Header image={{ src: Img, alt: 'Log in sheet' }}>
@@ -26,7 +28,7 @@ export default function App()
                 <Route path="/register" element={
                     <main>
                         <Header image={{ src: Img, alt: 'Log in sheet' }}>
-                            <h1>Please log in</h1>
+                            <h1>Please register yourself</h1>
                         </Header>
                         <Register onSubmit={(username, password) => 
                         {
