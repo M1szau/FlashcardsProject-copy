@@ -109,7 +109,7 @@ app.post('/api/flashcards', authenticateToken, async (req, res) =>
     };
 
     await addFlashcard(flashcard);
-    res.json({ succes: true, message: "Flashcard added successfully", flashcard  });
+    res.json({ success: true, message: "Flashcard added successfully", flashcard  });
 
 
 });
@@ -122,13 +122,13 @@ app.get('/api/flashcards', authenticateToken, async(req, res) =>
     res.json({ success: true, flashcards: all });
 });
 
-//Flaschcard editing
+//Flaschcard edition
 app.put('/api/flashcards/:id', authenticateToken, async (req, res) =>
 {
     const { id } = req.params;
     const { front, back, languageFront, languageBack } = req.body;
     const all = await getFlashcards();
-    const idx = all.findIndex(card => card.id === id && card.onwer === req.user.username);
+    const idx = all.findIndex(card => card.id === id && card.owner === req.user.username);
 
     if (idx === -1)
     {
@@ -148,3 +148,21 @@ app.put('/api/flashcards/:id', authenticateToken, async (req, res) =>
 });
 
 //Flashcard deletion
+app.delete('/api/flashcards/:id', authenticateToken, async (req, res) =>
+{
+    const { id } = req.params;
+    const all = await getFlashcards();
+    const idx = all.findIndex(card => card.id === id && card.owner === req.user.username);
+
+    if(idx === -1)
+    {
+        return res.status(404).json({ success: false, message: "Flashcard not found" });
+    }
+
+    const deleted = all.splice(idx, 1)[0];
+    await addFlashcard({});
+    all.pop();
+    await getFlashcards();
+
+    res.json({ success: true, message: "Flashcard deleted successfully", flashcard: deleted });
+});

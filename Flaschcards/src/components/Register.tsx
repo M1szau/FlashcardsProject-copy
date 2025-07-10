@@ -1,12 +1,13 @@
 import { useRef, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type RegisterProps = 
+interface RegisterProps 
 {
     onSubmit: (regUsername: string, regPassword: string) => void
-};
+    error?: string;
+}
 
-export default function Register({onSubmit}: RegisterProps) 
+export default function Register({ onSubmit, error }: RegisterProps) 
 {
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
@@ -21,7 +22,6 @@ export default function Register({onSubmit}: RegisterProps)
 
         event.currentTarget.reset();
         onSubmit(enteredUsername, enteredPassword);
-        // Registration logic
     }
 
     return (
@@ -34,6 +34,7 @@ export default function Register({onSubmit}: RegisterProps)
                 <p>
                     <label htmlFor='regPassword'>Choose your password</label>
                     <input id='regPassword' type='password' ref={passwordRef} />
+                    {error && <div className = 'error-box' style={{color: 'red', marginTop: '5px', fontSize: '14px'}}>{error}</div>}
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
                     <div>

@@ -3,6 +3,18 @@
     {
       "username": "testuser",
       "password": "$2b$10$q4v4Cvs8TAxaUFjDFpx5Qe2efZ9gvKnCCiyLjYNJ96n.6W582Ye7q"
+    },
+    {
+      "username": "admin",
+      "password": "$2b$10$1IpsSBDIeliGtE0HcUwY4enigQ9dUPCcTFYgqJ93rZeaQGv8p94.y"
+    },
+    {
+      "username": "admin2",
+      "password": "$2b$10$ZAH0/cj.nqnAqQhRoja/TemquLL9/QurxSHYCYXoaO2Ixups6TzSW"
+    },
+    {
+      "username": "admin 45",
+      "password": "$2b$10$OMnOKSOs3zSAtyvBsjWOBONDf2lNcJUIGsdc6w2cii17grkgNnzrC"
     }
   ],
   "flashcards": []
