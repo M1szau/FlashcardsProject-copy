@@ -1,6 +1,6 @@
 
 import { Navigate, BrowserRouter, Routes, Route} from 'react-router-dom'
-import { useState } from 'react'
+import { useState } from 'react';
 
 import Header from './components/Header.tsx';
 import Img from './assets/logo.png';
@@ -10,6 +10,7 @@ import Register from './components/Register.tsx'
 
 export default function App()
 {
+    //setting errors for login and register
     const [loginError, setLoginError] = useState('');
     const [registerError, setRegisterError] = useState('');
 
@@ -17,68 +18,81 @@ export default function App()
         <BrowserRouter>
             <Routes>
                 <Route path = "/" element = {<Navigate to ="/login" replace />} />
-                <Route path="/login" element={
+                <Route path="/login" element=
+                {
                     <main>
                         <Header image={{ src: Img, alt: 'Log in sheet' }}>
                             <h1>Please log in</h1>
                         </Header>
-                        <LogIn 
-                            error={loginError}
-                            onSubmit={ async (username, password) => 
+                        <LogIn onSubmit={ async (username, password) => 
+                        {
+                            setLoginError('');
+                            //Login functionality 
+                            try
                             {
-                                //Login functionality 
-                                setLoginError(''); 
-                                try
+                                const response = await fetch('/api/login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username, password })});
+                                
+                                const data = await response.json();
+                                if(data.success)
                                 {
-                                    const response = await fetch('http://localhost:3001/api/login', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ username, password })});
-                                    
-                                    const data = await response.json();
-                                    if(data.success)
-                                    {
-                                        localStorage.setItem('token', data.token);
-                                        alert('Login successful');
-                                    }
-                                    else
-                                    {
-                                        setLoginError(data.message);
-                                    }
-                                } catch (err) 
-                                {
-                                    setLoginError('Login failed. Please try again.');
+                                    localStorage.setItem('token', data.token);
+                                    window.location.href = '/dashboard'; 
                                 }
-                            }} />
+                                else
+                                {
+                                    setLoginError(data.message || 'Login failed');
+                                }
+                            } catch (err) 
+                            {
+                                setLoginError('Login failed');
+                            }
+                        }}
+                        error = {loginError} />
                     </main>
                 } />
-                <Route path="/register" element={
+                <Route path="/register" element=
+                {
                     <main>
                         <Header image={{ src: Img, alt: 'Log in sheet' }}>
                             <h1>Please register yourself</h1>
                         </Header>
-                        <Register 
-                        error = {registerError}
-                        onSubmit={async (username, password) => 
+                        <Register onSubmit={async (username, password) => 
                         {
-                            //Register functionality
                             setRegisterError('');
-                            try 
+                            //Register functionality
+                            try
                             {
-                                const response = await fetch('http://localhost:3001/api/register', { method: 'POST',headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password })});
+                                const response = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+
                                 const data = await response.json();
-                                if (data.success) 
+                                if(data.success)
                                 {
-                                    alert('Registration successful Please log in now.');
-                                    window.location.href = '/login';
-                                } 
-                                else {
-                                    setRegisterError(data.message);
+                                    alert('Registration successful');
+                                    window.location.href = '/login'; // Redirect to login page after successful registration
+                                    
                                 }
-                            } catch (err) 
+                                else
+                                {
+                                    setRegisterError(data.message || 'Registration failed');
+                                }
+                            } catch (err)
                             {
-                                setRegisterError('Registration failed.');
+                                setRegisterError('Registration failed');
                             }
-                        }}/>
+                        }}
+                        error = {registerError}
+                        />
                     </main>
                 } />
+                
+                <Route path="/dashboard" element=
+                {
+                    <main className='dashboardMain'>
+                        There will be a dashboard
+                    </main>
+                }> 
+                
+                </Route>
             </Routes>
         </BrowserRouter>
     );

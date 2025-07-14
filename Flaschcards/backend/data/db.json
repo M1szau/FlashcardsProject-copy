@@ -15,6 +15,14 @@
     {
       "username": "admin 45",
       "password": "$2b$10$OMnOKSOs3zSAtyvBsjWOBONDf2lNcJUIGsdc6w2cii17grkgNnzrC"
+    },
+    {
+      "username": "admin46",
+      "password": "$2b$10$SHWiMij.nXPtEs/0DN5I/O/EYE7g2uBTWjNzzcU6yDhROVWoE/XSS"
+    },
+    {
+      "username": "admin47",
+      "password": "$2b$10$UlKfoIIqIhqunpUOZmxW5uHGcC.kmv1my0yLZb42nmiXSkNCFS1rm"
     }
   ],
   "flashcards": []
