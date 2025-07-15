@@ -3,9 +3,11 @@ import { Navigate, BrowserRouter, Routes, Route} from 'react-router-dom'
 import { useState } from 'react';
 
 import Header from './components/Header.tsx';
-import Img from './assets/logo.png';
+import Img from './assets/logo2.png';
 import LogIn from './components/LogIn.tsx';
 import Register from './components/Register.tsx'
+import Dashboard from './components/Dashboard.tsx';
+
 
 
 export default function App()
@@ -87,9 +89,7 @@ export default function App()
                 
                 <Route path="/dashboard" element=
                 {
-                    <main className='dashboardMain'>
-                        There will be a dashboard
-                    </main>
+                    <Dashboard />
                 }> 
                 
                 </Route>
