@@ -13,7 +13,7 @@ html
 body 
 {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #ffe7f9;
 }
 
 main 
@@ -101,7 +101,7 @@ form button:hover
     max-width: none !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #f5f7fa;
+    background: #ffe7f9;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -137,6 +137,7 @@ form button:hover
 {
   display: block;
   padding: 0.75rem 1.25rem;
+  margin-left: 2rem;
   border-radius: 6px;
   border: none;
   background: #EEC0E3;
@@ -172,3 +173,75 @@ form button:hover
 {
   background-color: #EAB2F0;
 }
+
+/*Dashboard blocks styles */
+
+.setsRow
+{
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-top: 4rem;
+}
+
+.setBlock
+{
+  width: 400px;
+  height: 300px;
+  background-color:  #8F00BF;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #141414;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer; 
+  transition: box-shadow 0.2s;
+}
+
+.setBlock:hover
+{
+  box-shadow: 0 4px 24px rgba(143,0,191,0.15);
+}
+
+.addSetBlock 
+{
+  width: 400px;
+  height: 300px;
+  background-color: #EAB2F0;
+  border-radius: 12px;
+  border: 2px dashed #8F00BF;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; 
+  color: #141414;
+  font-weight: bold;
+  font-size: 1.5rem;
+  cursor: pointer; 
+  transition: box-shadow 0.2s;
+}
+
+.addSetBlock:hover 
+{
+  box-shadow: 0 4px 24px rgba(143,0,191,0.15);
+}
+.addSetBlock span {
+  font-size: 4rem;
+  display: block;
+  text-align: center;
+}
+
+.addSetBlock p {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+
+/*There is a section for statistics styles in the future */

@@ -7,6 +7,7 @@ import Img from './assets/logo2.png';
 import LogIn from './components/LogIn.tsx';
 import Register from './components/Register.tsx'
 import Dashboard from './components/Dashboard.tsx';
+import Statistics from './components/Statistics.tsx';
 
 
 
@@ -91,8 +92,13 @@ export default function App()
                 {
                     <Dashboard />
                 }> 
-                
                 </Route>
+
+                <Route path="/statistics" element=
+                {
+                <Statistics />
+                } />
+                
             </Routes>
         </BrowserRouter>
     );
