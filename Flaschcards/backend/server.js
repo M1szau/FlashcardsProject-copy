@@ -4,9 +4,29 @@ import cors from 'cors';
 import { addUser, findUserById, addFlashcard, getFlashcards } from './database.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
 const app = express();
 const PORT = 3001;
+
+// lines to replace __dirname in ES modules:
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const dbPath = path.join(__dirname, 'data', 'db.json');
+
+//functions for reading and writing to the database
+function readDB() 
+{
+    return JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+}
+
+function writeDB(data)
+{
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+}
 
 //JWT key
 const JWT_SECRET = 'secret-key';
@@ -49,14 +69,17 @@ function authenticateToken(req, res, next)
 }
 
 //Register a new user 
-app.post('/api/register', async (req, res) => {
+app.post('/api/register', async (req, res) => 
+    {
     const { username, password } = req.body;
-    if (!username || !password) {
+    if (!username || !password) 
+    {
         return res.status(400).json({ success: false, message: "Username and password are required" });
     }
 
     const existingUser = await findUserById(username);
-    if (existingUser) {
+    if (existingUser) 
+    {
         return res.status(400).json({ success: false, message: "User already exists" });
     }
 
@@ -71,7 +94,8 @@ app.post('/api/register', async (req, res) => {
 
 
 //Login user 
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', async (req, res) => 
+{
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ success: false, message: "Username and password are required" });
@@ -97,7 +121,8 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/flashcards', authenticateToken, async (req, res) => 
 {
     const { front, back, languageFront, languageBack } = req.body;
-    if( !front || !back || !languageFront || !languageBack) {
+    if( !front || !back || !languageFront || !languageBack) 
+    {
         return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
@@ -169,4 +194,65 @@ app.delete('/api/flashcards/:id', authenticateToken, async (req, res) =>
     await getFlashcards();
 
     res.json({ success: true, message: "Flashcard deleted successfully", flashcard: deleted });
+});
+
+
+//SETS
+
+//Adding a new set
+app.post('/api/sets', authenticateToken, (req, res) => 
+{
+    const { name } = req.body;
+    if (!name) {
+        return res.status(400).json({ message: "Set name is required" });
+    }
+    const db = readDB();
+    const set = {
+        id: Date.now().toString(),
+        name,
+        owner: req.user.username,
+        createdAt: new Date().toISOString(),
+    };
+    db.sets.push(set);
+    writeDB(db);
+    res.json({ set });
+});
+
+// Get all sets for the logged-in user
+app.get('/api/sets', authenticateToken, (req, res) => 
+{
+    const db = readDB();
+    const userSets = db.sets.filter(set => set.owner === req.user.username);
+    res.json({ sets: userSets });
+});
+
+// Edit a set
+app.put('/api/sets/:id', authenticateToken, (req, res) => 
+{
+    const { id } = req.params;
+    const { name } = req.body;
+    const db = readDB();
+    const idx = db.sets.findIndex(set => set.id === id && set.owner === req.user.username);
+    if (idx === -1) 
+    {
+        return res.status(404).json({ message: "Set not found" });
+    }
+    db.sets[idx].name = name;
+    writeDB(db);
+    res.json({ set: db.sets[idx] });
+});
+
+// Delete a set
+app.delete('/api/sets/:id', authenticateToken, (req, res) => 
+{
+    const { id } = req.params;
+    const db = readDB();
+    const idx = db.sets.findIndex(set => set.id === id && set.owner === req.user.username);
+    if (idx === -1) 
+    {
+        return res.status(404).json({ message: "Set not found" });
+    }
+    const deleted = db.sets.splice(idx, 1)[0];
+    writeDB(db);
+    res.json({ set: deleted });
 });

@@ -1,3 +1,11 @@
+/* Responsive grid for dashboard sets */
+.setsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  margin-top: 4rem;
+  justify-items: center;
+}
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 
 * 
@@ -12,6 +20,7 @@ html
 
 body 
 {
+  margin: 0px;
   min-height: 100vh;
   background: #ffe7f9;
 }
@@ -185,11 +194,165 @@ form button:hover
   margin-top: 4rem;
 }
 
-.setBlock
+/*Grid style*/
+
+/*"Add new set' block*/
+.addSetBlock 
 {
-  width: 400px;
-  height: 300px;
-  background-color:  #8F00BF;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4/3;
+  background-color: #EEC0E3;
+  border-radius: 12px;
+  border: 2px dashed #8F00BF;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #141414;
+  font-weight: bold;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+
+.addSetBlock span 
+{
+  font-size: 3.5rem;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 0.2em;
+  display: block;
+}
+
+.addSetBlock:hover 
+{
+  box-shadow: 0 4px 24px rgba(143,0,191,0.15);
+  background: #EAB2F0;
+}
+
+.addSetBlockInput 
+{
+  background-color: #EAB2F0;
+  border: 2px solid #8F00BF;
+  box-shadow: 0 2px 12px rgba(143,0,191,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4/3;
+  border-radius: 12px;
+  padding: 0;
+  color: #141414;
+  font-size: 1.1rem;
+  cursor: default;
+}
+
+.addSetInputContainer 
+{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  max-width: 260px;
+  margin: 0 auto;
+}
+
+.addSetInput 
+{
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 18px;
+  border-radius: 8px;
+  border: 1.5px solid #8F00BF;
+  background: #FFDEF7;
+  font-size: 1.1rem;
+  color: #141414;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.addSetInput:focus 
+{
+  border-color: #EAB2F0;
+  background: #FFDEF7;
+  border-radius: 8px;
+  border: 1.5px solid #8F00BF;
+}
+
+.addSetButtons 
+{
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  width: 100%;
+  justify-content: center;
+}
+
+.addSetConfirm, .addSetCancel 
+{
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  background: #8F00BF;
+  color: #141414;
+  transition: background 0.2s;
+}
+
+.addSetConfirm:hover 
+{
+  background: #B900F7;
+}
+
+.addSetCancel:hover 
+{
+  background: #B900F7;
+}
+
+/*ordinary blocks*/
+.setsGrid 
+{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 4rem;
+  justify-content: center;
+}
+
+.setBlock, .addSetBlock 
+{
+  flex: 0 1 400px;
+  max-width: 400px;
+  width: 100%;
+  aspect-ratio: 4/3;
+}
+
+@media (max-width: 900px) 
+{
+  .setsGrid 
+  {
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .setBlock, .addSetBlock 
+  {
+    max-width: 95vw;
+    font-size: 0.95rem;
+  }
+}
+
+.setBlock 
+{
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4/3;
+  background-color: #8F00BF;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
   display: flex;
@@ -199,8 +362,59 @@ form button:hover
   color: #141414;
   font-weight: bold;
   font-size: 1rem;
-  cursor: pointer; 
+  cursor: pointer;
   transition: box-shadow 0.2s;
+  position: relative;
+}
+
+.setBlock.editing 
+{
+  background-color: #EAB2F0;
+}
+
+.setName 
+{
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.setBlockActions 
+{
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+}
+
+.setEditBtn, .setDeleteBtn 
+{
+  background: #EEC0E3;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0.2em 0.5em;
+  transition: background 0.2s;
+  border-radius: 6px;
+}
+
+.setEditBtn:hover 
+{
+  background: #EAB2F0;
+}
+
+.setDeleteBtn:hover 
+{
+  background: #EAB2F0;
 }
 
 .setBlock:hover
@@ -208,40 +422,9 @@ form button:hover
   box-shadow: 0 4px 24px rgba(143,0,191,0.15);
 }
 
-.addSetBlock 
+.setBlock:hover .setName 
 {
-  width: 400px;
-  height: 300px;
-  background-color: #EAB2F0;
-  border-radius: 12px;
-  border: 2px dashed #8F00BF;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center; 
-  color: #141414;
-  font-weight: bold;
-  font-size: 1.5rem;
-  cursor: pointer; 
-  transition: box-shadow 0.2s;
+  font-size: 2rem;
+  transition: font-size 0.4s;
 }
 
-.addSetBlock:hover 
-{
-  box-shadow: 0 4px 24px rgba(143,0,191,0.15);
-}
-.addSetBlock span {
-  font-size: 4rem;
-  display: block;
-  text-align: center;
-}
-
-.addSetBlock p {
-  margin: 0;
-  padding: 0;
-  text-align: center;
-}
-
-
-/*There is a section for statistics styles in the future */

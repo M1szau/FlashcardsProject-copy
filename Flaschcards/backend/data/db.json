@@ -23,6 +23,18 @@
     {
       "username": "admin47",
       "password": "$2b$10$UlKfoIIqIhqunpUOZmxW5uHGcC.kmv1my0yLZb42nmiXSkNCFS1rm"
+    },
+    {
+      "username": "admin44",
+      "password": "$2b$10$aSiE9d9nmd4IlDrrZPgpgOZcxLmMFMy.v8qeyxTIn0.JNmtFsFovW"
+    }
+  ],
+  "sets": [
+    {
+      "id": "1752753771616",
+      "name": "asdsaa",
+      "owner": "admin",
+      "createdAt": "2025-07-17T12:02:51.616Z"
     }
   ],
   "flashcards": []

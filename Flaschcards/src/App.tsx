@@ -3,11 +3,12 @@ import { Navigate, BrowserRouter, Routes, Route} from 'react-router-dom'
 import { useState } from 'react';
 
 import Header from './components/Header.tsx';
-import Img from './assets/logo2.png';
+import Img from './assets/logo.png';
 import LogIn from './components/LogIn.tsx';
 import Register from './components/Register.tsx'
 import Dashboard from './components/Dashboard.tsx';
 import Statistics from './components/Statistics.tsx';
+import Flashcards from './components/Flashcards.tsx';
 
 
 
@@ -98,6 +99,8 @@ export default function App()
                 {
                 <Statistics />
                 } />
+
+                <Route path='/set/:setId' element={<Flashcards />}/>
                 
             </Routes>
         </BrowserRouter>
