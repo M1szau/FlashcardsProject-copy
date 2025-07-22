@@ -1,38 +1,81 @@
 import Navbar from "./Navbar";
 import React, { useEffect, useState } from "react";
 import { AiFillEdit, AiFillDelete, AiOutlineCheck, AiOutlineClose } from "react-icons/ai";
+import { useParams } from "react-router-dom";
 
 type Flashcard = 
 {
+    id: string;
+    setId: string;
     language: string;
     content: string;
     translation: string;
     translationLang: string;
+    owner: string;
 }
 
-const initialFlashcards: Flashcard[] = 
+const languageOptions = 
 [
-    { language: "Polish", content: "Cześć", translation: "Hello", translationLang: "English" },
-    { language: "Polish", content: "Witaj", translation: "Welcome", translationLang: "English" },
-    { language: "Polish", content: "Dzień dobry", translation: "Good morning", translationLang: "English" },
+    "Polish",
+    "English",
+    "German",
+    "Spanish",
 ];
-
 
 export default function App()
 {
-    const [flashcards, setFlashcards] = useState<Flashcard[]>(initialFlashcards);
+    //Consts for database
+    const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+    const currentUser = localStorage.getItem('username') || 'unknown';
+    const { setId } = useParams<{ setId: string }>();
+    const selectedSetId = setId ?? null;
+
     const [current, setCurrent] = useState(0);
     const [flipped, setFlipped] = useState(false);
     const [editing, setEditing] = useState(false);
     const [editValues, setEditValues] = useState<Flashcard | null>(null);
     const [adding, setAdding] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [addValues, setAddValues] = useState<Flashcard>(
     {
+        id: "",
+        setId: "",
         language: "",
         content: "",
         translation: "",
-        translationLang: ""
+        translationLang: "",
+        owner: currentUser
     });
+
+    useEffect(() =>
+    {
+        console.log("Selected Set ID:", selectedSetId);
+        if(selectedSetId)
+        {
+            setLoading(true);
+            console.log("Fetching flashcards for set:", selectedSetId);
+            fetch(`/api/sets/${selectedSetId}/flashcards`)
+                .then(res => {
+                    console.log("Response status:", res.status);
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    console.log("Fetched flashcards:", data);
+                    setFlashcards(data || []);
+                    setLoading(false);
+                })
+                .catch(error => {
+                    console.error("Fetch error:", error);
+                    setFlashcards([]);
+                    setLoading(false);
+                });
+        } else {
+            setLoading(false);
+        }
+    }, [selectedSetId]);
 
     useEffect(() =>
     {
@@ -65,7 +108,11 @@ export default function App()
     };
 
     //Flip
-    const handleFlip = () => setFlipped((prev) => !prev);
+    const handleFlip = () => {
+        if (flashcards.length > 0) {
+            setFlipped((prev) => !prev);
+        }
+    };
 
     //Handlers
     //Add new flashcard
@@ -74,13 +121,16 @@ export default function App()
         setAdding(true);
         setAddValues(
         {
+            id: "",
+            setId: selectedSetId || "",
             language: "",
             content: "",
             translation: "",
-            translationLang: ""
+            translationLang: "",
+            owner: currentUser
         });
     };
-    const handleAddChange = (e: React.ChangeEvent<HTMLInputElement>) => 
+    const handleAddChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => 
     {
         setAddValues({ ...addValues, [e.target.name]: e.target.value });
     };
@@ -94,11 +144,35 @@ export default function App()
             addValues.content.trim() &&
             addValues.translationLang.trim() &&
             addValues.translation.trim()
-        ) {
-            setFlashcards([...flashcards, addValues]);
-            setCurrent(flashcards.length); // Go to new card
-            setFlipped(false);
-            setAdding(false);
+        ) 
+        {
+            const newCard = 
+            {
+                ...addValues, 
+                setId: selectedSetId,
+                id: Date.now().toString(),
+                owner: currentUser
+            };
+
+            const token = localStorage.getItem('token'); 
+
+            fetch(`/api/sets/${selectedSetId}/flashcards`,
+            {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}` 
+                },
+                body: JSON.stringify(newCard),
+            })
+            .then(res => res.json())
+            .then(card => 
+            {
+                setFlashcards([...flashcards, card]);
+                setCurrent(flashcards.length);
+                setFlipped(false);
+                setAdding(false);
+            });
         }
     };
 
@@ -113,8 +187,10 @@ export default function App()
     const handleEditFlashcard = (e: React.MouseEvent) => 
     {
         e.stopPropagation();
-        setEditing(true);
-        setEditValues({ ...flashcards[current] });
+        if (flashcards.length > 0) {
+            setEditing(true);
+            setEditValues({ ...flashcards[current] });
+        }
     };
 
     // Cancel editing
@@ -137,11 +213,21 @@ export default function App()
             editValues.translation.trim()
         ) 
         {
-            const updated = [...flashcards];
-            updated[current] = { ...editValues };
-            setFlashcards(updated);
-            setEditing(false);
-            setEditValues(null);
+            fetch(`/api/sets/${selectedSetId}/flashcards/${editValues.id}`, 
+            {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(editValues),
+            })
+            .then(res => res.json())
+            .then(card => 
+            {
+                const updated = [...flashcards];
+                updated[current] = card;
+                setFlashcards(updated);
+                setEditing(false);
+                setEditValues(null);
+            });
         }
     };
 
@@ -156,24 +242,33 @@ export default function App()
     const handleDeleteFlashcard = (e: React.MouseEvent) => 
     {
         e.stopPropagation();
-        if (flashcards.length === 1)
+        if (flashcards.length === 1) 
         {
             alert("You must have at least one flashcard.");
             return;
         }
         if (window.confirm("Are you sure you want to delete this flashcard?")) 
         {
-            const updated = flashcards.filter((_, idx) => idx !== current);
-            setFlashcards(updated);
-            setCurrent((prev) => (prev > 0 ? prev - 1 : 0));
-            setFlipped(false);
-            setEditing(false);
+            fetch(`/api/sets/${selectedSetId}/flashcards/${flashcards[current].id}`, 
+            {
+                method: 'DELETE',
+            })
+            .then(() => {
+                const updated = flashcards.filter((_, idx) => idx !== current);
+                setFlashcards(updated);
+                setCurrent((prev) => (prev > 0 ? prev - 1 : 0));
+                setFlipped(false);
+                setEditing(false);
+            });
         }
     };
 
     //Rendering card or edit form
     const renderCardContent = (side: "front" | "back") => 
     {
+        // Check if there are no flashcards at all
+        if (flashcards.length === 0) return null;
+        
         if (editing) 
         {
             return (
@@ -203,16 +298,16 @@ export default function App()
             {
                 return (
                     <>
-                        <div className="flashcard-language">{flashcards[current].language}</div>
-                        <div className="flashcard-content">{flashcards[current].content}</div>
+                        <div className="flashcard-language">{flashcards[current]?.language}</div>
+                        <div className="flashcard-content">{flashcards[current]?.content}</div>
                     </>
                 );
             } else 
             {
                 return (
                     <>
-                        <div className="flashcard-language">{flashcards[current].translationLang}</div>
-                        <div className="flashcard-content">{flashcards[current].translation}</div>
+                        <div className="flashcard-language">{flashcards[current]?.translationLang}</div>
+                        <div className="flashcard-content">{flashcards[current]?.translation}</div>
                     </>
                 );
             }
@@ -221,23 +316,38 @@ export default function App()
 
     //Render actions:
     const renderActions = () => 
-    (
-        <div className="flashcard-actions-bottom">
-            {editing ? 
-            (
-                <>
-                    <button className="flashcard-save-button" onClick={handleSaveEdit} aria-label="Save"><AiOutlineCheck /></button>
-                    <button className="flashcard-cancel-button" onClick={handleCancelEdit} aria-label="Cancel"><AiOutlineClose /></button>
-                </>
-            ): 
-            (
-                <>
-                    <button className="flashcard-edit-button" onClick={handleEditFlashcard} aria-label="Edit Flashcard"><AiFillEdit /></button>
-                    <button className="flashcard-delete-button" onClick={handleDeleteFlashcard} aria-label="Delete Flashcard"><AiFillDelete /></button>
-                </>
-            )}
-        </div>
-    );
+    {
+        if (flashcards.length === 0) return null;
+        
+        return (
+            <div className="flashcard-actions-bottom">
+                {editing ? 
+                (
+                    <>
+                        <button className="flashcard-save-button" onClick={handleSaveEdit} aria-label="Save"><AiOutlineCheck /></button>
+                        <button className="flashcard-cancel-button" onClick={handleCancelEdit} aria-label="Cancel"><AiOutlineClose /></button>
+                    </>
+                ): 
+                (
+                    <>
+                        <button className="flashcard-edit-button" onClick={handleEditFlashcard} aria-label="Edit Flashcard"><AiFillEdit /></button>
+                        <button className="flashcard-delete-button" onClick={handleDeleteFlashcard} aria-label="Delete Flashcard"><AiFillDelete /></button>
+                    </>
+                )}
+            </div>
+        );
+    };
+
+    if (loading) {
+        return (
+            <>
+                <Navbar />
+                <div style={{ textAlign: "center", margin: "2rem", color: "#8F00BF" }}>
+                    Loading flashcards...
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -247,28 +357,37 @@ export default function App()
                 <button className='flashcard-add-button' onClick={handleAddFlashcard} aria-label='Add Flashcard'>
                     + Add Flashcard
                 </button>
-                {/* Flashcard counter */}
-                <div className="flashcard-counter">
-                    {current + 1} / {flashcards.length}
-                </div>
-                <button className="flashcard-arrow" onClick={prevCard} disabled={current === 0 || flipped || editing} aria-label="Previous Flashcard">
-                    &#8592;
-                </button>
-                <div className="flashcard-box" onClick={handleFlip} tabIndex={0} style={{ cursor: editing ? "default" : "pointer" }} aria-label="Flip flashcard">
-                    <div className={`flashcard-inner${flipped ? " flipped" : ""}`}>
-                        <div className="flashcard-front">
-                            {renderCardContent("front")}
-                            {renderActions()}
-                        </div>
-                        <div className="flashcard-back">
-                            {renderCardContent("back")}
-                            {renderActions()}
-                        </div>
+                
+                {flashcards.length === 0 ? (
+                    <div className = 'no-flashcards-message'>
+                        No flashcards in this set yet. Click "Add Flashcard" to create one!
                     </div>
-                </div>
-                <button className="flashcard-arrow" onClick={nextCard} disabled={current === flashcards.length - 1 || flipped || editing} aria-label="Next Flashcard">
-                    &#8594;
-                </button>
+                ) : (
+                    <>
+                        {/* Flashcard counter */}
+                        <div className="flashcard-counter">
+                            {current + 1} / {flashcards.length}
+                        </div>
+                        <button className="flashcard-arrow" onClick={prevCard} disabled={current === 0 || flipped || editing} aria-label="Previous Flashcard">
+                            &#8592;
+                        </button>
+                        <div className="flashcard-box" onClick={handleFlip} tabIndex={0} style={{ cursor: editing ? "default" : "pointer" }} aria-label="Flip flashcard">
+                            <div className={`flashcard-inner${flipped ? " flipped" : ""}`}>
+                                <div className="flashcard-front">
+                                    {renderCardContent("front")}
+                                    {renderActions()}
+                                </div>
+                                <div className="flashcard-back">
+                                    {renderCardContent("back")}
+                                    {renderActions()}
+                                </div>
+                            </div>
+                        </div>
+                        <button className="flashcard-arrow" onClick={nextCard} disabled={current === flashcards.length - 1 || flipped || editing} aria-label="Next Flashcard">
+                            &#8594;
+                        </button>
+                    </>
+                )}
             </div>
             {/* Add Flashcard Modal */}
             {adding && 
@@ -276,14 +395,13 @@ export default function App()
                 <div className="flashcard-add-modal">
                     <form className="flashcard-add-form" onSubmit={handleSaveAdd}>
                         <h2>Add New Flashcard</h2>
-                        <input
-                            name="language"
-                            value={addValues.language}
-                            onChange={handleAddChange}
-                            placeholder="Language (e.g., Polish)"
-                            className="flashcard-edit-input"
-                            required
-                        />
+                        <label>
+                            Language
+                            <select name='language' value={addValues.language} onChange={handleAddChange} className="flashcard-edit-input" required>
+                                <option value='' disabled>Select language</option>
+                                {languageOptions.map((lang) => (<option key={lang} value={lang}>{lang}</option>))}
+                            </select>
+                        </label>
                         <input
                             name="content"
                             value={addValues.content}
@@ -292,14 +410,13 @@ export default function App()
                             className="flashcard-edit-input"
                             required
                         />
-                        <input
-                            name="translationLang"
-                            value={addValues.translationLang}
-                            onChange={handleAddChange}
-                            placeholder="Translation Language (e.g., English)"
-                            className="flashcard-edit-input"
-                            required
-                        />
+                        <label>
+                            Translation Language
+                            <select name='translationLang' value={addValues.translationLang} onChange={handleAddChange} className="flashcard-edit-input" required>
+                                <option value='' disabled>Select translation language</option>
+                                {languageOptions.map((lang) => (<option key={lang} value={lang}>{lang}</option>))}
+                            </select>
+                        </label>
                         <input
                             name="translation"
                             value={addValues.translation}

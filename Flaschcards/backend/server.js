@@ -1,12 +1,12 @@
-
 import express from 'express';
 import cors from 'cors';
-import { addUser, findUserById, addFlashcard, getFlashcards } from './database.js';
+import { addUser, findUserById, getFlashcards } from './database.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import { JSONFilePreset } from 'lowdb/node';
 
 const app = express();
 const PORT = 3001;
@@ -16,6 +16,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const dbPath = path.join(__dirname, 'data', 'db.json');
+
+// Initialize LowDB
+const defaultData = { users: [], sets: [], flashcards: [] };
+const db = await JSONFilePreset(dbPath, defaultData);
 
 //functions for reading and writing to the database
 function readDB() 
@@ -92,7 +96,6 @@ app.post('/api/register', async (req, res) =>
     res.json({ success: true, message: "User registered successfully", token });
 });
 
-
 //Login user 
 app.post('/api/login', async (req, res) => 
 {
@@ -137,10 +140,10 @@ app.post('/api/flashcards', authenticateToken, async (req, res) =>
         createdAt: new Date().toISOString(),
     };
 
-    await addFlashcard(flashcard);
+    await db.read();
+    db.data.flashcards.push(flashcard);
+    await db.write();
     res.json({ success: true, message: "Flashcard added successfully", flashcard  });
-
-
 });
 
 //Get all flashcards
@@ -170,9 +173,9 @@ app.put('/api/flashcards/:id', authenticateToken, async (req, res) =>
     }
 
     all[idx] = { ...all[idx], front, back, languageFront, languageBack };
-    await addFlashcard(all[idx]);
-    all.pop();
-    await getFlashcards();
+    await db.read();
+    db.data.flashcards.push(all[idx]);
+    await db.write();
     res.json({ success: true, message: "Flashcard updated successfully", flashcard: all[idx] });
 });
 
@@ -189,40 +192,41 @@ app.delete('/api/flashcards/:id', authenticateToken, async (req, res) =>
     }
 
     const deleted = all.splice(idx, 1)[0];
-    await addFlashcard({});
-    all.pop();
-    await getFlashcards();
+    await db.read();
+    await db.write();
 
     res.json({ success: true, message: "Flashcard deleted successfully", flashcard: deleted });
 });
-
 
 //SETS
 
 //Adding a new set
 app.post('/api/sets', authenticateToken, (req, res) => 
 {
-    const { name } = req.body;
+    const { name, description, defaultLanguage, translationLanguage } = req.body;
     if (!name) {
         return res.status(400).json({ message: "Set name is required" });
     }
-    const db = readDB();
+    const dbData = readDB();
     const set = {
         id: Date.now().toString(),
         name,
+        description: description || '',
+        defaultLanguage: defaultLanguage || 'PL',
+        translationLanguage: translationLanguage || 'GB',
         owner: req.user.username,
         createdAt: new Date().toISOString(),
     };
-    db.sets.push(set);
-    writeDB(db);
+    dbData.sets.push(set);
+    writeDB(dbData);
     res.json({ set });
 });
 
 // Get all sets for the logged-in user
 app.get('/api/sets', authenticateToken, (req, res) => 
 {
-    const db = readDB();
-    const userSets = db.sets.filter(set => set.owner === req.user.username);
+    const dbData = readDB();
+    const userSets = dbData.sets.filter(set => set.owner === req.user.username);
     res.json({ sets: userSets });
 });
 
@@ -230,29 +234,128 @@ app.get('/api/sets', authenticateToken, (req, res) =>
 app.put('/api/sets/:id', authenticateToken, (req, res) => 
 {
     const { id } = req.params;
-    const { name } = req.body;
-    const db = readDB();
-    const idx = db.sets.findIndex(set => set.id === id && set.owner === req.user.username);
-    if (idx === -1) 
-    {
+    const { name, description, defaultLanguage, translationLanguage } = req.body;
+    const dbData = readDB();
+    const idx = dbData.sets.findIndex(set => set.id === id && set.owner === req.user.username);
+    if (idx === -1) {
         return res.status(404).json({ message: "Set not found" });
     }
-    db.sets[idx].name = name;
-    writeDB(db);
-    res.json({ set: db.sets[idx] });
+    
+    // Update the set
+    if (name !== undefined) dbData.sets[idx].name = name;
+    if (description !== undefined) dbData.sets[idx].description = description;
+    if (defaultLanguage !== undefined) dbData.sets[idx].defaultLanguage = defaultLanguage;
+    if (translationLanguage !== undefined) dbData.sets[idx].translationLanguage = translationLanguage;
+    
+    writeDB(dbData);
+    res.json({ set: dbData.sets[idx] });
 });
 
 // Delete a set
 app.delete('/api/sets/:id', authenticateToken, (req, res) => 
 {
     const { id } = req.params;
-    const db = readDB();
-    const idx = db.sets.findIndex(set => set.id === id && set.owner === req.user.username);
+    const dbData = readDB();
+    const idx = dbData.sets.findIndex(set => set.id === id && set.owner === req.user.username);
     if (idx === -1) 
     {
         return res.status(404).json({ message: "Set not found" });
     }
-    const deleted = db.sets.splice(idx, 1)[0];
-    writeDB(db);
+    const deleted = dbData.sets.splice(idx, 1)[0];
+    writeDB(dbData);
     res.json({ set: deleted });
+});
+
+// Helper functions for flashcards with sets
+async function addFlashcardToSet(flashcard) 
+{
+    await db.read();
+    db.data.flashcards.push(flashcard);
+    await db.write();
+}
+
+async function getFlashcardsBySet(setId) 
+{
+    await db.read();
+    return db.data.flashcards.filter(card => card.setId === setId);
+}
+
+// Get flashcards for a set
+app.get("/api/sets/:setId/flashcards", async (req, res) => 
+{
+    try {
+        const setId = req.params.setId;
+        const cards = await getFlashcardsBySet(setId); 
+        res.json(cards);
+    } catch (error) {
+        console.error('Error fetching flashcards:', error);
+        res.status(500).json({ error: 'Failed to fetch flashcards' });
+    }
+});
+
+// Post new flashcard to a set
+app.post("/api/sets/:setId/flashcards", authenticateToken, async (req, res) => 
+{
+    try 
+    {
+        const setId = req.params.setId;
+        const card = req.body;
+        card.setId = setId;
+        card.owner = req.user.username;
+        
+        await addFlashcardToSet(card);
+        res.json(card);
+    } catch (error) {
+        console.error('Error adding flashcard:', error);
+        res.status(500).json({ error: 'Failed to add flashcard' });
+    }
+});
+
+// Update flashcard in a set
+app.put('/api/sets/:setId/flashcards/:cardId', async (req, res) => 
+{
+    try 
+    {
+        const { setId, cardId } = req.params;
+        const updatedCard = req.body;
+        
+        await db.read();
+        const cardIndex = db.data.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
+        
+        if (cardIndex === -1) {
+            return res.status(404).json({ error: 'Flashcard not found' });
+        }
+        
+        db.data.flashcards[cardIndex] = { ...db.data.flashcards[cardIndex], ...updatedCard };
+        await db.write();
+        
+        res.json(db.data.flashcards[cardIndex]);
+    } catch (error) {
+        console.error('Error updating flashcard:', error);
+        res.status(500).json({ error: 'Failed to update flashcard' });
+    }
+});
+
+// Delete flashcard from a set
+app.delete('/api/sets/:setId/flashcards/:cardId', async (req, res) => 
+{
+    try 
+    {
+        const { setId, cardId } = req.params;
+        
+        await db.read();
+        const cardIndex = db.data.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
+        
+        if (cardIndex === -1) {
+            return res.status(404).json({ error: 'Flashcard not found' });
+        }
+        
+        db.data.flashcards.splice(cardIndex, 1);
+        await db.write();
+        
+        res.json({ message: 'Flashcard deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting flashcard:', error);
+        res.status(500).json({ error: 'Failed to delete flashcard' });
+    }
 });

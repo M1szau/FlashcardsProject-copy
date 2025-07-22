@@ -32,10 +32,75 @@
   "sets": [
     {
       "id": "1753077308263",
-      "name": "aaa",
+      "name": "aaaa",
       "owner": "admin",
-      "createdAt": "2025-07-21T05:55:08.263Z"
+      "createdAt": "2025-07-21T05:55:08.263Z",
+      "description": "aaadesc"
+    },
+    {
+      "id": "1753177916967",
+      "name": "cccc",
+      "description": "cccdesc",
+      "defaultLanguage": "PL",
+      "translationLanguage": "EN",
+      "owner": "admin",
+      "createdAt": "2025-07-22T09:51:56.967Z"
     }
   ],
-  "flashcards": []
+  "flashcards": [
+    {
+      "id": "1753176752360",
+      "setId": "1753077308263",
+      "language": "Polish",
+      "content": "aaa",
+      "translation": "aaa",
+      "translationLang": "English",
+      "owner": "unknown"
+    },
+    {
+      "id": "1753177165606",
+      "setId": "1753077308263",
+      "language": "Polish",
+      "content": "aaaaa",
+      "translation": "aaaaaa",
+      "translationLang": "English",
+      "owner": "unknown"
+    },
+    {
+      "id": "1753177179222",
+      "setId": "1753177143068",
+      "language": "Polish",
+      "content": "bbbb",
+      "translation": "bbbb",
+      "translationLang": "German",
+      "owner": "unknown"
+    },
+    {
+      "id": "1753178083355",
+      "setId": "1753177916967",
+      "language": "Polish",
+      "content": "cc",
+      "translation": "ccc",
+      "translationLang": "English",
+      "owner": "unknown"
+    },
+    {
+      "id": "1753178283630",
+      "setId": "1753177916967",
+      "language": "Polish",
+      "content": "cc2",
+      "translation": "cc2",
+      "translationLang": "English",
+      "owner": "unknown"
+    },
+    {
+      "id": "1753178745237",
+      "setId": "1753177916967",
+      "language": "Polish",
+      "content": "cc3",
+      "translation": "cc3",
+      "translationLang": "English",
+      "owner": "admin"
+    }
+  ]
 }

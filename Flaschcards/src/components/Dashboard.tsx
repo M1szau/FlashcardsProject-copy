@@ -3,14 +3,35 @@ import { useEffect, useState } from 'react';
 import { AiFillEdit, AiFillDelete } from "react-icons/ai";
 import Navbar from './Navbar.tsx';
 
+type SetType = 
+{
+    id: string;
+    name: string;
+    description: string;
+    defaultLanguage: string;
+    translationLanguage: string;
+    owner: string;
+};
+
+const languageOptions = [
+    { code: 'PL', name: 'Polish' },
+    { code: 'EN', name: 'English' },
+    { code: 'DE', name: 'German' },
+    { code: 'ES', name: 'Spanish' },
+];
+
 export default function Dashboard() 
 {
     const navigate = useNavigate();
-    const [sets, setSets] = useState<{ id: string, name: string }[]>([]);
+    const [sets, setSets] = useState<SetType[]>([]);
     const [adding, setAdding] = useState(false);
     const [newSetName, setNewSetName] = useState('');
+    const [newSetDescription, setNewSetDescription] = useState('');
+    const [newSetDefaultLanguage, setNewSetDefaultLanguage] = useState('PL');
+    const [newSetTranslationLanguage, setNewSetTranslationLanguage] = useState('EN');
     const [editingIdx, setEditingIdx] = useState<number | null>(null);
     const [editSetName, setEditSetName] = useState('');
+    const [editSetDescription, setEditSetDescription] = useState('');
     const [addingLoading, setAddingLoading] = useState(false);
 
     // Fetch sets from backend on mount
@@ -41,7 +62,6 @@ export default function Dashboard()
             } 
             catch (err) 
             {
-                // Network or server error
                 localStorage.removeItem('token');
                 navigate('/login', { replace: true });
             }
@@ -54,6 +74,9 @@ export default function Dashboard()
     {
         setAdding(true);
         setNewSetName('');
+        setNewSetDescription('');
+        setNewSetDefaultLanguage('PL');
+        setNewSetTranslationLanguage('EN');
     }
 
     async function handleAddSetConfirm() 
@@ -64,20 +87,28 @@ export default function Dashboard()
         {
             const token = localStorage.getItem('token');
             const res = await fetch('/api/sets', 
-                {
+            {
                 method: 'POST',
                 headers: 
                 {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                body: JSON.stringify({ name: newSetName.trim() })
+                body: JSON.stringify({
+                    name: newSetName.trim(),
+                    description: newSetDescription.trim(),
+                    defaultLanguage: newSetDefaultLanguage,
+                    translationLanguage: newSetTranslationLanguage
+                })
             });
             if (!res.ok) throw new Error('Failed to add set');
             const data = await res.json();
             setSets(prev => [...prev, data.set]); 
             setAdding(false);
             setNewSetName('');
+            setNewSetDescription('');
+            setNewSetDefaultLanguage('PL');
+            setNewSetTranslationLanguage('EN');
         } catch (err) {
             alert('Failed to add set.');
         } finally {
@@ -89,6 +120,9 @@ export default function Dashboard()
     {
         setAdding(false);
         setNewSetName('');
+        setNewSetDescription('');
+        setNewSetDefaultLanguage('PL');
+        setNewSetTranslationLanguage('EN');
         setAddingLoading(false);
     }
 
@@ -96,9 +130,10 @@ export default function Dashboard()
     {
         setEditingIdx(idx);
         setEditSetName(sets[idx].name);
+        setEditSetDescription(sets[idx].description || '');
     }
 
-    //Edit set name functionality
+    //Edit set functionality
     async function handleEditSetConfirm() 
     {
         if (editingIdx === null || editSetName.trim() === '') return;
@@ -112,7 +147,10 @@ export default function Dashboard()
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ name: editSetName.trim() })
+            body: JSON.stringify({
+                name: editSetName.trim(),
+                description: editSetDescription.trim()
+            })
         });
         if (!res.ok) 
         {
@@ -125,12 +163,14 @@ export default function Dashboard()
         );
         setEditingIdx(null);
         setEditSetName('');
+        setEditSetDescription('');
     }
 
     function handleEditSetCancel() 
     {
         setEditingIdx(null);
         setEditSetName('');
+        setEditSetDescription('');
     }
 
     //Delete set functionality
@@ -151,6 +191,7 @@ export default function Dashboard()
 
     // Blocks functionality
     const allBlocks = [];
+    
     if (adding) 
     {
         allBlocks.push(
@@ -162,7 +203,6 @@ export default function Dashboard()
                         autoFocus
                         placeholder="Set name"
                         onChange={e => setNewSetName(e.target.value)}
-                        //Keyboard shortcuts
                         onKeyDown={async e => 
                         {
                             if (e.key === 'Enter') await handleAddSetConfirm();
@@ -171,6 +211,39 @@ export default function Dashboard()
                         className="addSetInput"
                         disabled={addingLoading}
                     />
+                    <input
+                        type="text"
+                        value={newSetDescription}
+                        placeholder="Description"
+                        onChange={e => setNewSetDescription(e.target.value)}
+                        className="addSetInput"
+                        disabled={addingLoading}
+                    />
+                    <div className = 'language-list'>
+                        <select
+                            value={newSetDefaultLanguage}
+                            onChange={e => setNewSetDefaultLanguage(e.target.value)}
+                            className="addSetInput"
+                            disabled={addingLoading}
+                            style={{ flex: 1 }}
+                        >
+                            {languageOptions.map(opt => (
+                                <option key={opt.code} value={opt.code}>{opt.name}</option>
+                            ))}
+                        </select>
+                        <span style={{ fontSize: '1.5rem', marginBottom: '1.25rem' }}>&rarr;</span>
+                        <select
+                            value={newSetTranslationLanguage}
+                            onChange={e => setNewSetTranslationLanguage(e.target.value)}
+                            className="addSetInput"
+                            disabled={addingLoading}
+                            style={{ flex: 1 }}
+                        >
+                            {languageOptions.map(opt => (
+                                <option key={opt.code} value={opt.code}>{opt.name}</option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="addSetButtons">
                         <button
                             onClick={async () => await handleAddSetConfirm()}
@@ -200,12 +273,12 @@ export default function Dashboard()
             </div>
         );
     }
+    
     sets.forEach((set, i) => 
     {
         if (editingIdx === i) 
         {
-            allBlocks.push
-            (
+            allBlocks.push(
                 <div className="setBlock editing" key={set.id}>
                     <div className="addSetInputContainer">
                         <input
@@ -214,7 +287,6 @@ export default function Dashboard()
                             autoFocus
                             placeholder="Set name"
                             onChange={e => setEditSetName(e.target.value)}
-                            //Keyboard shortcuts
                             onKeyDown={e => 
                             {
                                 if (e.key === 'Enter') handleEditSetConfirm();
@@ -222,6 +294,18 @@ export default function Dashboard()
                             }}
                             className="addSetInput"
                         />
+                        <input
+                            type="text"
+                            value={editSetDescription}
+                            placeholder="Description"
+                            onChange={e => setEditSetDescription(e.target.value)}
+                            className="addSetInput"
+                        />
+                        <div className="edit-language">
+                            <span>{set.defaultLanguage}</span>
+                            <span className="edit-language-arrow">&rarr;</span>
+                            <span>{set.translationLanguage}</span>
+                        </div>
                         <div className="addSetButtons">
                             <button onClick={handleEditSetConfirm} className="addSetConfirm">Save</button>
                             <button onClick={handleEditSetCancel} className="addSetCancel">Cancel</button>
@@ -232,18 +316,31 @@ export default function Dashboard()
         } 
         else 
         {
-            allBlocks.push
-            (
+            allBlocks.push(
                 <div
                     className="setBlock"
                     key={set.id}
                     onClick={() => navigate(`/set/${set.id}`)}
                 >
-                    <div className="setName">{set.name}</div>
+                    <div className = 'setBlock-name'>
+                        {set.name}
+                    </div>
+                    <div className = 'setBlock-description'>
+                        {set.description}
+                    </div>
+                    <div className="setBlock-languages">
+                        <span>
+                            {languageOptions.find(opt => opt.code === set.defaultLanguage)?.name || set.defaultLanguage}
+                        </span>
+                        <span className="language-arrow">&rarr;</span>
+                        <span>
+                            {languageOptions.find(opt => opt.code === set.translationLanguage)?.name || set.translationLanguage}
+                        </span>
+                    </div>
                     <div className="setBlockActions">
                         <button
                             className="setEditBtn"
-                            title="Edit set name"
+                            title="Edit set"
                             onClick={e => { e.stopPropagation(); handleEditSet(i); }}
                         >
                             <span><AiFillEdit /></span>
