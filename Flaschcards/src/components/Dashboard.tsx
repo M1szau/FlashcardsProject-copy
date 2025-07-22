@@ -60,12 +60,14 @@ export default function Dashboard()
     {
         if (newSetName.trim() === '' || addingLoading) return;
         setAddingLoading(true);
-        try {
+        try 
+        {
             const token = localStorage.getItem('token');
             const res = await fetch('/api/sets', 
                 {
                 method: 'POST',
-                headers: {
+                headers: 
+                {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
