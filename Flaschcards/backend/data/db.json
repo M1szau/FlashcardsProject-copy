@@ -11,32 +11,9 @@
     {
       "username": "admin2",
       "password": "$2b$10$ZAH0/cj.nqnAqQhRoja/TemquLL9/QurxSHYCYXoaO2Ixups6TzSW"
-    },
-    {
-      "username": "admin 45",
-      "password": "$2b$10$OMnOKSOs3zSAtyvBsjWOBONDf2lNcJUIGsdc6w2cii17grkgNnzrC"
-    },
-    {
-      "username": "admin46",
-      "password": "$2b$10$SHWiMij.nXPtEs/0DN5I/O/EYE7g2uBTWjNzzcU6yDhROVWoE/XSS"
-    },
-    {
-      "username": "admin47",
-      "password": "$2b$10$UlKfoIIqIhqunpUOZmxW5uHGcC.kmv1my0yLZb42nmiXSkNCFS1rm"
-    },
-    {
-      "username": "admin44",
-      "password": "$2b$10$aSiE9d9nmd4IlDrrZPgpgOZcxLmMFMy.v8qeyxTIn0.JNmtFsFovW"
     }
   ],
   "sets": [
-    {
-      "id": "1753077308263",
-      "name": "aaaa",
-      "owner": "admin",
-      "createdAt": "2025-07-21T05:55:08.263Z",
-      "description": "aaadesc"
-    },
     {
       "id": "1753177916967",
       "name": "cccc",
@@ -45,36 +22,18 @@
       "translationLanguage": "EN",
       "owner": "admin",
       "createdAt": "2025-07-22T09:51:56.967Z"
+    },
+    {
+      "id": "1753248569515",
+      "name": "aaa",
+      "description": "aaadesc",
+      "defaultLanguage": "PL",
+      "translationLanguage": "EN",
+      "owner": "admin",
+      "createdAt": "2025-07-23T05:29:29.515Z"
     }
   ],
   "flashcards": [
-    {
-      "id": "1753176752360",
-      "setId": "1753077308263",
-      "language": "Polish",
-      "content": "aaa",
-      "translation": "aaa",
-      "translationLang": "English",
-      "owner": "unknown"
-    },
-    {
-      "id": "1753177165606",
-      "setId": "1753077308263",
-      "language": "Polish",
-      "content": "aaaaa",
-      "translation": "aaaaaa",
-      "translationLang": "English",
-      "owner": "unknown"
-    },
-    {
-      "id": "1753177179222",
-      "setId": "1753177143068",
-      "language": "Polish",
-      "content": "bbbb",
-      "translation": "bbbb",
-      "translationLang": "German",
-      "owner": "unknown"
-    },
     {
       "id": "1753178083355",
       "setId": "1753177916967",
@@ -99,6 +58,42 @@
       "language": "Polish",
       "content": "cc3",
       "translation": "cc3",
+      "translationLang": "English",
+      "owner": "admin"
+    },
+    {
+      "id": "1753188709777",
+      "setId": "1753177916967",
+      "language": "Polish",
+      "content": "ccc4",
+      "translation": "cccc4",
+      "translationLang": "English",
+      "owner": "admin"
+    },
+    {
+      "id": "1753248581337",
+      "setId": "1753248569515",
+      "language": "Polish",
+      "content": "a",
+      "translation": "a",
+      "translationLang": "English",
+      "owner": "admin"
+    },
+    {
+      "id": "1753248586593",
+      "setId": "1753248569515",
+      "language": "Polish",
+      "content": "aa",
+      "translation": "aa",
+      "translationLang": "English",
+      "owner": "admin"
+    },
+    {
+      "id": "1753248592761",
+      "setId": "1753248569515",
+      "language": "Polish",
+      "content": "aaa",
+      "translation": "aaa",
       "translationLang": "English",
       "owner": "admin"
     }

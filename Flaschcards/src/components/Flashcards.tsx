@@ -279,7 +279,7 @@ export default function App()
                         onChange={handleEditChange}
                         placeholder={side === "front" ? "Language" : "Translation Language"}
                         className="flashcard-edit-input"
-                        disabled={side === "back" && !flipped}
+                        disabled
                         required
                     />
                     <input
@@ -288,7 +288,6 @@ export default function App()
                         onChange={handleEditChange}
                         placeholder={side === "front" ? "Word" : "Translation"}
                         className="flashcard-edit-input"
-                        disabled={side === "back" && !flipped}
                         required
                     />
                 </form>

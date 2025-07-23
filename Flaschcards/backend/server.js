@@ -252,17 +252,21 @@ app.put('/api/sets/:id', authenticateToken, (req, res) =>
 });
 
 // Delete a set
-app.delete('/api/sets/:id', authenticateToken, (req, res) => 
+app.delete('/api/sets/:id', authenticateToken, async (req, res) => 
 {
     const { id } = req.params;
-    const dbData = readDB();
-    const idx = dbData.sets.findIndex(set => set.id === id && set.owner === req.user.username);
+    await db.read();
+    const idx = db.data.sets.findIndex(set => set.id === id && set.owner === req.user.username);
     if (idx === -1) 
     {
         return res.status(404).json({ message: "Set not found" });
     }
-    const deleted = dbData.sets.splice(idx, 1)[0];
-    writeDB(dbData);
+    const deleted = db.data.sets.splice(idx, 1)[0];
+
+    // Remove all flashcards belonging to this set
+    db.data.flashcards = db.data.flashcards.filter(card => card.setId !== id);
+
+    await db.write();
     res.json({ set: deleted });
 });
 
@@ -359,3 +363,4 @@ app.delete('/api/sets/:setId/flashcards/:cardId', async (req, res) =>
         res.status(500).json({ error: 'Failed to delete flashcard' });
     }
 });
+
