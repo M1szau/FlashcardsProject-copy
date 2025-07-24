@@ -24,8 +24,6 @@ jobs:
 
     - name: Install dependencies
       run: npm install
-      working-directory: ./Flaschcards
 
     - name: Run frontend tests
       run: npm test
-      working-directory: ./Flaschcards
