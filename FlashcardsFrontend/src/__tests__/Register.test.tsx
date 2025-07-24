@@ -27,14 +27,14 @@ describe('Register component', () =>
   {
     render(
       <MemoryRouter>
-        <Register onSubmit={() => {}} />    
+        <Register onSubmit={() => {}} />
       </MemoryRouter>
     );
-    expect(screen.getByLabelText(/Username/i)).toBeInTheDocument(); 
-    expect(screen.getByLabelText(/Password/i)).toBeInTheDocument(); 
-    expect(screen.getByLabelText(/Confirm Password/i)).toBeInTheDocument(); 
-    expect(screen.getByRole('button', { name: /Register/i })).toBeInTheDocument(); 
-    expect(screen.getByRole('button', { name: /Back to login/i })).toBeInTheDocument(); 
+    expect(screen.getByLabelText(/Username/i)).toBeInTheDocument(); // username field
+    expect(screen.getByLabelText(/Password/i)).toBeInTheDocument(); // password field
+    expect(screen.getByRole('button', { name: /Register/i })).toBeInTheDocument(); // register button
+    expect(screen.getByText(/Already have an account\?/i)).toBeInTheDocument(); // info text
+    expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument(); // log in button
   });
 
   
@@ -48,7 +48,6 @@ describe('Register component', () =>
     );
     fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'newuser' } });
     fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'newpass' } });
-    fireEvent.change(screen.getByLabelText(/Confirm Password/i), { target: { value: 'newpass' } });
     fireEvent.click(screen.getByRole('button', { name: /Register/i }));
     expect(handleSubmit).toHaveBeenCalledWith('newuser', 'newpass', 'newpass');
   });
@@ -63,15 +62,16 @@ describe('Register component', () =>
     expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
   });
 
-  it('navigates to /login when Back to login button is clicked', () => 
-  {
+  // Test that navigation to  Log in when button is clicked
+  it('navigates to Log in when button is clicked', () => 
+{
     render(
       <MemoryRouter>
         <Register onSubmit={() => {}} />
       </MemoryRouter>
     );
-    fireEvent.click(screen.getByRole('button', { name: /Back to login/i }));
-    expect(navigateMock).toHaveBeenCalledWith('/login');
+    fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
+    expect(navigateMock).toHaveBeenCalledWith('/');
   });
 
   it('resets the form after submit', () => 
@@ -84,15 +84,12 @@ describe('Register component', () =>
     );
     const usernameInput = screen.getByLabelText(/Username/i) as HTMLInputElement;
     const passwordInput = screen.getByLabelText(/Password/i) as HTMLInputElement;
-    const confirmInput = screen.getByLabelText(/Confirm Password/i) as HTMLInputElement;
 
     fireEvent.change(usernameInput, { target: { value: 'resetuser' } });
     fireEvent.change(passwordInput, { target: { value: 'resetpass' } });
-    fireEvent.change(confirmInput, { target: { value: 'resetpass' } });
     fireEvent.click(screen.getByRole('button', { name: /Register/i }));
 
     expect(usernameInput.value).toBe(''); 
     expect(passwordInput.value).toBe(''); 
-    expect(confirmInput.value).toBe(''); 
   });
 });
