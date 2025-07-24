@@ -2,7 +2,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
 import LogIn from '../components/LogIn';
-import { MemoryRouter, useNavigate } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
+
+const navigateMock = vi.fn();
 
 // Properly mock react-router-dom and preserve MemoryRouter
 vi.mock('react-router-dom', async (importOriginal) => 
@@ -29,7 +31,7 @@ describe('LogIn component', () =>
     expect(screen.getByLabelText(/Your password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Join us!/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/Not yet with us\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/Not yet with us\?/i)).toBeInTheDocument();
   });
 
   it('calls onSubmit with username and password when Log in button is clicked', () => {
@@ -57,14 +59,13 @@ describe('LogIn component', () =>
 
   it('navigates to /register when Join us! button is clicked', () => 
   {
-    const navigate = useNavigate();
     render(
       <MemoryRouter>
         <LogIn onSubmit={() => {}} />
       </MemoryRouter>
     );
     fireEvent.click(screen.getByRole('button', { name: /Join us!/i }));
-    expect(navigate).toHaveBeenCalledWith('/register');
+    expect(navigateMock).toHaveBeenCalledWith('/register');
   });
 
   it('resets the form after submit', () => 
