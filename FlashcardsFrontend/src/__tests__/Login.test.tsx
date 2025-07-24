@@ -4,12 +4,15 @@ import '@testing-library/jest-dom';
 import LogIn from '../components/LogIn';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 
-// Navigation test
-vi.mock('react-router-dom', () => 
+// Properly mock react-router-dom and preserve MemoryRouter
+vi.mock('react-router-dom', async (importOriginal) => 
 {
+  const actual = await importOriginal();
+  const actualTyped = actual as Record<string, any>;
   return {
-    ...vi.importActual('react-router-dom'),
+    ...actualTyped,
     useNavigate: () => vi.fn(),
+    MemoryRouter: actualTyped.MemoryRouter,
   };
 });
 
