@@ -24,8 +24,14 @@ jobs:
 
     - name: Install dependencies
       run: npm install
-      working-directory: ./Flaschcards 
+      working-directory: ./FlashcardsFrontend
       
-    - name: Run frontend tests
-      run: npm test
-      working-directory: ./Flaschcards
+    - name: Run frontend tests with coverage
+      run: npx vitest run --coverage
+      working-directory: ./FlashcardsFrontend
+
+    - name: Show coverage percent
+      run: |
+        COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+        echo "Test coverage: $COVERAGE%"
+      working-directory: ./FlashcardsFrontend
