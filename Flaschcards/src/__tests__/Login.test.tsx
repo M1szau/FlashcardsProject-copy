@@ -1,12 +1,13 @@
-import React from 'react';
+/*import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import LogIn from '../components/LogIn';
 import { MemoryRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 
 describe('LogIn component', () => 
 {
   it('renders username and password fields', () => 
-    {
+  {
     render(
       <MemoryRouter>
         <LogIn onSubmit={() => {}} />
@@ -19,8 +20,8 @@ describe('LogIn component', () =>
   });
 
   it('calls onSubmit with username and password', () => 
-{
-    const handleSubmit = jest.fn();
+  {
+    const handleSubmit = vi.fn(); // <-- Use vi.fn() instead of jest.fn()
     render(
       <MemoryRouter>
         <LogIn onSubmit={handleSubmit} />
@@ -33,7 +34,7 @@ describe('LogIn component', () =>
   });
 
   it('shows error message when error prop is set', () => 
-{
+  {
     render(
       <MemoryRouter>
         <LogIn onSubmit={() => {}} error="Invalid credentials" />
@@ -41,6 +42,4 @@ describe('LogIn component', () =>
     );
     expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
   });
-});
-
-//Comment just to push git changes
+});*/

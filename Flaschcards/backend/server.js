@@ -44,14 +44,14 @@ app.get( '/', (req, res) =>
 });
 
 app.get('/api/health',authenticateToken, async (req, res) => 
-    {
-        res.json({ success: true, message: 'API is running' });
-    });
+{
+    res.json({ success: true, message: 'API is running' });
+});
 
 app.listen(PORT, () => 
-    {
-        console.log(`Server is running on http://localhost:${PORT}`);
-    });
+{
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
 
 //Token authentication
 function authenticateToken(req, res, next)
@@ -74,7 +74,7 @@ function authenticateToken(req, res, next)
 
 //Register a new user 
 app.post('/api/register', async (req, res) => 
-    {
+{
     const { username, password } = req.body;
     if (!username || !password) 
     {
@@ -287,7 +287,8 @@ async function getFlashcardsBySet(setId)
 // Get flashcards for a set
 app.get("/api/sets/:setId/flashcards", async (req, res) => 
 {
-    try {
+    try 
+    {
         const setId = req.params.setId;
         const cards = await getFlashcardsBySet(setId); 
         res.json(cards);
