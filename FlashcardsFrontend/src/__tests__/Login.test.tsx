@@ -5,11 +5,10 @@ import LogIn from '../components/LogIn';
 import { MemoryRouter, useNavigate } from 'react-router-dom';
 
 // Navigation test
-vi.mock('react-router-dom', async () => 
+vi.mock('react-router-dom', () => 
 {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
-    ...actual,
+    ...vi.importActual('react-router-dom'),
     useNavigate: () => vi.fn(),
   };
 });
@@ -53,12 +52,9 @@ describe('LogIn component', () =>
     expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
   });
 
-  it('navigates to /register when Join us! button is clicked', () => {
-    const navigate = vi.fn();
-
-    // Overriding UseNavigate to return mock function
-    vi.mocked(useNavigate).mockReturnValue(navigate);
-
+  it('navigates to /register when Join us! button is clicked', () => 
+  {
+    const navigate = useNavigate();
     render(
       <MemoryRouter>
         <LogIn onSubmit={() => {}} />
