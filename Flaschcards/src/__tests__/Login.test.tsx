@@ -22,7 +22,7 @@ describe('LogIn component', () =>
 
   it('calls onSubmit with username and password', () => 
   {
-    const handleSubmit = vi.fn(); // <-- Use vi.fn() instead of jest.fn()
+    const handleSubmit = vi.fn(); 
     render(
       <MemoryRouter>
         <LogIn onSubmit={handleSubmit} />
