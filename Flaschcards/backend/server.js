@@ -364,3 +364,4 @@ app.delete('/api/sets/:setId/flashcards/:cardId', async (req, res) =>
     }
 });
 
+export default app;
