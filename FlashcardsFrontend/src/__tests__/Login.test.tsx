@@ -13,7 +13,7 @@ vi.mock('react-router-dom', async (importOriginal) =>
   const actualTyped = actual as Record<string, any>;
   return {
     ...actualTyped,
-    useNavigate: () => vi.fn(),
+    useNavigate: () => navigateMock,
     MemoryRouter: actualTyped.MemoryRouter,
   };
 });
