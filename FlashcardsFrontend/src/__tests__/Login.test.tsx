@@ -1,13 +1,22 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import '@testing-library/jest-dom'
+import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom';
 import LogIn from '../components/LogIn';
-import { MemoryRouter } from 'react-router-dom';
-import { vi } from 'vitest';
+import { MemoryRouter, useNavigate } from 'react-router-dom';
+
+// Navigation test
+vi.mock('react-router-dom', async () => 
+{
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+  };
+});
 
 describe('LogIn component', () => 
 {
-  it('renders username and password fields', () => 
+  it('renders all required fields and buttons', () => 
   {
     render(
       <MemoryRouter>
@@ -18,11 +27,11 @@ describe('LogIn component', () =>
     expect(screen.getByLabelText(/Your password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Join us!/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Not yet with us\?/i)).toBeInTheDocument();
   });
 
-  it('calls onSubmit with username and password', () => 
-  {
-    const handleSubmit = vi.fn(); 
+  it('calls onSubmit with username and password when Log in button is clicked', () => {
+    const handleSubmit = vi.fn();
     render(
       <MemoryRouter>
         <LogIn onSubmit={handleSubmit} />
@@ -42,5 +51,39 @@ describe('LogIn component', () =>
       </MemoryRouter>
     );
     expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
+  });
+
+  it('navigates to /register when Join us! button is clicked', () => {
+    const navigate = vi.fn();
+
+    // Overriding UseNavigate to return mock function
+    vi.mocked(useNavigate).mockReturnValue(navigate);
+
+    render(
+      <MemoryRouter>
+        <LogIn onSubmit={() => {}} />
+      </MemoryRouter>
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Join us!/i }));
+    expect(navigate).toHaveBeenCalledWith('/register');
+  });
+
+  it('resets the form after submit', () => 
+  {
+    const handleSubmit = vi.fn();
+    render(
+      <MemoryRouter>
+        <LogIn onSubmit={handleSubmit} />
+      </MemoryRouter>
+    );
+    const usernameInput = screen.getByLabelText(/Your username/i) as HTMLInputElement;
+    const passwordInput = screen.getByLabelText(/Your password/i) as HTMLInputElement;
+
+    fireEvent.change(usernameInput, { target: { value: 'resetuser' } });
+    fireEvent.change(passwordInput, { target: { value: 'resetpass' } });
+    fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
+
+    expect(usernameInput.value).toBe('');
+    expect(passwordInput.value).toBe('');
   });
 });
