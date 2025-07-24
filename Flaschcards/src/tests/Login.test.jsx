@@ -42,3 +42,5 @@ describe('LogIn component', () =>
     expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
   });
 });
+
+//Comment just to push git changes
