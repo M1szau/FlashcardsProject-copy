@@ -1,5 +1,6 @@
-/*import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import '@testing-library/jest-dom'
 import LogIn from '../components/LogIn';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
@@ -42,4 +43,4 @@ describe('LogIn component', () =>
     );
     expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
   });
-});*/
+});
