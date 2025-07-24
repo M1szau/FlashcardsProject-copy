@@ -4,6 +4,7 @@ import '@testing-library/jest-dom';
 import LogIn from '../components/LogIn';
 import { MemoryRouter } from 'react-router-dom';
 
+// Mock function for navigation
 const navigateMock = vi.fn();
 
 // Properly mock react-router-dom and preserve MemoryRouter

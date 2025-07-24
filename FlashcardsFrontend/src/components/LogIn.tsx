@@ -41,7 +41,7 @@ export default function LogIn({ onSubmit, error }: LogInProps)
                         <button type="submit">Log in</button>
                     </div>
                     <div>
-                        <span style={{ marginRight: '0.5rem', marginTop: '1rem' }}>Not yet with us?</span>
+                        <label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}>Not yet with us?</label>
                         <button type="button" onClick={() => navigate('/register')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}>Join us!</button>
                     </div>
                 </div>
