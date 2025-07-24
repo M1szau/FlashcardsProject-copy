@@ -49,7 +49,7 @@ describe('Register component', () =>
     fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'newuser' } });
     fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'newpass' } });
     fireEvent.click(screen.getByRole('button', { name: /Register/i }));
-    expect(handleSubmit).toHaveBeenCalledWith('newuser', 'newpass', 'newpass');
+    expect(handleSubmit).toHaveBeenCalledWith('newuser', 'newpass');
   });
 
   it('shows error message when error prop is set', () => 
