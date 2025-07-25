@@ -63,4 +63,35 @@ describe('Navbar component', () =>
         fireEvent.click(screen.getByRole('button', { name: /Log out/i }));
         expect(navigateMock).toHaveBeenCalledWith('/login');
     });
+
+    it('removes token from localStorage when Log out is clicked', () => 
+    {
+        const removeItemMock = vi.spyOn(window.localStorage, 'removeItem');
+        render(
+            <MemoryRouter>
+                <Navbar />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByRole('button', { name: /Log out/i }));
+        expect(removeItemMock).toHaveBeenCalledWith('token');
+        removeItemMock.mockRestore();
+    });
+
+    it('reloads page when logo is clicked on /dashboard', () => 
+    {
+        const reloadMock = vi.fn();
+        Object.defineProperty(window, 'location', 
+        {
+            value: { pathname: '/dashboard', reload: reloadMock },
+            writable: true,
+        });
+        render(
+            <MemoryRouter>
+                <Navbar />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText(/Flashcards/i));
+        expect(reloadMock).toHaveBeenCalled();
+    });
+
 });
