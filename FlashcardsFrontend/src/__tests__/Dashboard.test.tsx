@@ -229,7 +229,7 @@ describe('Dashboard component', () =>
         fireEvent.click(screen.getByTitle(/Edit set/i));
         fireEvent.change(screen.getByPlaceholderText(/Set name/i), { target: { value: 'Set1 Edited' } });
         fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
-        
+
         // After cancel, edited block should not be visible
         await waitFor(() => {
         expect(screen.getByText(/Set1/i)).toBeInTheDocument();
@@ -264,6 +264,88 @@ describe('Dashboard component', () =>
         await waitFor(() => 
         {
         expect(screen.queryByText(/Set1/i)).not.toBeInTheDocument();
+        });
+    });
+
+    //OnKeyDown in add form test 
+    it('Handles Enter and Escape keydown in add set input', async () => 
+    {
+        window.localStorage.setItem('token', 'testtoken');
+        fetchMock.mockResolvedValueOnce(
+        {
+            status: 200,
+            json: async () => ({ sets: [] })
+        });
+        render(
+            <MemoryRouter>
+                <Dashboard />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByText('+'));
+        const nameInput = screen.getByPlaceholderText(/Set name/i);
+        fireEvent.change(nameInput, { target: { value: 'Test Set' } });
+
+        // Mock add set fetch
+        fetchMock.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ set: { id: '2', name: 'Test Set', description: '', defaultLanguage: 'PL', translationLanguage: 'EN', owner: 'admin' } })
+        });
+        fireEvent.keyDown(nameInput, { key: 'Enter', code: 'Enter' });
+        await waitFor(() => 
+        {
+            expect(screen.getByText(/Test Set/i)).toBeInTheDocument();
+        });
+        // Test Escape key
+        fireEvent.click(screen.getByText('+'));
+        fireEvent.change(nameInput, { target: { value: 'Another Set' } });
+        fireEvent.keyDown(nameInput, { key: 'Escape', code: 'Escape' });
+        await waitFor(() => {
+            expect(screen.getByText(/Add new set/i)).toBeInTheDocument();
+        });
+    });
+
+    it('Handles Enter and Escape keydown in edit set input', async () => 
+    {
+        window.localStorage.setItem('token', 'testtoken');
+        fetchMock.mockResolvedValueOnce(
+        {
+        status: 200,
+        json: async () => ({ sets: [
+            { id: '1', name: 'Set1', description: 'Desc1', defaultLanguage: 'PL', translationLanguage: 'EN', owner: 'admin' }
+        ] })
+        });
+        render(
+            <MemoryRouter>
+                <Dashboard />
+            </MemoryRouter>
+        );
+        await waitFor(() => 
+        {
+            expect(screen.getByText(/Set1/i)).toBeInTheDocument();
+        });
+        fireEvent.click(screen.getByTitle(/Edit set/i));
+        const editNameInput = screen.getByPlaceholderText(/Set name/i);
+        fireEvent.change(editNameInput, { target: { value: 'Set1 Edited' } });
+
+        // Mock edit set fetch
+        fetchMock.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ set: { id: '1', name: 'Set1 Edited', description: 'Desc1', defaultLanguage: 'PL', translationLanguage: 'EN', owner: 'admin' } })
+        });
+        fireEvent.keyDown(editNameInput, { key: 'Enter', code: 'Enter' });
+        await waitFor(() =>
+        {
+            expect(screen.getByText(/Set1 Edited/i)).toBeInTheDocument();
+        });
+
+        // Test Escape key
+        fireEvent.click(screen.getByTitle(/Edit set/i));
+        fireEvent.change(editNameInput, { target: { value: 'Set1 Again' } });
+        fireEvent.keyDown(editNameInput, { key: 'Escape', code: 'Escape' });
+        await waitFor(() => {
+        expect(screen.getByText(/Set1/i)).toBeInTheDocument();
         });
     });
 });
