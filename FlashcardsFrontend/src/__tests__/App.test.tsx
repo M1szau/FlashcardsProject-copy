@@ -22,8 +22,17 @@ const localStorageMock = (() =>
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 // Mock window.location
-const locationMock = { href: '', assign: vi.fn() };
-Object.defineProperty(window, 'location', { value: locationMock });
+const locationMock = 
+{
+  href: 'http://localhost/',
+  origin: 'http://localhost',
+  assign: vi.fn(),
+  pathname: '/',
+  search: '',
+  hash: '',
+  reload: vi.fn(),
+};
+Object.defineProperty(window, 'location', { value: locationMock, writable: true });
 
 // Mock alert
 const alertMock = vi.fn();
