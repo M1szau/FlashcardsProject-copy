@@ -1,11 +1,27 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import Navbar from '../components/Navbar';
 import { MemoryRouter } from 'react-router-dom';
 
 // Mock function for navigation
 const navigateMock = vi.fn();
+
+// Add this before your test
+beforeEach(() => 
+{
+  Object.defineProperty(window, 'localStorage', 
+  {
+    value: 
+    {
+      removeItem: vi.fn(),
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      clear: vi.fn(),
+    },
+    writable: true,
+  });
+});
 
 // Properly mock react-router-dom and preserve MemoryRouter
 vi.mock('react-router-dom', async (importOriginal) =>
@@ -42,7 +58,7 @@ describe('Navbar component', () =>
         expect(navigateMock).toHaveBeenCalledWith('/dashboard');
     });
 
-    it('navigates to /statistics when Statistics button is clicked', () => 
+    it('Navigates to /statistics when Statistics button is clicked', () => 
     {
         render(
             <MemoryRouter>
@@ -53,7 +69,7 @@ describe('Navbar component', () =>
         expect(navigateMock).toHaveBeenCalledWith('/statistics');
     });
 
-    it('navigates to /logout when Log out button is clicked', () => 
+    it('Navigates to /logout when Log out button is clicked', () => 
     {
         render(
             <MemoryRouter>
@@ -64,12 +80,12 @@ describe('Navbar component', () =>
         expect(navigateMock).toHaveBeenCalledWith('/login');
     });
 
-    it('removes token from localStorage when Log out is clicked', () => 
+    it('Removes token from localStorage when Log out is clicked', () => 
     {
         const removeItemMock = vi.spyOn(window.localStorage, 'removeItem');
         render(
             <MemoryRouter>
-                <Navbar />
+            <Navbar />
             </MemoryRouter>
         );
         fireEvent.click(screen.getByRole('button', { name: /Log out/i }));
@@ -77,7 +93,7 @@ describe('Navbar component', () =>
         removeItemMock.mockRestore();
     });
 
-    it('reloads page when logo is clicked on /dashboard', () => 
+    it('Reloads page when logo is clicked on /dashboard', () => 
     {
         const reloadMock = vi.fn();
         Object.defineProperty(window, 'location', 
