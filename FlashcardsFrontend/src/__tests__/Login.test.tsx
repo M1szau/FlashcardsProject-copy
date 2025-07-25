@@ -28,6 +28,7 @@ describe('LogIn component', () =>
         <LogIn onSubmit={() => {}} />
       </MemoryRouter>
     );
+    
     expect(screen.getByLabelText(/Your username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Your password/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument();
