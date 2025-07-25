@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
-import App from '../App';
+import App from '../App.tsx';
 
 // Mock fetch
 const fetchMock = vi.fn();
@@ -44,12 +44,15 @@ beforeEach(() => {
 });
 
 describe('App component', () => {
-  it('Redirects from / to /login and renders login header', () => 
+  it('Redirects from / to /login and renders login header', async () => 
   {
     window.history.pushState({}, '', '/');
     render(<App />);
-    expect(screen.getByRole('heading', { name: /Please log in/i })).toBeInTheDocument();
-  });
+    await waitFor(() => 
+    {
+      expect(screen.getByRole('heading', { name: /Please log in/i })).toBeInTheDocument();
+    });
+});
 
   it('Renders login page and handles successful login', async () => 
   {
@@ -86,13 +89,17 @@ describe('App component', () => {
   it('Renders register page and handles successful registration', async () => 
   {
     window.history.pushState({}, '', '/register');
-    fetchMock.mockResolvedValueOnce({
+    fetchMock.mockResolvedValueOnce(
+    {
       json: async () => ({ success: true })
     });
     render(<App />);
-    expect(screen.getByRole('heading', { name: /Please register yourself/i })).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'newuser' } });
-    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'newpass' } });
+    await waitFor(() => 
+    {
+      expect(screen.getByRole('heading', { name: /Please register yourself/i })).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
     fireEvent.click(screen.getByRole('button', { name: /Register/i }));
     await waitFor(() => {
       expect(alertMock).toHaveBeenCalledWith('Registration successful');
