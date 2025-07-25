@@ -8,8 +8,7 @@ const fetchMock = vi.fn();
 global.fetch = fetchMock;
 
 // Mock localStorage
-const localStorageMock = (() => 
-{
+const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] || null,
@@ -18,7 +17,6 @@ const localStorageMock = (() =>
     clear: () => { store = {}; },
   };
 })();
-
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 
 // Mock window.location
@@ -38,44 +36,38 @@ Object.defineProperty(window, 'location', { value: locationMock, writable: true 
 const alertMock = vi.fn();
 window.alert = alertMock;
 
-beforeEach(() => 
-{
+beforeEach(() => {
   vi.clearAllMocks();
   window.localStorage.clear();
-  locationMock.href = '';
+  locationMock.href = 'http://localhost/';
+  locationMock.pathname = '/';
 });
 
-describe('App component', () => 
-{
-  //Redirection to login page
-  it('Redirects from / to /login', () => 
+describe('App component', () => {
+  it('Redirects from / to /login and renders login header', () => 
   {
     window.history.pushState({}, '', '/');
     render(<App />);
-    expect(screen.getByText(/Please log in/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Please log in/i })).toBeInTheDocument();
   });
 
-  //Login functionality test
   it('Renders login page and handles successful login', async () => 
   {
     window.history.pushState({}, '', '/login');
-    fetchMock.mockResolvedValueOnce(
-    {
+    fetchMock.mockResolvedValueOnce({
       json: async () => ({ success: true, token: 'testtoken' })
     });
     render(<App />);
-    expect(screen.getByText(/Please log in/i)).toBeInTheDocument();
-    fireEvent.change(screen.getByPlaceholderText(/username/i), { target: { value: 'user' } });
-    fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: 'pass' } });
+    expect(screen.getByRole('heading', { name: /Please log in/i })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'user' } });
+    fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'pass' } });
     fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
-    await waitFor(() => 
-    {
+    await waitFor(() => {
       expect(window.localStorage.getItem('token')).toBe('testtoken');
       expect(window.location.href).toBe('/dashboard');
     });
   });
 
-  //Login error handling
   it('Shows login error on failed login', async () => 
   {
     window.history.pushState({}, '', '/login');
@@ -83,81 +75,69 @@ describe('App component', () =>
       json: async () => ({ success: false, message: 'Invalid credentials' })
     });
     render(<App />);
-    fireEvent.change(screen.getByPlaceholderText(/username/i), { target: { value: 'user' } });
-    fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: 'pass' } });
+    fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'user' } });
+    fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'pass' } });
     fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
-    await waitFor(() => 
-    {
+    await waitFor(() => {
       expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
     });
   });
 
-  //Register functionality test
   it('Renders register page and handles successful registration', async () => 
   {
     window.history.pushState({}, '', '/register');
-    fetchMock.mockResolvedValueOnce(
-    {
+    fetchMock.mockResolvedValueOnce({
       json: async () => ({ success: true })
     });
     render(<App />);
-    expect(screen.getByText(/Please register yourself/i)).toBeInTheDocument();
-    fireEvent.change(screen.getByPlaceholderText(/username/i), { target: { value: 'newuser' } });
-    fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: 'newpass' } });
+    expect(screen.getByRole('heading', { name: /Please register yourself/i })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'newpass' } });
     fireEvent.click(screen.getByRole('button', { name: /Register/i }));
-    await waitFor(() => 
-    {
+    await waitFor(() => {
       expect(alertMock).toHaveBeenCalledWith('Registration successful');
       expect(window.location.href).toBe('/login');
     });
   });
 
-  //Register error handling
   it('Shows register error on failed registration', async () => 
   {
     window.history.pushState({}, '', '/register');
-    fetchMock.mockResolvedValueOnce(
-    {
+    fetchMock.mockResolvedValueOnce({
       json: async () => ({ success: false, message: 'User exists' })
     });
     render(<App />);
-    fireEvent.change(screen.getByPlaceholderText(/username/i), { target: { value: 'newuser' } });
-    fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: 'newpass' } });
+    fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'newpass' } });
     fireEvent.click(screen.getByRole('button', { name: /Register/i }));
     await waitFor(() => {
       expect(screen.getByText(/User exists/i)).toBeInTheDocument();
     });
   });
 
-  //Dashboard page rendering test
   it('Renders dashboard page', async () => 
   {
     window.history.pushState({}, '', '/dashboard');
     render(<App />);
-    await waitFor(() => 
-    {
+    await waitFor(() => {
       expect(screen.getByText(/Add new set/i)).toBeInTheDocument();
     });
   });
 
-  //Statistics page rendering test
-  it('renders statistics page', async () => 
+  it('Renders statistics page', async () => 
   {
     window.history.pushState({}, '', '/statistics');
     render(<App />);
-    await waitFor(() => 
-    {
+    await waitFor(() => {
       expect(screen.getByText(/Statistics/i)).toBeInTheDocument();
     });
   });
 
-  //Flashcards page rendering test
   it('Renders flashcards page', async () => 
   {
     window.history.pushState({}, '', '/set/1');
     render(<App />);
-    await waitFor(() => 
-    {
+    await waitFor(() => {
       expect(screen.getByText(/Flashcards/i)).toBeInTheDocument();
     });
   });
