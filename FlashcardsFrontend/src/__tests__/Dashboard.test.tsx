@@ -323,7 +323,7 @@ describe('Dashboard component', () =>
         );
         await waitFor(() => 
         {
-            expect(screen.getByText((content) => content.includes('Set1'))).toBeInTheDocument();
+            expect(screen.getByText(/Set1/i)).toBeInTheDocument();
         });
         fireEvent.click(screen.getByTitle(/Edit set/i));
         const editNameInput = screen.getByPlaceholderText(/Set name/i);
@@ -346,7 +346,7 @@ describe('Dashboard component', () =>
         fireEvent.change(editNameInput, { target: { value: 'Set1 Again' } });
         fireEvent.keyDown(editNameInput, { key: 'Escape', code: 'Escape' });
         await waitFor(() => {
-        expect(screen.getByText((content) => content.includes('Set1'))).toBeInTheDocument();
+        expect(screen.getByText(/Set1/i)).toBeInTheDocument();
         });
     });
 });
