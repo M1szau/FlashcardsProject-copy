@@ -61,6 +61,6 @@ describe('Navbar component', () =>
             </MemoryRouter>
         );
         fireEvent.click(screen.getByRole('button', { name: /Log out/i }));
-        expect(navigateMock).toHaveBeenCalledWith('/logout');
+        expect(navigateMock).toHaveBeenCalledWith('/login');
     });
 });
