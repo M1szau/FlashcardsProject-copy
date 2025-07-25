@@ -15,13 +15,13 @@ describe('Header component', () =>
                 </Header>
             </MemoryRouter>
         )
+
+        //Image check
+        const img = screen.getByRole('img');
+        expect(img).toHaveAttribute('src', 'test.png');
+        expect(img).toHaveAttribute('alt', 'Test image');
+
+        //Children check
+        expect(screen.getByText(/Test Header/i)).toBeInTheDocument();
     });
-
-    //Image check
-    const img = screen.getByRole('img');
-    expect(img).toHaveAttribute('src', 'test.png');
-    expect(img).toHaveAttribute('alt', 'Test image');
-
-    //Children check
-    expect(screen.getByText(/Test Header/i)).toBeInTheDocument();
 });
