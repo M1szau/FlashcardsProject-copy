@@ -282,7 +282,7 @@ describe('Dashboard component', () =>
             </MemoryRouter>
         );
         fireEvent.click(screen.getByText('+'));
-        const nameInput = screen.getByPlaceholderText(/Set name/i);
+        let nameInput = screen.getByPlaceholderText(/Set name/i);
         fireEvent.change(nameInput, { target: { value: 'Test Set' } });
 
         // Mock add set fetch
@@ -298,6 +298,7 @@ describe('Dashboard component', () =>
         });
         // Test Escape key
         fireEvent.click(screen.getByText('+'));
+        nameInput = screen.getByPlaceholderText(/Set name/i);
         fireEvent.change(nameInput, { target: { value: 'Another Set' } });
         fireEvent.keyDown(nameInput, { key: 'Escape', code: 'Escape' });
         await waitFor(() => {
@@ -322,7 +323,7 @@ describe('Dashboard component', () =>
         );
         await waitFor(() => 
         {
-            expect(screen.getByText(/Set1/i)).toBeInTheDocument();
+            expect(screen.getByText((content) => content.includes('Set1'))).toBeInTheDocument();
         });
         fireEvent.click(screen.getByTitle(/Edit set/i));
         const editNameInput = screen.getByPlaceholderText(/Set name/i);
@@ -345,7 +346,7 @@ describe('Dashboard component', () =>
         fireEvent.change(editNameInput, { target: { value: 'Set1 Again' } });
         fireEvent.keyDown(editNameInput, { key: 'Escape', code: 'Escape' });
         await waitFor(() => {
-        expect(screen.getByText(/Set1/i)).toBeInTheDocument();
+        expect(screen.getByText((content) => content.includes('Set1'))).toBeInTheDocument();
         });
     });
 });
