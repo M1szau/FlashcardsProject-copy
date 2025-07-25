@@ -137,7 +137,7 @@ describe('Dashboard component', () =>
             </MemoryRouter>
         );
         await waitFor(() => {
-        expect(screen.getByText(/Set1/i)).toBeInTheDocument();
+        expect(screen.getByText((content) => /Set1/i.test(content))).toBeInTheDocument();
         });
         fireEvent.click(screen.getByText(/Set1/i));
         expect(navigateMock).toHaveBeenCalledWith('/set/1');
