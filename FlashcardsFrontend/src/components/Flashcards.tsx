@@ -1,6 +1,6 @@
 import Navbar from "./Navbar";
 import React, { useEffect, useState } from "react";
-import { AiFillEdit, AiFillDelete, AiOutlineCheck, AiOutlineClose } from "react-icons/ai";
+import { AiFillEdit, AiFillDelete, AiOutlineCheck, AiOutlineClose, AiFillCheckCircle, AiFillCloseCircle } from "react-icons/ai";
 import { useParams } from "react-router-dom";
 
 type Flashcard = 
@@ -12,6 +12,7 @@ type Flashcard =
     translation: string;
     translationLang: string;
     owner: string;
+    known?: boolean;
 }
 
 const languageOptions = 
@@ -44,7 +45,8 @@ export default function App()
         content: "",
         translation: "",
         translationLang: "",
-        owner: currentUser
+        owner: currentUser,
+        known: false
     });
 
     useEffect(() =>
@@ -127,7 +129,8 @@ export default function App()
             content: "",
             translation: "",
             translationLang: "",
-            owner: currentUser
+            owner: currentUser,
+            known: false
         });
     };
     const handleAddChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => 
@@ -213,13 +216,23 @@ export default function App()
             editValues.translation.trim()
         ) 
         {
+            const token = localStorage.getItem('token');
+            
             fetch(`/api/sets/${selectedSetId}/flashcards/${editValues.id}`, 
             {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}` 
+                },
                 body: JSON.stringify(editValues),
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
             .then(card => 
             {
                 const updated = [...flashcards];
@@ -227,12 +240,16 @@ export default function App()
                 setFlashcards(updated);
                 setEditing(false);
                 setEditValues(null);
+            })
+            .catch(error => {
+                console.error('Error updating flashcard:', error);
+                alert('Failed to update flashcard. Please try again.');
             });
         }
     };
 
     // Handle input changes
-    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => 
+    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => 
     {
         if (!editValues) return;
         setEditValues({ ...editValues, [e.target.name]: e.target.value });
@@ -249,9 +266,20 @@ export default function App()
         }
         if (window.confirm("Are you sure you want to delete this flashcard?")) 
         {
+            const token = localStorage.getItem('token');
+            
             fetch(`/api/sets/${selectedSetId}/flashcards/${flashcards[current].id}`, 
             {
                 method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
             })
             .then(() => {
                 const updated = flashcards.filter((_, idx) => idx !== current);
@@ -259,8 +287,54 @@ export default function App()
                 setCurrent((prev) => (prev > 0 ? prev - 1 : 0));
                 setFlipped(false);
                 setEditing(false);
+            })
+            .catch(error => {
+                console.error('Error deleting flashcard:', error);
+                alert('Failed to delete flashcard. Please try again.');
             });
         }
+    };
+
+    //Toggle known status
+    const handleToggleKnown = (e: React.MouseEvent) => 
+    {
+        e.stopPropagation();
+        if (flashcards.length === 0) return;
+        
+        const currentCard = flashcards[current];
+        const currentKnownStatus = currentCard.known || false; // Treat undefined as false
+        const newKnownStatus = !currentKnownStatus;
+        
+        const token = localStorage.getItem('token');
+        
+        fetch(`/api/sets/${selectedSetId}/flashcards/${currentCard.id}/known`, 
+        {
+            method: 'PATCH',
+            headers: 
+            { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify({ known: newKnownStatus }),
+        })
+        .then(res => {
+            if (!res.ok) 
+            {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(updatedCard => 
+        {
+            const updated = [...flashcards];
+            updated[current] = updatedCard;
+            setFlashcards(updated);
+        })
+        .catch(error => 
+        {
+            console.error('Error updating known status:', error);
+            alert('Failed to update known status. Please try again.');
+        });
     };
 
     //Rendering card or edit form
@@ -273,15 +347,18 @@ export default function App()
         {
             return (
                 <form className="flashcard-edit-form" onClick={e => e.stopPropagation()} onSubmit={e => { e.preventDefault(); handleSaveEdit(e as any); }}>
-                    <input
+                    <select
                         name={side === "front" ? "language" : "translationLang"}
                         value={side === "front" ? editValues?.language ?? "" : editValues?.translationLang ?? ""}
                         onChange={handleEditChange}
-                        placeholder={side === "front" ? "Language" : "Translation Language"}
                         className="flashcard-edit-input"
-                        disabled
                         required
-                    />
+                    >
+                        <option value="" disabled>Select {side === "front" ? "language" : "translation language"}</option>
+                        {languageOptions.map((lang) => (
+                            <option key={lang} value={lang}>{lang}</option>
+                        ))}
+                    </select>
                     <input
                         name={side === "front" ? "content" : "translation"}
                         value={side === "front" ? editValues?.content ?? "" : editValues?.translation ?? ""}
@@ -297,6 +374,13 @@ export default function App()
             {
                 return (
                     <>
+                        <div className="flashcard-known-status">
+                            {flashcards[current]?.known ? (
+                                <span className="known-label known">Already known</span>
+                            ) : (
+                                <span className="known-label unknown">Not known yet</span>
+                            )}
+                        </div>
                         <div className="flashcard-language">{flashcards[current]?.language}</div>
                         <div className="flashcard-content">{flashcards[current]?.content}</div>
                     </>
@@ -305,6 +389,13 @@ export default function App()
             {
                 return (
                     <>
+                        <div className="flashcard-known-status">
+                            {flashcards[current]?.known ? (
+                                <span className="known-label known">Already known</span>
+                            ) : (
+                                <span className="known-label unknown">Not known yet</span>
+                            )}
+                        </div>
                         <div className="flashcard-language">{flashcards[current]?.translationLang}</div>
                         <div className="flashcard-content">{flashcards[current]?.translation}</div>
                     </>
@@ -329,6 +420,13 @@ export default function App()
                 ): 
                 (
                     <>
+                        <button 
+                            className={`flashcard-known-button ${flashcards[current]?.known ? 'known' : 'unknown'}`} 
+                            onClick={handleToggleKnown} 
+                            aria-label={flashcards[current]?.known ? "Mark as unknown" : "Mark as known"}
+                        >
+                            {flashcards[current]?.known ? <AiFillCheckCircle /> : <AiFillCloseCircle />}
+                        </button>
                         <button className="flashcard-edit-button" onClick={handleEditFlashcard} aria-label="Edit Flashcard"><AiFillEdit /></button>
                         <button className="flashcard-delete-button" onClick={handleDeleteFlashcard} aria-label="Delete Flashcard"><AiFillDelete /></button>
                     </>

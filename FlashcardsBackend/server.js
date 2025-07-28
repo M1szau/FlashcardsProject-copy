@@ -307,8 +307,8 @@ async function addFlashcardToSet(flashcard)
 
 async function getFlashcardsBySet(setId) 
 {
-    await db.read();
-    return db.data.flashcards.filter(card => card.setId === setId);
+    const dbData = readDB();
+    return dbData.flashcards.filter(card => card.setId === setId);
 }
 
 //Helpers for tests
@@ -344,16 +344,19 @@ app.post("/api/sets/:setId/flashcards", authenticateToken, async (req, res) =>
 
         const card = req.body;
         // Validate required fields
-        if (!card.front || !card.back || !card.languageFront || !card.languageBack) {
+        if (!card.content || !card.translation || !card.language || !card.translationLang) 
+        {
             return res.status(400).json({ success: false, message: 'All fields are required' });
         }
 
-        card.id = Date.now().toString(); // Generate unique ID
+        card.id = Date.now().toString(); // unique ID
         card.setId = setId;
         card.owner = req.user.username;
+        card.known = card.known !== undefined ? card.known : false; // Default to false if not provided
         card.createdAt = new Date().toISOString();
 
-        await req.app.locals.addFlashcardToSet(card); // Use app.locals for testability
+        dbData.flashcards.push(card);
+        writeDB(dbData);
         res.json(card);
     } catch (error) {
         console.error('Error adding flashcard:', error);
@@ -369,17 +372,31 @@ app.put('/api/sets/:setId/flashcards/:cardId', authenticateToken, async (req, re
         const { setId, cardId } = req.params;
         const updatedCard = req.body;
         
-        await req.app.locals.db.read();
-        const cardIndex = req.app.locals.db.data.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
+        // Basic validation for required fields if they're being updated
+        if (updatedCard.content !== undefined && !updatedCard.content.trim()) {
+            return res.status(400).json({ error: 'Content cannot be empty' });
+        }
+        if (updatedCard.translation !== undefined && !updatedCard.translation.trim()) {
+            return res.status(400).json({ error: 'Translation cannot be empty' });
+        }
+        if (updatedCard.language !== undefined && !updatedCard.language.trim()) {
+            return res.status(400).json({ error: 'Language cannot be empty' });
+        }
+        if (updatedCard.translationLang !== undefined && !updatedCard.translationLang.trim()) {
+            return res.status(400).json({ error: 'Translation language cannot be empty' });
+        }
+        
+        const dbData = readDB();
+        const cardIndex = dbData.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
         
         if (cardIndex === -1) {
             return res.status(404).json({ error: 'Flashcard not found' });
         }
         
-        req.app.locals.db.data.flashcards[cardIndex] = { ...req.app.locals.db.data.flashcards[cardIndex], ...updatedCard };
-        await req.app.locals.db.write();
+        dbData.flashcards[cardIndex] = { ...dbData.flashcards[cardIndex], ...updatedCard };
+        writeDB(dbData);
         
-        res.json(req.app.locals.db.data.flashcards[cardIndex]);
+        res.json(dbData.flashcards[cardIndex]);
     } catch (error) {
         console.error('Error updating flashcard:', error);
         res.status(500).json({ error: 'Failed to update flashcard' });
@@ -393,20 +410,88 @@ app.delete('/api/sets/:setId/flashcards/:cardId', authenticateToken, async (req,
     {
         const { setId, cardId } = req.params;
         
-        await req.app.locals.db.read();
-        const cardIndex = req.app.locals.db.data.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
+        const dbData = readDB();
+        const cardIndex = dbData.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
         
         if (cardIndex === -1) {
             return res.status(404).json({ error: 'Flashcard not found' });
         }
         
-        req.app.locals.db.data.flashcards.splice(cardIndex, 1);
-        await req.app.locals.db.write();
+        dbData.flashcards.splice(cardIndex, 1);
+        writeDB(dbData);
         
         res.json({ success: true, message: 'Flashcard deleted successfully' });
     } catch (error) {
         console.error('Error deleting flashcard:', error);
         res.status(500).json({ error: 'Failed to delete flashcard' });
+    }
+});
+
+// Toggle known status of a flashcard
+app.patch('/api/sets/:setId/flashcards/:cardId/known', authenticateToken, async (req, res) => 
+{
+    try 
+    {
+        const { setId, cardId } = req.params;
+        const { known } = req.body;
+        
+        const dbData = readDB();
+        const cardIndex = dbData.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
+        
+        if (cardIndex === -1) {
+            return res.status(404).json({ error: 'Flashcard not found' });
+        }
+        
+        dbData.flashcards[cardIndex].known = known;
+        writeDB(dbData);
+        
+        res.json(dbData.flashcards[cardIndex]);
+    } catch (error) {
+        console.error('Error updating flashcard known status:', error);
+        res.status(500).json({ error: 'Failed to update flashcard known status' });
+    }
+});
+
+// Get statistics for user's flashcards
+app.get('/api/statistics', authenticateToken, async (req, res) => 
+{
+    try 
+    {
+        const dbData = readDB();
+        const userSets = dbData.sets.filter(set => set.owner === req.user.username);
+        const userFlashcards = dbData.flashcards.filter(card => card.owner === req.user.username);
+        
+        const knownCards = userFlashcards.filter(card => card.known === true);
+        const unknownCards = userFlashcards.filter(card => card.known === false || card.known === undefined);
+        
+        const setStats = userSets.map(set => 
+        {
+            const setFlashcards = userFlashcards.filter(card => card.setId === set.id);
+            const setKnownCards = setFlashcards.filter(card => card.known === true);
+            const setUnknownCards = setFlashcards.filter(card => card.known === false || card.known === undefined);
+            
+            return {
+                setId: set.id,
+                setName: set.name,
+                totalCards: setFlashcards.length,
+                knownCards: setKnownCards.length,
+                unknownCards: setUnknownCards.length
+            };
+        });
+        
+        const statistics = 
+        {
+            totalSets: userSets.length,
+            totalFlashcards: userFlashcards.length,
+            totalKnownCards: knownCards.length,
+            totalUnknownCards: unknownCards.length,
+            setStatistics: setStats
+        };
+        
+        res.json(statistics);
+    } catch (error) {
+        console.error('Error fetching statistics:', error);
+        res.status(500).json({ error: 'Failed to fetch statistics' });
     }
 });
 

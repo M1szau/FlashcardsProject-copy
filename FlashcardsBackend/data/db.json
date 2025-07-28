@@ -1,5 +1,32 @@
 {
-  "users": [],
-  "sets": [],
-  "flashcards": []
+  "users": [
+    {
+      "username": "admin",
+      "password": "$2b$10$MgRemc0AGye6lc9ymyM9KOusrAC44.BA6osYYNRrpuET4y8TSqhTW"
+    }
+  ],
+  "sets": [
+    {
+      "id": "1753708329773",
+      "name": "aaa",
+      "description": "aaadesc",
+      "defaultLanguage": "PL",
+      "translationLanguage": "EN",
+      "owner": "admin",
+      "createdAt": "2025-07-28T13:12:09.773Z"
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "1753708338134",
+      "setId": "1753708329773",
+      "language": "Polish",
+      "content": "aaa",
+      "translation": "aaa",
+      "translationLang": "English",
+      "owner": "admin",
+      "known": true,
+      "createdAt": "2025-07-28T13:12:18.134Z"
+    }
+  ]
 }
