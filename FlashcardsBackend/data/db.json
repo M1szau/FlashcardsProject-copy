@@ -11,6 +11,42 @@
     {
       "username": "admin2",
       "password": "$2b$10$ZAH0/cj.nqnAqQhRoja/TemquLL9/QurxSHYCYXoaO2Ixups6TzSW"
+    },
+    {
+      "username": "testuser",
+      "password": "testpass"
+    },
+    {
+      "username": "testuser",
+      "password": "testpass"
+    },
+    {
+      "username": "user1",
+      "password": "pass1"
+    },
+    {
+      "username": "user2",
+      "password": "pass2"
+    },
+    {
+      "username": "testuser",
+      "password": "testpass"
+    },
+    {
+      "username": "testuser",
+      "password": "testpass"
+    },
+    {
+      "username": "user1",
+      "password": "pass1"
+    },
+    {
+      "username": "user2",
+      "password": "pass2"
+    },
+    {
+      "username": "admin22",
+      "password": "$2b$10$RqCrqlts6JzdeesJ4DelQ.Crgdt3rVz.SwjQIkIFIejiU.S7Ygnkm"
     }
   ],
   "sets": [
@@ -105,6 +141,90 @@
       "translation": "aaaa",
       "translationLang": "English",
       "owner": "admin"
+    },
+    {
+      "id": "1",
+      "setId": "set1",
+      "front": "Hello",
+      "back": "Hola",
+      "owner": "testuser"
+    },
+    {
+      "id": "1",
+      "setId": "set1",
+      "front": "Hello",
+      "back": "Hola",
+      "owner": "user1"
+    },
+    {
+      "id": "2",
+      "setId": "set2",
+      "front": "Goodbye",
+      "back": "Adiós",
+      "owner": "user2"
+    },
+    {
+      "id": "1",
+      "setId": "set1",
+      "front": "Hello",
+      "back": "Hola",
+      "owner": "testuser"
+    },
+    {
+      "id": "2",
+      "setId": "set1",
+      "front": "Goodbye",
+      "back": "Adiós",
+      "owner": "testuser"
+    },
+    {
+      "id": "3",
+      "setId": "set2",
+      "front": "Yes",
+      "back": "Sí",
+      "owner": "testuser"
+    },
+    {
+      "id": "1",
+      "setId": "set1",
+      "front": "Hello",
+      "back": "Hola",
+      "owner": "testuser"
+    },
+    {
+      "id": "1",
+      "setId": "set1",
+      "front": "Hello",
+      "back": "Hola",
+      "owner": "user1"
+    },
+    {
+      "id": "2",
+      "setId": "set2",
+      "front": "Goodbye",
+      "back": "Adiós",
+      "owner": "user2"
+    },
+    {
+      "id": "1",
+      "setId": "set1",
+      "front": "Hello",
+      "back": "Hola",
+      "owner": "testuser"
+    },
+    {
+      "id": "2",
+      "setId": "set1",
+      "front": "Goodbye",
+      "back": "Adiós",
+      "owner": "testuser"
+    },
+    {
+      "id": "3",
+      "setId": "set2",
+      "front": "Yes",
+      "back": "Sí",
+      "owner": "testuser"
     }
   ]
 }

@@ -3,51 +3,48 @@ import { JSONFile } from 'lowdb/node';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const defaultFile = join(__dirname, 'data', 'db.json');
 
-const file = join(__dirname, 'data', 'db.json');
-
-const adapter = new JSONFile(file);
-const db = new Low(adapter, { users: [], flashcards: [] });
-
-//Adding new user
-export async function addUser(user)
-{
-    await db.read();
-    db.data.users.push(user);
-    await db.write();
+function getDb(file = defaultFile) {
+  const adapter = new JSONFile(file);
+  return new Low(adapter, { users: [], flashcards: [] });
 }
 
-export async function findUserById(username)
-{
-    await db.read();
-    return db.data.users.find(user => user.username === username);
+export async function addUser(user, file) {
+  const db = getDb(file);
+  await db.read();
+  db.data.users.push(user);
+  await db.write();
 }
 
-export async function getFlashcards()
-{
-    await db.read();
-    return db.data.flashcards;
+export async function findUserById(username, file) {
+  const db = getDb(file);
+  await db.read();
+  return db.data.users.find(user => user.username === username);
 }
 
-export async function getFlashcardsByUser(username)
-{
-    await db.read();
-    return db.data.flashcards.filter(card => card.owner === username);
+export async function getFlashcards(file) {
+  const db = getDb(file);
+  await db.read();
+  return db.data.flashcards;
 }
 
-export async function addFlashcard(flashcard) 
-{
-    await db.read();
-    db.data.flashcards.push(flashcard);
-    await db.write();
+export async function getFlashcardsByUser(username, file) {
+  const db = getDb(file);
+  await db.read();
+  return db.data.flashcards.filter(card => card.owner === username);
 }
 
-export async function getFlashcardsBySet(setId) 
-{
-    await db.read();
-    return db.data.flashcards.filter(card => card.setId === setId);
+export async function addFlashcard(card, file) {
+  const db = getDb(file);
+  await db.read();
+  db.data.flashcards.push(card);
+  await db.write();
 }
 
-export default db;
+export async function getFlashcardsBySet(setId, file) {
+  const db = getDb(file);
+  await db.read();
+  return db.data.flashcards.filter(card => card.setId === setId);
+}
