@@ -204,11 +204,13 @@ app.delete('/api/flashcards/:id', authenticateToken, async (req, res) =>
 app.post('/api/sets', authenticateToken, (req, res) => 
 {
     const { name, description, defaultLanguage, translationLanguage } = req.body;
-    if (!name) {
-        return res.status(400).json({ message: "Set name is required" });
+    if (!name || !description || !defaultLanguage || !translationLanguage) 
+    {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
     const dbData = readDB();
-    const set = {
+    const set = 
+    {
         id: Date.now().toString(),
         name,
         description: description || '',
@@ -304,12 +306,24 @@ app.post("/api/sets/:setId/flashcards", authenticateToken, async (req, res) =>
     try 
     {
         const setId = req.params.setId;
+        const dbData = readDB();
+        // Check if set exists and belongs to the user
+        const set = dbData.sets.find(s => s.id === setId && s.owner === req.user.username);
+        if (!set) {
+            return res.status(404).json({ success: false, message: 'Set not found' });
+        }
+
         const card = req.body;
+        // Validate required fields
+        if (!card.front || !card.back || !card.languageFront || !card.languageBack) {
+            return res.status(400).json({ success: false, message: 'All fields are required' });
+        }
+
         card.id = Date.now().toString(); // Generate unique ID
         card.setId = setId;
         card.owner = req.user.username;
         card.createdAt = new Date().toISOString();
-        
+
         await addFlashcardToSet(card);
         res.json(card);
     } catch (error) {
