@@ -203,25 +203,31 @@ app.delete('/api/flashcards/:id', authenticateToken, async (req, res) =>
 //Adding a new set
 app.post('/api/sets', authenticateToken, (req, res) => 
 {
-    const { name, description, defaultLanguage, translationLanguage } = req.body;
-    if (!name || !description || !defaultLanguage || !translationLanguage) 
+    try 
     {
-        return res.status(400).json({ success: false, message: 'Missing required fields' });
+        const { name, description, defaultLanguage, translationLanguage } = req.body;
+        if (!name || !description || !defaultLanguage || !translationLanguage) 
+        {
+            return res.status(400).json({ success: false, message: 'Missing required fields' });
+        }
+        const dbData = readDB();
+        const set = 
+        {
+            id: Date.now().toString(),
+            name,
+            description: description || '',
+            defaultLanguage: defaultLanguage || 'PL',
+            translationLanguage: translationLanguage || 'GB',
+            owner: req.user.username,
+            createdAt: new Date().toISOString(),
+        };
+        dbData.sets.push(set);
+        writeDB(dbData);
+        res.json({ set });
+    } catch (error) {
+        console.error('Error creating set:', error);
+        res.status(500).json({ error: 'Failed to create set' });
     }
-    const dbData = readDB();
-    const set = 
-    {
-        id: Date.now().toString(),
-        name,
-        description: description || '',
-        defaultLanguage: defaultLanguage || 'PL',
-        translationLanguage: translationLanguage || 'GB',
-        owner: req.user.username,
-        createdAt: new Date().toISOString(),
-    };
-    dbData.sets.push(set);
-    writeDB(dbData);
-    res.json({ set });
 });
 
 // Get all sets for the logged-in user

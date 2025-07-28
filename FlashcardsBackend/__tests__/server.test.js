@@ -285,4 +285,96 @@ describe('Server API', () =>
         if (app.locals.db) app.locals.db.read = originalRead;
     });
 
+    //Next set of tests (uncovered casses accoring to GitHub Actions)
+
+    //Test for lines 263-265
+    it('Handles server error during set creation', async () => 
+    {
+        const originalWriteFileSync = fs.writeFileSync;
+        fs.writeFileSync = () => { throw new Error('Database write error'); };
+        
+        const res = await request(server)
+            .post('/api/sets')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'Test Set', description: 'desc', defaultLanguage: 'EN', translationLanguage: 'PL' });
+        
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBeDefined();
+        
+        // Restore original function
+        fs.writeFileSync = originalWriteFileSync;
+    });
+
+    //Test for lines 302-304
+    it('Returns 400 when creating flashcard with missing required fields', async () => 
+    {
+        const res = await request(server)
+            .post(`/api/sets/${setId}/flashcards`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ front: 'Hello' });
+        
+        expect(res.status).toBe(400);
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe('All fields are required');
+    });
+
+    //Test for lines 323-324
+    it('Handles server error during flashcard update', async () => 
+    {
+        const createRes = await request(server)
+            .post(`/api/sets/${setId}/flashcards`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ front: 'Test', back: 'Test', languageFront: 'EN', languageBack: 'PL' });
+        
+        const cardId = createRes.body.id;
+        
+        //Break the db.write function to simulate an error
+        const originalWrite = app.locals.db?.write;
+        if (app.locals.db) app.locals.db.write = () => { throw new Error('Database write error'); };
+        
+        const res = await request(server)
+            .put(`/api/sets/${setId}/flashcards/${cardId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ front: 'Updated', back: 'Updated', languageFront: 'EN', languageBack: 'PL' });
+        
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe('Failed to update flashcard');
+        
+        if (app.locals.db) app.locals.db.write = originalWrite;
+    });
+
+    //Test for edge case - empty flashcard fields
+    it('Returns 400 when creating flashcard with empty strings', async () => 
+    {
+        const res = await request(server)
+            .post(`/api/sets/${setId}/flashcards`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ front: '', back: 'Test', languageFront: 'EN', languageBack: 'PL' });
+        
+        expect(res.status).toBe(400);
+        expect(res.body.success).toBe(false);
+    });
+
+    //Unauthorized flashcard access
+    it('Returns 404 when updating flashcard in set not owned by user', async () => 
+    {
+        await request(server)
+            .post('/api/register')
+            .send({ username: 'otheruser', password: 'otherpass' });
+        
+        const loginRes = await request(server)
+            .post('/api/login')
+            .send({ username: 'otheruser', password: 'otherpass' });
+        
+        const otherToken = loginRes.body.token;
+        
+        //Update a flashcard with the other user's token
+        const res = await request(server)
+            .put(`/api/sets/${setId}/flashcards/someid`)
+            .set('Authorization', `Bearer ${otherToken}`)
+            .send({ front: 'Hack', back: 'Attempt', languageFront: 'EN', languageBack: 'PL' });
+        
+        expect(res.status).toBe(404);
+    });
+
 });
