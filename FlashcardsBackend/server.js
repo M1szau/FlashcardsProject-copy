@@ -286,6 +286,10 @@ async function getFlashcardsBySet(setId)
     return db.data.flashcards.filter(card => card.setId === setId);
 }
 
+//Helpers for tests
+app.locals.addFlashcardToSet = addFlashcardToSet;
+app.locals.db = db;
+
 // Get flashcards for a set
 app.get("/api/sets/:setId/flashcards", async (req, res) => 
 {
@@ -324,7 +328,7 @@ app.post("/api/sets/:setId/flashcards", authenticateToken, async (req, res) =>
         card.owner = req.user.username;
         card.createdAt = new Date().toISOString();
 
-        await addFlashcardToSet(card);
+        await req.app.locals.addFlashcardToSet(card); // Use app.locals for testability
         res.json(card);
     } catch (error) {
         console.error('Error adding flashcard:', error);
@@ -340,17 +344,17 @@ app.put('/api/sets/:setId/flashcards/:cardId', authenticateToken, async (req, re
         const { setId, cardId } = req.params;
         const updatedCard = req.body;
         
-        await db.read();
-        const cardIndex = db.data.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
+        await req.app.locals.db.read();
+        const cardIndex = req.app.locals.db.data.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
         
         if (cardIndex === -1) {
             return res.status(404).json({ error: 'Flashcard not found' });
         }
         
-        db.data.flashcards[cardIndex] = { ...db.data.flashcards[cardIndex], ...updatedCard };
-        await db.write();
+        req.app.locals.db.data.flashcards[cardIndex] = { ...req.app.locals.db.data.flashcards[cardIndex], ...updatedCard };
+        await req.app.locals.db.write();
         
-        res.json(db.data.flashcards[cardIndex]);
+        res.json(req.app.locals.db.data.flashcards[cardIndex]);
     } catch (error) {
         console.error('Error updating flashcard:', error);
         res.status(500).json({ error: 'Failed to update flashcard' });
@@ -364,15 +368,15 @@ app.delete('/api/sets/:setId/flashcards/:cardId', authenticateToken, async (req,
     {
         const { setId, cardId } = req.params;
         
-        await db.read();
-        const cardIndex = db.data.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
+        await req.app.locals.db.read();
+        const cardIndex = req.app.locals.db.data.flashcards.findIndex(card => card.id === cardId && card.setId === setId);
         
         if (cardIndex === -1) {
             return res.status(404).json({ error: 'Flashcard not found' });
         }
         
-        db.data.flashcards.splice(cardIndex, 1);
-        await db.write();
+        req.app.locals.db.data.flashcards.splice(cardIndex, 1);
+        await req.app.locals.db.write();
         
         res.json({ success: true, message: 'Flashcard deleted successfully' });
     } catch (error) {

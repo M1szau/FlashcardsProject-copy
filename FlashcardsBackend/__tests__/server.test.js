@@ -252,9 +252,9 @@ describe('Server API', () =>
     {
         const original = app.locals.addFlashcardToSet;
         app.locals.addFlashcardToSet = () => { throw new Error('Simulated error'); };
-        const res = await request(app)
-            .post('/api/sets/badsetid/flashcards')
-            .set('Authorization', `Bearer sometoken`)
+        const res = await request(server)  // Use server, not app
+            .post(`/api/sets/${setId}/flashcards`)  // Use valid setId
+            .set('Authorization', `Bearer ${token}`)  // Use valid token
             .send({ front: 'a', back: 'b', languageFront: 'EN', languageBack: 'PL' });
         expect(res.status).toBe(500);
         app.locals.addFlashcardToSet = original;
@@ -265,9 +265,9 @@ describe('Server API', () =>
     {
         const originalRead = app.locals.db?.read;
         if (app.locals.db) app.locals.db.read = () => { throw new Error('Simulated error'); };
-        const res = await request(app)
-            .put('/api/sets/badsetid/flashcards/badcardid')
-            .set('Authorization', `Bearer sometoken`)
+        const res = await request(server)  // Use server, not app
+            .put(`/api/sets/${setId}/flashcards/someid`)  // Use valid setId
+            .set('Authorization', `Bearer ${token}`)  // Use valid token
             .send({ front: 'a', back: 'b', languageFront: 'EN', languageBack: 'PL' });
         expect(res.status).toBe(500);
         if (app.locals.db) app.locals.db.read = originalRead;
@@ -278,9 +278,9 @@ describe('Server API', () =>
     {
         const originalRead = app.locals.db?.read;
         if (app.locals.db) app.locals.db.read = () => { throw new Error('Simulated error'); };
-        const res = await request(app)
-            .delete('/api/sets/badsetid/flashcards/badcardid')
-            .set('Authorization', `Bearer sometoken`);
+        const res = await request(server)  // Use server, not app
+            .delete(`/api/sets/${setId}/flashcards/someid`)  // Use valid setId
+            .set('Authorization', `Bearer ${token}`);  // Use valid token
         expect(res.status).toBe(500);
         if (app.locals.db) app.locals.db.read = originalRead;
     });
