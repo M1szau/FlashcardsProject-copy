@@ -61,12 +61,12 @@ function authenticateToken(req, res, next)
 
     if(!token)
     {
-        return res.status(401).json({ success: false, message: "Access denied. No token provided." });
+        return res.status(401).json({ error: "Access denied. No token provided." });
     }
 
     jwt.verify(token, JWT_SECRET, (err, user) => 
     {
-        if(err) return res.status(403).json({success: false, message: "Invalid token" });
+        if(err) return res.status(401).json({ error: "Invalid token" });
         req.user = user;
         next();
     });
@@ -75,49 +75,63 @@ function authenticateToken(req, res, next)
 //Register a new user 
 app.post('/api/register', async (req, res) => 
 {
-    const { username, password } = req.body;
-    if (!username || !password) 
-    {
-        return res.status(400).json({ success: false, message: "Username and password are required" });
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) 
+        {
+            return res.status(400).json({ success: false, message: "Username and password are required" });
+        }
+
+        const dbData = readDB();
+        const existingUser = dbData.users.find(user => user.username === username);
+        if (existingUser) 
+        {
+            return res.status(400).json({ success: false, message: "User already exists" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = { username, password: hashedPassword };
+        dbData.users.push(user);
+        writeDB(dbData);
+
+        //Create JWT token
+        const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.json({ success: true, message: "User registered successfully", token });
+    } catch (error) {
+        console.error('Error during registration:', error);
+        res.status(500).json({ error: 'Failed to register user' });
     }
-
-    const existingUser = await findUserById(username);
-    if (existingUser) 
-    {
-        return res.status(400).json({ success: false, message: "User already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await addUser({ username, password: hashedPassword });
-
-    //Create JWT token
-    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '7d' });
-
-    res.json({ success: true, message: "User registered successfully", token });
 });
 
 //Login user 
 app.post('/api/login', async (req, res) => 
 {
-    const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).json({ success: false, message: "Username and password are required" });
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ success: false, message: "Username and password are required" });
+        }
+
+        const dbData = readDB();
+        const user = dbData.users.find(user => user.username === username);
+        if (!user) {
+            return res.status(400).json({ success: false, message: "User not found" });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ success: false, message: "Invalid password" });
+        }
+
+        //Create JWT token
+        const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.json({ success: true, message: "Login successful", token, user: { username: user.username } });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ error: 'Failed to login' });
     }
-
-    const user = await findUserById(username);
-    if (!user) {
-        return res.status(400).json({ success: false, message: "User not found" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return res.status(400).json({ success: false, message: "Invalid password" });
-    }
-
-    //Create JWT token
-    const token = jwt.sign({ username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-
-    res.json({ success: true, message: "Login successful", token, user: { username: user.username } });
 });
 
 //Add a new flashcard
@@ -241,22 +255,27 @@ app.get('/api/sets', authenticateToken, (req, res) =>
 // Edit a set
 app.put('/api/sets/:id', authenticateToken, (req, res) => 
 {
-    const { id } = req.params;
-    const { name, description, defaultLanguage, translationLanguage } = req.body;
-    const dbData = readDB();
-    const idx = dbData.sets.findIndex(set => set.id === id && set.owner === req.user.username);
-    if (idx === -1) {
-        return res.status(404).json({ message: "Set not found" });
+    try {
+        const { id } = req.params;
+        const { name, description, defaultLanguage, translationLanguage } = req.body;
+        const dbData = readDB();
+        const idx = dbData.sets.findIndex(set => set.id === id && set.owner === req.user.username);
+        if (idx === -1) {
+            return res.status(404).json({ message: "Set not found" });
+        }
+        
+        // Update the set
+        if (name !== undefined) dbData.sets[idx].name = name;
+        if (description !== undefined) dbData.sets[idx].description = description;
+        if (defaultLanguage !== undefined) dbData.sets[idx].defaultLanguage = defaultLanguage;
+        if (translationLanguage !== undefined) dbData.sets[idx].translationLanguage = translationLanguage;
+        
+        writeDB(dbData);
+        res.json({ set: dbData.sets[idx] });
+    } catch (error) {
+        console.error('Error updating set:', error);
+        res.status(500).json({ error: 'Failed to update set' });
     }
-    
-    // Update the set
-    if (name !== undefined) dbData.sets[idx].name = name;
-    if (description !== undefined) dbData.sets[idx].description = description;
-    if (defaultLanguage !== undefined) dbData.sets[idx].defaultLanguage = defaultLanguage;
-    if (translationLanguage !== undefined) dbData.sets[idx].translationLanguage = translationLanguage;
-    
-    writeDB(dbData);
-    res.json({ set: dbData.sets[idx] });
 });
 
 // Delete a set

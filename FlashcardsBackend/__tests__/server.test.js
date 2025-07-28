@@ -377,4 +377,145 @@ describe('Server API', () =>
         expect(res.status).toBe(404);
     });
 
+    // Next set of tests (uncovered cases according to GitHub Actions) / 2
+    //Lines 195-198
+    it('Handles server error during user registration', async () => 
+    {
+        // Mock fs.writeFileSync for registration write operation
+        const originalWriteFileSync = fs.writeFileSync;
+        fs.writeFileSync = (path, data) => {
+            if (path.includes('db.json')) {
+                throw new Error('Database write error');
+            }
+            return originalWriteFileSync(path, data);
+        };
+        
+        const res = await request(server)
+            .post('/api/register')
+            .send({ username: 'erroruser', password: 'errorpass' });
+        
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe('Failed to register user');
+        
+        // Restore original function
+        fs.writeFileSync = originalWriteFileSync;
+    });
+
+    //Lines 270-271
+    it('Handles server error during set update', async () => 
+    {
+        const originalWriteFileSync = fs.writeFileSync;
+        fs.writeFileSync = () => { throw new Error('Database write error'); };
+        
+        const res = await request(server)
+            .put(`/api/sets/${setId}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send({ name: 'Error Update' });
+        
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe('Failed to update set'); // Expect specific error message
+        
+        // Restore original function
+        fs.writeFileSync = originalWriteFileSync;
+    });
+
+    // Test for lines 308-310 (likely validation in flashcard update)
+    it('Returns 404 when updating flashcard with invalid set ownership', async () => 
+    {
+        // Create another user
+        await request(server)
+            .post('/api/register')
+            .send({ username: 'user2', password: 'pass2' });
+        
+        const loginRes = await request(server)
+            .post('/api/login')
+            .send({ username: 'user2', password: 'pass2' });
+        
+        const user2Token = loginRes.body.token;
+        
+        //Update a flashcard in a set owned by user1 using user2's token
+        const res = await request(server)
+            .put(`/api/sets/${setId}/flashcards/nonexistent`)
+            .set('Authorization', `Bearer ${user2Token}`)
+            .send({ front: 'Hack', back: 'Attempt', languageFront: 'EN', languageBack: 'PL' });
+        
+        expect(res.status).toBe(404);
+    });
+
+    //Additional test for username validation in login
+    it('Returns 400 when logging in with non-existent user', async () => 
+    {
+        const res = await request(server)
+            .post('/api/login')
+            .send({ username: 'nonexistent', password: 'anypass' });
+        
+        expect(res.status).toBe(400);
+        expect(res.body.success).toBe(false);
+    });
+
+        //Missing username/password in registration
+    it('Returns 400 when registering without username or password', async () => 
+    {
+        const res = await request(server)
+            .post('/api/register')
+            .send({ username: '', password: '' });
+        
+        expect(res.status).toBe(400);
+        expect(res.body.success).toBe(false);
+    });
+
+    //JWT token validation error
+    it('Returns 401 with malformed token', async () => 
+    {
+        const res = await request(server)
+            .get('/api/sets')
+            .set('Authorization', 'Bearer completely.invalid.token.format');
+        
+        expect(res.status).toBe(401);
+    });
+
+    //Database read error in login
+    it('Handles server error during login', async () => 
+    {
+        const originalReadFileSync = fs.readFileSync;
+        fs.readFileSync = (path, encoding) => 
+        {
+            if (path.includes('db.json')) 
+            {
+                throw new Error('Database read error');
+            }
+            return originalReadFileSync(path, encoding);
+        };
+        
+        const res = await request(server)
+            .post('/api/login')
+            .send({ username: 'testuser', password: 'testpass' });
+        
+        expect(res.status).toBe(500);
+        expect(res.body.error).toBe('Failed to login');
+        
+        // Restore original function
+        fs.readFileSync = originalReadFileSync;
+    });
+    // Additional test for registration validation
+    it('Returns 400 when registering with missing username', async () => 
+    {
+        const res = await request(server)
+            .post('/api/register')
+            .send({ password: 'testpass' });
+        
+        expect(res.status).toBe(400);
+        expect(res.body.success).toBe(false);
+    });
+
+    // Additional test for registration validation
+    it('Returns 400 when registering with missing password', async () => 
+        {
+        const res = await request(server)
+            .post('/api/register')
+            .send({ username: 'testuser' });
+        
+        expect(res.status).toBe(400);
+        expect(res.body.success).toBe(false);
+    });
 });
