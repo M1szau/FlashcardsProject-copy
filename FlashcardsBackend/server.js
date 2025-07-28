@@ -252,22 +252,22 @@ app.put('/api/sets/:id', authenticateToken, (req, res) =>
 });
 
 // Delete a set
-app.delete('/api/sets/:id', authenticateToken, async (req, res) => 
+app.delete('/api/sets/:id', authenticateToken, (req, res) => 
 {
     const { id } = req.params;
-    await db.read();
-    const idx = db.data.sets.findIndex(set => set.id === id && set.owner === req.user.username);
+    const dbData = readDB();
+    const idx = dbData.sets.findIndex(set => set.id === id && set.owner === req.user.username);
     if (idx === -1) 
     {
         return res.status(404).json({ message: "Set not found" });
     }
-    const deleted = db.data.sets.splice(idx, 1)[0];
+    const deleted = dbData.sets.splice(idx, 1)[0];
 
     // Remove all flashcards belonging to this set
-    db.data.flashcards = db.data.flashcards.filter(card => card.setId !== id);
+    dbData.flashcards = dbData.flashcards.filter(card => card.setId !== id);
 
-    await db.write();
-    res.json({ set: deleted });
+    writeDB(dbData);
+    res.json({ success: true, set: deleted });
 });
 
 // Helper functions for flashcards with sets
@@ -305,8 +305,10 @@ app.post("/api/sets/:setId/flashcards", authenticateToken, async (req, res) =>
     {
         const setId = req.params.setId;
         const card = req.body;
+        card.id = Date.now().toString(); // Generate unique ID
         card.setId = setId;
         card.owner = req.user.username;
+        card.createdAt = new Date().toISOString();
         
         await addFlashcardToSet(card);
         res.json(card);
@@ -317,7 +319,7 @@ app.post("/api/sets/:setId/flashcards", authenticateToken, async (req, res) =>
 });
 
 // Update flashcard in a set
-app.put('/api/sets/:setId/flashcards/:cardId', async (req, res) => 
+app.put('/api/sets/:setId/flashcards/:cardId', authenticateToken, async (req, res) => 
 {
     try 
     {
@@ -342,7 +344,7 @@ app.put('/api/sets/:setId/flashcards/:cardId', async (req, res) =>
 });
 
 // Delete flashcard from a set
-app.delete('/api/sets/:setId/flashcards/:cardId', async (req, res) => 
+app.delete('/api/sets/:setId/flashcards/:cardId', authenticateToken, async (req, res) => 
 {
     try 
     {
@@ -358,7 +360,7 @@ app.delete('/api/sets/:setId/flashcards/:cardId', async (req, res) =>
         db.data.flashcards.splice(cardIndex, 1);
         await db.write();
         
-        res.json({ message: 'Flashcard deleted successfully' });
+        res.json({ success: true, message: 'Flashcard deleted successfully' });
     } catch (error) {
         console.error('Error deleting flashcard:', error);
         res.status(500).json({ error: 'Failed to delete flashcard' });

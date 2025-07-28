@@ -127,6 +127,30 @@ describe('Server API', () => {
 
   /*There should be also update flashcard in a set, delete flashcard in a set and delete a set */
 
+  it('deletes a set', async () => {
+  // Create a new set to ensure it exists for this test
+  const createRes = await request(server)
+    .post('/api/sets')
+    .set('Authorization', `Bearer ${token}`)
+    .send({ name: 'Set To Delete', description: 'desc', defaultLanguage: 'EN', translationLanguage: 'PL' });
+  expect(createRes.status).toBe(200);
+  const deleteSetId = createRes.body.set.id;
+
+  // Now delete the set
+  const res = await request(server)
+    .delete(`/api/sets/${deleteSetId}`)
+    .set('Authorization', `Bearer ${token}`);
+  expect(res.status).toBe(200);
+  expect(res.body.success).toBe(true);
+
+  // Confirm set is deleted
+  const getRes = await request(server)
+    .get(`/api/sets`)
+    .set('Authorization', `Bearer ${token}`);
+  expect(getRes.body.sets.find(s => s.id === deleteSetId)).toBeUndefined();
+});
+
+    
   it('returns 404 for missing set', async () => {
     const res = await request(server)
       .put(`/api/sets/doesnotexist`)
@@ -135,9 +159,33 @@ describe('Server API', () => {
     expect(res.status).toBe(404);
   });
 
+  it('updates a flashcard in a set', async () => {
+    const res = await request(server)
+      .put(`/api/sets/${setId}/flashcards/${flashcardId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ front: 'Updated Hello', back: 'Zaktualizowane Cześć', languageFront: 'EN', languageBack: 'PL' });
+    expect(res.status).toBe(200);
+    expect(res.body.front).toBe('Updated Hello');
+    expect(res.body.back).toBe('Zaktualizowane Cześć');
+  });
+
+  it('deletes a flashcard from a set', async () => {
+    const res = await request(server)
+      .delete(`/api/sets/${setId}/flashcards/${flashcardId}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+
+    // Confirm flashcard is deleted
+    const getRes = await request(server)
+      .get(`/api/sets/${setId}/flashcards`);
+    expect(getRes.body.find(card => card.id === flashcardId)).toBeUndefined();
+  });
+
   it('returns 404 for missing flashcard', async () => {
     const res = await request(server)
       .put(`/api/sets/${setId}/flashcards/doesnotexist`)
+      .set('Authorization', `Bearer ${token}`)
       .send({ front: 'No', back: 'Nie', languageFront: 'EN', languageBack: 'PL' });
     expect(res.status).toBe(404);
   });
