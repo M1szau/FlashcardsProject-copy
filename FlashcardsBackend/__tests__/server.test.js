@@ -207,7 +207,7 @@ describe('Server API', () =>
         expect(res.status).toBe(404);
     });
 
-    /*Tests that were missing according to GitHub Actions */
+    /* Tests that were missing according to GitHub Actions */
 
     //Creating a set with missing required fields
     it('Returns 400 when creating a set with missing fields', async () => 
@@ -246,4 +246,43 @@ describe('Server API', () =>
             .get('/api/sets');
         expect(res.status).toBe(401);
     });
+
+    //Error in POST /api/sets/:setId/flashcards (by throw)
+    it('Handles error in POST /api/sets/:setId/flashcards', async () => 
+    {
+        const original = app.locals.addFlashcardToSet;
+        app.locals.addFlashcardToSet = () => { throw new Error('Simulated error'); };
+        const res = await request(app)
+            .post('/api/sets/badsetid/flashcards')
+            .set('Authorization', `Bearer sometoken`)
+            .send({ front: 'a', back: 'b', languageFront: 'EN', languageBack: 'PL' });
+        expect(res.status).toBe(500);
+        app.locals.addFlashcardToSet = original;
+    });
+
+    //Error in PUT /api/sets/:setId/flashcards/:cardId (by throw)
+    it('Handles error in PUT /api/sets/:setId/flashcards/:cardId', async () => 
+    {
+        const originalRead = app.locals.db?.read;
+        if (app.locals.db) app.locals.db.read = () => { throw new Error('Simulated error'); };
+        const res = await request(app)
+            .put('/api/sets/badsetid/flashcards/badcardid')
+            .set('Authorization', `Bearer sometoken`)
+            .send({ front: 'a', back: 'b', languageFront: 'EN', languageBack: 'PL' });
+        expect(res.status).toBe(500);
+        if (app.locals.db) app.locals.db.read = originalRead;
+    });
+
+    //Error in DELETE /api/sets/:setId/flashcards/:cardId (by throw)
+    it('Handles error in DELETE /api/sets/:setId/flashcards/:cardId', async () => 
+    {
+        const originalRead = app.locals.db?.read;
+        if (app.locals.db) app.locals.db.read = () => { throw new Error('Simulated error'); };
+        const res = await request(app)
+            .delete('/api/sets/badsetid/flashcards/badcardid')
+            .set('Authorization', `Bearer sometoken`);
+        expect(res.status).toBe(500);
+        if (app.locals.db) app.locals.db.read = originalRead;
+    });
+
 });
