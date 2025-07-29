@@ -9,7 +9,7 @@ import Register from './components/Register.tsx'
 import Dashboard from './components/Dashboard.tsx';
 import Statistics from './components/Statistics.tsx';
 import Flashcards from './components/Flashcards.tsx';
-import Learn from './components/Learn.tsx';
+import LearnForm from './components/LearnForm.tsx';
 
 
 
@@ -98,16 +98,18 @@ export default function App()
 
                 <Route path="/statistics" element=
                 {
-                <Statistics />
+                    <Statistics />
                 } />
 
                 <Route path='/set/:setId' element={<Flashcards />}/>
 
-                <Route path='/learn' element=
+                <Route path='/learnForm' element=
                 {
-                    <Learn />
+                    <LearnForm />
                 }
                 />
+
+                
 
             </Routes>
         </BrowserRouter>
