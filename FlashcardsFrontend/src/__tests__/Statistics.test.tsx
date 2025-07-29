@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import Statistics from '../components/Statistics';
+import Statistics from '../components/Statistics.tsx';
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
