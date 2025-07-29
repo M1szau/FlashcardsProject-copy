@@ -9,6 +9,7 @@ import Register from './components/Register.tsx'
 import Dashboard from './components/Dashboard.tsx';
 import Statistics from './components/Statistics.tsx';
 import Flashcards from './components/Flashcards.tsx';
+import Learn from './components/Learn.tsx';
 
 
 
@@ -101,7 +102,13 @@ export default function App()
                 } />
 
                 <Route path='/set/:setId' element={<Flashcards />}/>
-                
+
+                <Route path='/learn' element=
+                {
+                    <Learn />
+                }
+                />
+
             </Routes>
         </BrowserRouter>
     );

@@ -31,6 +31,7 @@ export default function Navbar()
                 </span>
             </div>
             <div className="navbarRight">
+                <button className = "navButton" onClick={() => navigate('/Learn')}>Learn</button>
                 <button className="navButton" onClick={() => navigate('/statistics')}>Statistics</button>
                 <button className="navButton" onClick={handleLogout}>Log out</button>
             </div>
