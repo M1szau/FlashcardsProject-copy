@@ -34,6 +34,12 @@ export default function Dashboard()
     const [editSetDescription, setEditSetDescription] = useState('');
     const [addingLoading, setAddingLoading] = useState(false);
 
+    // Helper function to truncate text
+    const truncateText = (text: string, maxLength: number) => {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
+    };
+
     // Fetch sets from backend on mount
     useEffect(() => 
     {
@@ -197,28 +203,40 @@ export default function Dashboard()
         allBlocks.push(
             <div className="addSetBlock addSetBlockInput" key="add-input">
                 <div className="addSetInputContainer">
-                    <input
-                        type="text"
-                        value={newSetName}
-                        autoFocus
-                        placeholder="Set name"
-                        onChange={e => setNewSetName(e.target.value)}
-                        onKeyDown={async e => 
-                        {
-                            if (e.key === 'Enter') await handleAddSetConfirm();
-                            if (e.key === 'Escape') handleAddSetCancel();
-                        }}
-                        className="addSetInput"
-                        disabled={addingLoading}
-                    />
-                    <input
-                        type="text"
-                        value={newSetDescription}
-                        placeholder="Description"
-                        onChange={e => setNewSetDescription(e.target.value)}
-                        className="addSetInput"
-                        disabled={addingLoading}
-                    />
+                    <div>
+                        <input
+                            type="text"
+                            value={newSetName}
+                            autoFocus
+                            placeholder="Set name"
+                            maxLength={50}
+                            onChange={e => setNewSetName(e.target.value)}
+                            onKeyDown={async e => 
+                            {
+                                if (e.key === 'Enter') await handleAddSetConfirm();
+                                if (e.key === 'Escape') handleAddSetCancel();
+                            }}
+                            className="addSetInput"
+                            disabled={addingLoading}
+                        />
+                        <small style={{ color: '#666', fontSize: '0.8rem' }}>
+                            {newSetName.length}/50 characters
+                        </small>
+                    </div>
+                    <div>
+                        <input
+                            type="text"
+                            value={newSetDescription}
+                            placeholder="Description"
+                            maxLength={100}
+                            onChange={e => setNewSetDescription(e.target.value)}
+                            className="addSetInput"
+                            disabled={addingLoading}
+                        />
+                        <small style={{ color: '#666', fontSize: '0.8rem' }}>
+                            {newSetDescription.length}/100 characters
+                        </small>
+                    </div>
                     <div className = 'language-list'>
                         <select
                             value={newSetDefaultLanguage}
@@ -281,26 +299,38 @@ export default function Dashboard()
             allBlocks.push(
                 <div className="setBlock editing" key={set.id}>
                     <div className="addSetInputContainer">
-                        <input
-                            type="text"
-                            value={editSetName}
-                            autoFocus
-                            placeholder="Set name"
-                            onChange={e => setEditSetName(e.target.value)}
-                            onKeyDown={e => 
-                            {
-                                if (e.key === 'Enter') handleEditSetConfirm();
-                                if (e.key === 'Escape') handleEditSetCancel();
-                            }}
-                            className="addSetInput"
-                        />
-                        <input
-                            type="text"
-                            value={editSetDescription}
-                            placeholder="Description"
-                            onChange={e => setEditSetDescription(e.target.value)}
-                            className="addSetInput"
-                        />
+                        <div>
+                            <input
+                                type="text"
+                                value={editSetName}
+                                autoFocus
+                                placeholder="Set name"
+                                maxLength={50}
+                                onChange={e => setEditSetName(e.target.value)}
+                                onKeyDown={e => 
+                                {
+                                    if (e.key === 'Enter') handleEditSetConfirm();
+                                    if (e.key === 'Escape') handleEditSetCancel();
+                                }}
+                                className="addSetInput"
+                            />
+                            <small style={{ color: '#666', fontSize: '0.8rem' }}>
+                                {editSetName.length}/50 characters
+                            </small>
+                        </div>
+                        <div>
+                            <input
+                                type="text"
+                                value={editSetDescription}
+                                placeholder="Description"
+                                maxLength={100}
+                                onChange={e => setEditSetDescription(e.target.value)}
+                                className="addSetInput"
+                            />
+                            <small style={{ color: '#666', fontSize: '0.8rem' }}>
+                                {editSetDescription.length}/100 characters
+                            </small>
+                        </div>
                         <div className="edit-language">
                             <span>{set.defaultLanguage}</span>
                             <span className="edit-language-arrow">&rarr;</span>
@@ -322,11 +352,11 @@ export default function Dashboard()
                     key={set.id}
                     onClick={() => navigate(`/set/${set.id}`)}
                 >
-                    <div className = 'setBlock-name'>
-                        {set.name}
+                    <div className='setBlock-name' title={set.name}>
+                        {truncateText(set.name, 25)}
                     </div>
-                    <div className = 'setBlock-description'>
-                        {set.description}
+                    <div className='setBlock-description' title={set.description || ''}>
+                        {set.description ? truncateText(set.description, 40) : 'No description'}
                     </div>
                     <div className="setBlock-languages">
                         <span>

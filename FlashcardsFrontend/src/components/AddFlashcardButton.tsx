@@ -121,14 +121,21 @@ export default function AddFlashcardButton({ selectedSetId, currentUser, flashca
                                 {languageOptions.map((lang) => (<option key={lang} value={lang}>{lang}</option>))}
                             </select>
                         </label>
-                        <input
-                            name="content"
-                            value={addValues.content}
-                            onChange={handleAddChange}
-                            placeholder="Word"
-                            className="flashcard-edit-input"
-                            required
-                        />
+                        <div>
+                            <input
+                                type="text"
+                                name="content"
+                                value={addValues.content}
+                                onChange={handleAddChange}
+                                placeholder="Word"
+                                maxLength={30}
+                                className="flashcard-edit-input"
+                                required
+                            />
+                            <small style={{ color: '#666', fontSize: '0.8rem' }}>
+                                {addValues.content.length}/30 characters
+                            </small>
+                        </div>
                         <label>
                             Translation Language
                             <select name='translationLang' value={addValues.translationLang} onChange={handleAddChange} className="flashcard-edit-input" required>
@@ -136,14 +143,21 @@ export default function AddFlashcardButton({ selectedSetId, currentUser, flashca
                                 {languageOptions.map((lang) => (<option key={lang} value={lang}>{lang}</option>))}
                             </select>
                         </label>
-                        <input
-                            name="translation"
-                            value={addValues.translation}
-                            onChange={handleAddChange}
-                            placeholder="Translation"
-                            className="flashcard-edit-input"
-                            required
-                        />
+                        <div>
+                            <input
+                                type="text"
+                                name="translation"
+                                value={addValues.translation}
+                                onChange={handleAddChange}
+                                placeholder="Translation"
+                                maxLength={30}
+                                className="flashcard-edit-input"
+                                required
+                            />
+                            <small style={{ color: '#666', fontSize: '0.8rem' }}>
+                                {addValues.translation.length}/30 characters
+                            </small>
+                        </div>
                         <div className="flashcard-actions-bottom">
                             <button className="flashcard-add-save-button" type="submit" aria-label="Save">Save</button>
                             <button className="flashcard-add-cancel-button" type="button" onClick={handleCancelAdd} aria-label="Cancel">Cancel</button>

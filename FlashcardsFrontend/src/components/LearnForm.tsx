@@ -103,7 +103,7 @@ export default function LearnForm()
                             required
                             >
                                 <option value = "" disabled> Choose a set to practice </option>
-                                {Array.isArray(sets) && sets.map(set => ( <option key = {set.id} value = {set.id}> {set.name} ({set.description})</option>))}
+                                {Array.isArray(sets) && sets.map(set => ( <option key = {set.id} value = {set.id}> {set.name}</option>))}
                             </select>
                         </label>
                         {/*Choice of learning mode */}

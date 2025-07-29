@@ -572,19 +572,21 @@ form button:hover
 .flashcard-language 
 {
   font-size: 1.1rem;
+  text-align: center;
   color: #8F00BF;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   font-weight: bold;
   letter-spacing: 1px;
 }
 
 .flashcard-content 
 {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: bold;
   color: #141414;
   text-align: center;
   word-break: break-word;
+  margin-bottom: 0.8rem;
 }
 
 /*Mobile devices*/
@@ -1096,36 +1098,4 @@ form button:hover
   }
 }
 
-/*LEARN FORM*/
-
-/* Learning action buttons */
-.flashcard-action-button {
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  min-width: 120px;
-}
-
-.flashcard-action-button-success {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.flashcard-action-button-success:hover {
-  background-color: #45a049;
-  transform: translateY(-2px);
-}
-
-.flashcard-action-button-error {
-  background-color: #f44336;
-  color: white;
-}
-
-.flashcard-action-button-error:hover {
-  background-color: #da190b;
-  transform: translateY(-2px);
-}
+/*LEARN*/

@@ -39,7 +39,7 @@
       "id": "1753708338134",
       "setId": "1753708329773",
       "language": "Polish",
-      "content": "aaa",
+      "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "translation": "aaa",
       "translationLang": "English",
       "owner": "admin",
@@ -133,6 +133,17 @@
       "owner": "admin",
       "known": true,
       "createdAt": "2025-07-29T07:47:35.638Z"
+    },
+    {
+      "id": "1753792130138",
+      "setId": "1753708329773",
+      "language": "Polish",
+      "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "translation": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "translationLang": "German",
+      "owner": "admin",
+      "known": false,
+      "createdAt": "2025-07-29T12:28:50.138Z"
     }
   ]
 }

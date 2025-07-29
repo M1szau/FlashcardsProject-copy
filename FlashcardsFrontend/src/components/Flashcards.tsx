@@ -18,6 +18,13 @@ export default function App()
     const [current, setCurrent] = useState(0);
     const [flipped, setFlipped] = useState(false);
     const [editing, setEditing] = useState(false);
+
+    // Helper function to truncate flashcard text
+    const truncateFlashcardText = (text: string, maxLength: number = 50) => {
+        if (!text) return '';
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
+    };
     const [editValues, setEditValues] = useState<Flashcard | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -255,10 +262,12 @@ export default function App()
                         ))}
                     </select>
                     <input
+                        type="text"
                         name={side === "front" ? "content" : "translation"}
                         value={side === "front" ? editValues?.content ?? "" : editValues?.translation ?? ""}
                         onChange={handleEditChange}
                         placeholder={side === "front" ? "Word" : "Translation"}
+                        maxLength={30}
                         className="flashcard-edit-input"
                         required
                     />
@@ -277,8 +286,12 @@ export default function App()
                                 <span className="known-label unknown">Not known yet</span>
                             )}
                         </div>
-                        <div className="flashcard-language">{flashcards[current]?.language}</div>
-                        <div className="flashcard-content">{flashcards[current]?.content}</div>
+                        <div className="flashcard-main-content">
+                            <div className="flashcard-language">{flashcards[current]?.language}</div>
+                            <div className="flashcard-content" title={flashcards[current]?.content}>
+                                {truncateFlashcardText(flashcards[current]?.content, 50)}
+                            </div>
+                        </div>
                     </>
                 );
             } else 
@@ -292,8 +305,12 @@ export default function App()
                                 <span className="known-label unknown">Not known yet</span>
                             )}
                         </div>
-                        <div className="flashcard-language">{flashcards[current]?.translationLang}</div>
-                        <div className="flashcard-content">{flashcards[current]?.translation}</div>
+                        <div className="flashcard-main-content">
+                            <div className="flashcard-language">{flashcards[current]?.translationLang}</div>
+                            <div className="flashcard-content" title={flashcards[current]?.translation}>
+                                {truncateFlashcardText(flashcards[current]?.translation, 50)}
+                            </div>
+                        </div>
                     </>
                 );
             }
