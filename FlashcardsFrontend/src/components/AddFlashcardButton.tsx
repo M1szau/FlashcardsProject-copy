@@ -30,7 +30,8 @@ export default function AddFlashcardButton({ selectedSetId, currentUser, flashca
     const handleAddFlashcard = () => 
     {
         setAdding(true);
-        setAddValues({
+        setAddValues(
+        {
             id: "",
             setId: selectedSetId || "",
             language: "",
@@ -69,7 +70,8 @@ export default function AddFlashcardButton({ selectedSetId, currentUser, flashca
             fetch(`/api/sets/${selectedSetId}/flashcards`, 
             {
                 method: 'POST',
-                headers: { 
+                headers: 
+                { 
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}` 
                 },
