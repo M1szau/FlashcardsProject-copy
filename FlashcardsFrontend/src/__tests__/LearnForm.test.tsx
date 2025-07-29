@@ -167,4 +167,29 @@ describe('LearnForm', () =>
             expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
         });
     });
+
+    //HTTP error
+    it('Handles HTTP error response gracefully', async () => 
+    {
+        vi.stubGlobal('fetch', vi.fn(() =>
+            Promise.resolve(
+            {
+                ok: false,
+                status: 500,
+                json: async () => ({})
+            })
+        ));
+
+        render(
+            <BrowserRouter>
+                <LearnForm />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => 
+        {
+            expect(screen.getByText(/You don't have any sets yet/i)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
+        });
+    });
 });
