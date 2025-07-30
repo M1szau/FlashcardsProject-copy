@@ -49,6 +49,7 @@ describe('Navbar component', () =>
         expect(screen.getByText(/Flashcards/i)).toBeInTheDocument();
 
         // Buttons check
+        expect(screen.getByRole('button', { name: /Learn/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Statistics/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Log out/i })).toBeInTheDocument();
 
@@ -56,6 +57,17 @@ describe('Navbar component', () =>
         const logo = screen.getByText(/Flashcards/i);
         logo.click();
         expect(navigateMock).toHaveBeenCalledWith('/dashboard');
+    });
+
+    it('Navigates to /learnForm when Learn button is clicked', () => 
+    {
+        render(
+            <MemoryRouter>
+                <Navbar />
+            </MemoryRouter>
+        );
+        fireEvent.click(screen.getByRole('button', { name: /Learn/i }));
+        expect(navigateMock).toHaveBeenCalledWith('/learnForm');
     });
 
     it('Navigates to /statistics when Statistics button is clicked', () => 
