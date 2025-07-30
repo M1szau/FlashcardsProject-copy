@@ -88,8 +88,6 @@ describe('LearnForm', () =>
 
     it('Navigates on submit', async () =>
     {
-        
-        
         render(
             <BrowserRouter>
                 <LearnForm />
@@ -100,6 +98,8 @@ describe('LearnForm', () =>
 
         fireEvent.change(screen.getByLabelText(/Select set/i), { target: { value: '1' } });
         fireEvent.click(screen.getByRole('button', { name: /Start Learning/i }));
+
+        expect(mockNavigate).toHaveBeenCalledWith('/learn/practice/1?mode=all');
     });
 
     it('Changes learning mode and navigates with correct params', async () => 
@@ -116,7 +116,7 @@ describe('LearnForm', () =>
         fireEvent.change(screen.getByLabelText(/Learning Mode/i), { target: { value: 'unknown' } });
         fireEvent.click(screen.getByRole('button', { name: /Start Learning/i }));
 
-        expect(mockNavigate).toHaveBeenCalledWith('/learn/practice?setId=2&mode=unknown');
+        expect(mockNavigate).toHaveBeenCalledWith('/learn/practice/2?mode=unknown');
     });
 
     it('Shows alert if no set is selected', async () => 
