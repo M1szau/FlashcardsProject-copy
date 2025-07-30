@@ -30,7 +30,8 @@ export default function Register()
             });
             
             const data = await response.json();
-            if(data.success) {
+            if(data.success) 
+            {
                 localStorage.setItem('token', data.token);
                 window.location.href = '/dashboard';
             } else {

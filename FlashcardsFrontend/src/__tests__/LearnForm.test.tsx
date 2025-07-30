@@ -251,7 +251,7 @@ describe('LearnForm', () =>
 
     it('Handles response where data is directly an array (no sets property)', async () => 
     {
-        //Test line 45
+        //Test line 45 - the middle part "|| data ||" when data.sets is undefined but data is an array
         const directArrayData = [{ id: '3', name: 'Direct Set' }];
         
         vi.stubGlobal('fetch', vi.fn(() => 
@@ -272,6 +272,33 @@ describe('LearnForm', () =>
         {
             expect(screen.getByText(/Choose set to learn/i)).toBeInTheDocument();
             expect(screen.getByText('Direct Set')).toBeInTheDocument();
+        });
+    });
+
+    it('Handles response where data.sets is null but data is an array', async () => 
+    {
+        //Test line 45 - specifically the "|| data ||" branch when data.sets is null but data is an array
+        const mockData = [{ id: '4', name: 'Fallback Set' }];
+        Object.defineProperty(mockData, 'sets', { value: null, writable: true });
+        
+        vi.stubGlobal('fetch', vi.fn(() => 
+            Promise.resolve(
+            {
+                ok: true,
+                json: async () => mockData
+            })
+        ));
+
+        render(
+            <BrowserRouter>
+                <LearnForm />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => 
+        {
+            expect(screen.getByText(/Choose set to learn/i)).toBeInTheDocument();
+            expect(screen.getByText('Fallback Set')).toBeInTheDocument();
         });
     });
 
@@ -298,4 +325,5 @@ describe('LearnForm', () =>
             expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
         });
     });
+    
 });

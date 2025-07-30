@@ -36,7 +36,7 @@ describe('LogIn component', () =>
     });
   });
 
-  it('renders all required fields and buttons', () => 
+  it('Renders all required fields and buttons', () => 
   {
     render(
       <MemoryRouter>
@@ -52,7 +52,7 @@ describe('LogIn component', () =>
     expect(screen.getByText(/Please log in/i)).toBeInTheDocument();
   });
 
-  it('handles successful login', async () => 
+  it('Handles successful login', async () => 
   {
     const mockResponse = { success: true, token: 'fake-token' };
     (global.fetch as any).mockResolvedValueOnce(
@@ -81,7 +81,7 @@ describe('LogIn component', () =>
     });
   });
 
-  it('shows error message when login fails', async () => 
+  it('Shows error message when login fails', async () => 
   {
     const mockResponse = { success: false, message: 'Invalid credentials' };
     (global.fetch as any).mockResolvedValueOnce(
@@ -105,7 +105,51 @@ describe('LogIn component', () =>
     });
   });
 
-  it('navigates to /register when Join us! button is clicked', () => 
+  it('Shows fallback error message when login fails without message', async () => 
+  {
+    const mockResponse = { success: false }; //line 38 
+    (global.fetch as any).mockResolvedValueOnce(
+    {
+      json: () => Promise.resolve(mockResponse),
+    });
+
+    render(
+      <MemoryRouter>
+        <LogIn />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'testuser' } });
+    fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'wrongpass' } });
+    fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
+
+    await waitFor(() => 
+    {
+      expect(screen.getByText(/Login failed/i)).toBeInTheDocument();
+    });
+  });
+
+  it('Shows error message when network error occurs', async () => 
+  {
+    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+
+    render(
+      <MemoryRouter>
+        <LogIn />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'testuser' } });
+    fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'testpass' } });
+    fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
+
+    await waitFor(() => 
+    {
+      expect(screen.getByText(/Login failed/i)).toBeInTheDocument();
+    });
+  });
+
+  it('Navigates to /register when Join us! button is clicked', () => 
   {
     render(
       <MemoryRouter>
@@ -116,7 +160,7 @@ describe('LogIn component', () =>
     expect(navigateMock).toHaveBeenCalledWith('/register');
   });
 
-  it('resets the form after submit', async () => 
+  it('Resets the form after submit', async () => 
   {
     const mockResponse = { success: false, message: 'Login failed' };
     (global.fetch as any).mockResolvedValueOnce(

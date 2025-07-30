@@ -37,7 +37,7 @@ describe('Register component', () =>
   });
 
   //Test that all form fields and buttons are rendered
-  it('renders all required fields and buttons', () => 
+  it('Renders all required fields and buttons', () => 
   {
     render(
       <MemoryRouter>
@@ -52,7 +52,7 @@ describe('Register component', () =>
     expect(screen.getByText(/Please register/i)).toBeInTheDocument();
   });
 
-  it('handles successful registration', async () =>
+  it('Handles successful registration', async () =>
   {
     const mockResponse = { success: true, token: 'fake-token' };
     (global.fetch as any).mockResolvedValueOnce(
@@ -81,7 +81,7 @@ describe('Register component', () =>
     });
   });
 
-  it('shows error message when registration fails', async () => 
+  it('Shows error message when registration fails', async () => 
   {
     const mockResponse = { success: false, message: 'Registration failed' };
     (global.fetch as any).mockResolvedValueOnce(
@@ -105,8 +105,53 @@ describe('Register component', () =>
     });
   });
 
-  //Test that navigation to Log in when button is clicked
-  it('navigates to Log in when button is clicked', () => 
+  //line 37
+  it('Shows fallback error message when registration fails without message', async () => 
+  {
+    const mockResponse = { success: false }; 
+    (global.fetch as any).mockResolvedValueOnce(
+    {
+      json: () => Promise.resolve(mockResponse),
+    });
+
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
+    fireEvent.click(screen.getByRole('button', { name: /Register/i }));
+
+    await waitFor(() => 
+    {
+      expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
+    });
+  });
+
+  it('Shows error message when network error occurs', async () => 
+  {
+    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
+    fireEvent.click(screen.getByRole('button', { name: /Register/i }));
+
+    await waitFor(() => 
+    {
+      expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
+    });
+  });
+
+  //Navigation to Log in when button is clicked
+  it('Navigates to Log in when button is clicked', () => 
   {
     render(
       <MemoryRouter>
@@ -117,7 +162,7 @@ describe('Register component', () =>
     expect(navigateMock).toHaveBeenCalledWith('/');
   });
 
-  it('resets the form after submit', async () => 
+  it('Resets the form after submit', async () => 
   {
     const mockResponse = { success: false, message: 'Registration failed' };
     (global.fetch as any).mockResolvedValueOnce(
