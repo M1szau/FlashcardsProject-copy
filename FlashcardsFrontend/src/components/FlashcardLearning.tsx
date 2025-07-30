@@ -238,7 +238,7 @@ export default function FlashcardLearning()
     {
         const message = learnMode === 'unknown' 
             ? ( <>No unknown flashcards found in this set.<br />All flashcards are marked as known!</> )
-            : (<>No flashcards found in this set.<br />Click to return to Dashboard.</>);
+            : ( <>No flashcards found in this set.<br />Click to return to Dashboard.</> );
             
         return (
             <>

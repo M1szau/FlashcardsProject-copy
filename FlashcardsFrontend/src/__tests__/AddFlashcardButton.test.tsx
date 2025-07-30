@@ -477,7 +477,7 @@ describe('AddFlashcardButton component', () =>
             fireEvent.change(screen.getByLabelText(/translation language/i), { target: { value: 'Spanish' } });
             fireEvent.change(screen.getByPlaceholderText('Translation'), { target: { value: 'Prueba' } });
             
-            // Submit by pressing Enter on the form (simulate form submission)
+            //Submit by enter
             const form = document.querySelector('form');
             expect(form).toBeInTheDocument();
             fireEvent.submit(form!);

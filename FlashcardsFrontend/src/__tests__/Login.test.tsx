@@ -1,13 +1,15 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import LogIn from '../components/LogIn';
 import { MemoryRouter } from 'react-router-dom';
 
-// Mock function for navigation
+//Mock function for navigation
 const navigateMock = vi.fn();
 
-// Properly mock react-router-dom and preserve MemoryRouter
+global.fetch = vi.fn();
+
+//Properly mock react-router-dom and preserve MemoryRouter
 vi.mock('react-router-dom', async (importOriginal) => 
 {
   const actual = await importOriginal();
@@ -21,11 +23,24 @@ vi.mock('react-router-dom', async (importOriginal) =>
 
 describe('LogIn component', () => 
 {
+  beforeEach(() => 
+  {
+    vi.clearAllMocks();
+    Object.defineProperty(window, 'location', 
+    {
+      value: 
+      {
+        href: '',
+      },
+      writable: true,
+    });
+  });
+
   it('renders all required fields and buttons', () => 
   {
     render(
       <MemoryRouter>
-        <LogIn onSubmit={() => {}} />
+        <LogIn />
       </MemoryRouter>
     );
     
@@ -34,58 +49,102 @@ describe('LogIn component', () =>
     expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Join us!/i })).toBeInTheDocument();
     expect(screen.getByText(/Not yet with us\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/Please log in/i)).toBeInTheDocument();
   });
 
-  it('calls onSubmit with username and password when Log in button is clicked', () => {
-    const handleSubmit = vi.fn();
+  it('handles successful login', async () => 
+  {
+    const mockResponse = { success: true, token: 'fake-token' };
+    (global.fetch as any).mockResolvedValueOnce(
+    {
+      json: () => Promise.resolve(mockResponse),
+    });
+
     render(
       <MemoryRouter>
-        <LogIn onSubmit={handleSubmit} />
+        <LogIn />
       </MemoryRouter>
     );
+
     fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'testuser' } });
     fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'testpass' } });
     fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
-    expect(handleSubmit).toHaveBeenCalledWith('testuser', 'testpass');
+
+    await waitFor(() => 
+    {
+      expect(global.fetch).toHaveBeenCalledWith('/api/login', 
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'testuser', password: 'testpass' }),
+      });
+    });
   });
 
-  it('shows error message when error prop is set', () => 
+  it('shows error message when login fails', async () => 
   {
+    const mockResponse = { success: false, message: 'Invalid credentials' };
+    (global.fetch as any).mockResolvedValueOnce(
+    {
+      json: () => Promise.resolve(mockResponse),
+    });
+
     render(
       <MemoryRouter>
-        <LogIn onSubmit={() => {}} error="Invalid credentials" />
+        <LogIn />
       </MemoryRouter>
     );
-    expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'testuser' } });
+    fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'wrongpass' } });
+    fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
+
+    await waitFor(() => 
+    {
+      expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
+    });
   });
 
   it('navigates to /register when Join us! button is clicked', () => 
   {
     render(
       <MemoryRouter>
-        <LogIn onSubmit={() => {}} />
+        <LogIn />
       </MemoryRouter>
     );
     fireEvent.click(screen.getByRole('button', { name: /Join us!/i }));
     expect(navigateMock).toHaveBeenCalledWith('/register');
   });
 
-  it('resets the form after submit', () => 
+  it('resets the form after submit', async () => 
   {
-    const handleSubmit = vi.fn();
+    const mockResponse = { success: false, message: 'Login failed' };
+    (global.fetch as any).mockResolvedValueOnce(
+    {
+      json: () => Promise.resolve(mockResponse),
+    });
+
     render(
       <MemoryRouter>
-        <LogIn onSubmit={handleSubmit} />
+        <LogIn />
       </MemoryRouter>
     );
+    
     const usernameInput = screen.getByLabelText(/Your username/i) as HTMLInputElement;
     const passwordInput = screen.getByLabelText(/Your password/i) as HTMLInputElement;
 
     fireEvent.change(usernameInput, { target: { value: 'resetuser' } });
     fireEvent.change(passwordInput, { target: { value: 'resetpass' } });
+    
+    expect(usernameInput.value).toBe('resetuser');
+    expect(passwordInput.value).toBe('resetpass');
+    
     fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
-    expect(usernameInput.value).toBe('');
-    expect(passwordInput.value).toBe('');
+    await waitFor(() => 
+    {
+      expect(usernameInput.value).toBe('');
+      expect(passwordInput.value).toBe('');
+    });
   });
 });

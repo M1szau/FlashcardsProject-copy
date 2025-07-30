@@ -341,31 +341,30 @@ describe('FlashcardViewer component', () =>
 
         it('Does not decrement current when already at first card (edge case)', () => 
         {
-            // Test when at first card (current = 0) but button is enabled due to flipped state
-            const props = { 
+            //Test when at first card (current = 0) but button is enabled due to flipped state
+            const props = 
+            { 
                 ...defaultProps, 
                 current: 0,
                 flipped: false,
                 editing: false,
-                total: 1  // Single card - this will make the navigation logic execute
+                total: 1 
             };
             render(<FlashcardViewer {...props} />);
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             
-            // Button should be disabled when current === 0
+            //Button should be disabled when current === 0
             expect(prevButton).toBeDisabled();
             
-            // Force click on disabled button to test the internal logic
             fireEvent.click(prevButton);
             
-            // Since button is disabled, setCurrent shouldn't be called
             expect(mockSetCurrent).not.toHaveBeenCalled();
         });
 
         it('Does not increment current when already at last card (edge case)', () => 
         {
-            // Test when at last card but we want to trigger the nextCard logic
+            //Test when at last card but we want to trigger the nextCard logic
             const props = 
             { 
                 ...defaultProps, 
@@ -378,33 +377,30 @@ describe('FlashcardViewer component', () =>
             
             const nextButton = screen.getByLabelText('Next Flashcard');
             
-            // Button should be disabled when current === total - 1
+            //Button should be disabled when current === total - 1
             expect(nextButton).toBeDisabled();
             
-            // Force click to test (prev < total - 1 ? prev + 1 : prev) where prev = 2, total = 3
             fireEvent.click(nextButton);
             
-            // Since button is disabled, setCurrent shouldn't be called
             expect(mockSetCurrent).not.toHaveBeenCalled();
         });
 
         it('Tests prevCard edge case when button is enabled but at boundary', () => 
         {
-            // Create scenario where button is enabled but test is for edge case
+            //Create scenario where button is enabled but test is for edge case
             const props = 
             { 
                 ...defaultProps, 
-                current: 1,  // Middle position
+                current: 1, 
                 flipped: false,
                 editing: false
             };
             
-            // Mock setCurrent to capture calls with a function that simulates the edge case
             const testSetCurrent = vi.fn((updateFn) => 
             {
                 const mockPrev = 0;
                 const result = typeof updateFn === 'function' ? updateFn(mockPrev) : updateFn;
-                // The result should be 0 (unchanged) when prev = 0
+                //Rresult should be 0 (unchanged) when prev = 0
                 expect(result).toBe(0);
             });
             
@@ -419,7 +415,7 @@ describe('FlashcardViewer component', () =>
 
         it('Tests nextCard edge case when button is enabled but at boundary', () => 
         {
-            // Test the nextCard edge case logic
+            //Test the nextCard edge case logic
             const props = 
             { 
                 ...defaultProps, 
@@ -429,10 +425,9 @@ describe('FlashcardViewer component', () =>
                 editing: false
             };
             
-            // Mock setCurrent to test edge case scenario
             const testSetCurrent = vi.fn((updateFn) => 
             {
-                const mockPrev = 2; // Last card index for total = 3
+                const mockPrev = 2; //Last card index for total = 3
                 const result = typeof updateFn === 'function' ? updateFn(mockPrev) : updateFn;
                 expect(result).toBe(2);
             });

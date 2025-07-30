@@ -154,7 +154,6 @@ describe('LearnForm', () =>
 
     it('Handles fetch error gracefully', async () =>
     {
-        // Mock console.error to verify it's called
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         
         vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Network error'))));
@@ -170,10 +169,8 @@ describe('LearnForm', () =>
             expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
         });
 
-        // Verify that console.error was called with the error
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching sets:', expect.any(Error));
         
-        // Restore console.error
         consoleErrorSpy.mockRestore();
     });
 
@@ -206,8 +203,8 @@ describe('LearnForm', () =>
     {
         const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
         
-        // Mock fetch to throw a network error
-        vi.stubGlobal('fetch', vi.fn(() => {
+        vi.stubGlobal('fetch', vi.fn(() => 
+        {
             throw new Error('Network connection failed');
         }));
 
@@ -219,14 +216,86 @@ describe('LearnForm', () =>
 
         await waitFor(() => 
         {
-            // Should show empty sets message
             expect(screen.getByText(/You don't have any sets yet/i)).toBeInTheDocument();
             expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
         });
 
-        // Verify console.error was called
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching sets:', expect.any(Error));
         
         consoleErrorSpy.mockRestore();
+    });
+
+    it('Handles response with data.sets being null but data being array', async () => 
+    {
+        //Test line 45
+        vi.stubGlobal('fetch', vi.fn(() => 
+            Promise.resolve(
+            {
+                ok: true,
+                json: async () => ({ sets: null, otherData: 'test' })
+            })
+        ));
+
+        render(
+            <BrowserRouter>
+                <LearnForm />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => 
+        {
+            expect(screen.getByText(/You don't have any sets yet/i)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
+        });
+    });
+
+    it('Handles response where data is directly an array (no sets property)', async () => 
+    {
+        //Test line 45
+        const directArrayData = [{ id: '3', name: 'Direct Set' }];
+        
+        vi.stubGlobal('fetch', vi.fn(() => 
+            Promise.resolve(
+            {
+                ok: true,
+                json: async () => directArrayData 
+            })
+        ));
+
+        render(
+            <BrowserRouter>
+                <LearnForm />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => 
+        {
+            expect(screen.getByText(/Choose set to learn/i)).toBeInTheDocument();
+            expect(screen.getByText('Direct Set')).toBeInTheDocument();
+        });
+    });
+
+    it('Handles response where setsArray is not an array', async () => 
+    {
+        //Test line 46
+        vi.stubGlobal('fetch', vi.fn(() => 
+            Promise.resolve(
+            {
+                ok: true,
+                json: async () => ({ sets: "invalid_string_instead_of_array" })  
+            })
+        ));
+
+        render(
+            <BrowserRouter>
+                <LearnForm />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => 
+        {
+            expect(screen.getByText(/You don't have any sets yet/i)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
+        });
     });
 });

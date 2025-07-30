@@ -1,13 +1,15 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import Register from '../components/Register';
 import { MemoryRouter } from 'react-router-dom';
 
-// Mock funcition for navigation
+//Mock function for navigation
 const navigateMock = vi.fn();
 
-// Properly mock react-router-dom and preserve MemoryRouter
+global.fetch = vi.fn();
+
+//Properly mock react-router-dom and preserve MemoryRouter
 vi.mock('react-router-dom', async (importOriginal) => 
 {
   const actual = await importOriginal();
@@ -19,77 +21,131 @@ vi.mock('react-router-dom', async (importOriginal) =>
   };
 });
 
-
 describe('Register component', () => 
 {
-  // Test that all form fields and buttons are rendered
+  beforeEach(() => 
+  {
+    vi.clearAllMocks();
+    Object.defineProperty(window, 'location', 
+    {
+      value: 
+      {
+        href: '',
+      },
+      writable: true,
+    });
+  });
+
+  //Test that all form fields and buttons are rendered
   it('renders all required fields and buttons', () => 
   {
     render(
       <MemoryRouter>
-        <Register onSubmit={() => {}} />
+        <Register />
       </MemoryRouter>
     );
-    expect(screen.getByLabelText(/Username/i)).toBeInTheDocument(); // username field
-    expect(screen.getByLabelText(/Password/i)).toBeInTheDocument(); // password field
+    expect(screen.getByLabelText(/Choose your username/i)).toBeInTheDocument(); // username field
+    expect(screen.getByLabelText(/Choose your password/i)).toBeInTheDocument(); // password field
     expect(screen.getByRole('button', { name: /Register/i })).toBeInTheDocument(); // register button
     expect(screen.getByText(/Already have an account\?/i)).toBeInTheDocument(); // info text
     expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument(); // log in button
+    expect(screen.getByText(/Please register/i)).toBeInTheDocument();
   });
 
-  
-  it('calls onSubmit with username, password, and confirmPassword', () => 
+  it('handles successful registration', async () =>
   {
-    const handleSubmit = vi.fn();
+    const mockResponse = { success: true, token: 'fake-token' };
+    (global.fetch as any).mockResolvedValueOnce(
+    {
+      json: () => Promise.resolve(mockResponse),
+    });
+
     render(
       <MemoryRouter>
-        <Register onSubmit={handleSubmit} />
+        <Register />
       </MemoryRouter>
     );
-    fireEvent.change(screen.getByLabelText(/Username/i), { target: { value: 'newuser' } });
-    fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'newpass' } });
+
+    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
     fireEvent.click(screen.getByRole('button', { name: /Register/i }));
-    expect(handleSubmit).toHaveBeenCalledWith('newuser', 'newpass');
+
+    await waitFor(() => 
+    {
+      expect(global.fetch).toHaveBeenCalledWith('/api/register', 
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'newuser', password: 'newpass' }),
+      });
+    });
   });
 
-  it('shows error message when error prop is set', () => 
+  it('shows error message when registration fails', async () => 
+  {
+    const mockResponse = { success: false, message: 'Registration failed' };
+    (global.fetch as any).mockResolvedValueOnce(
+    {
+      json: () => Promise.resolve(mockResponse),
+    });
+
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>
+    );
+
+    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
+    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
+    fireEvent.click(screen.getByRole('button', { name: /Register/i }));
+
+    await waitFor(() => 
+    {
+      expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
+    });
+  });
+
+  //Test that navigation to Log in when button is clicked
+  it('navigates to Log in when button is clicked', () => 
   {
     render(
       <MemoryRouter>
-        <Register onSubmit={() => {}} error="Registration failed" />
-      </MemoryRouter>
-    );
-    expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
-  });
-
-  // Test that navigation to  Log in when button is clicked
-  it('navigates to Log in when button is clicked', () => 
-{
-    render(
-      <MemoryRouter>
-        <Register onSubmit={() => {}} />
+        <Register />
       </MemoryRouter>
     );
     fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
     expect(navigateMock).toHaveBeenCalledWith('/');
   });
 
-  it('resets the form after submit', () => 
+  it('resets the form after submit', async () => 
   {
-    const handleSubmit = vi.fn();
+    const mockResponse = { success: false, message: 'Registration failed' };
+    (global.fetch as any).mockResolvedValueOnce(
+    {
+      json: () => Promise.resolve(mockResponse),
+    });
+
     render(
       <MemoryRouter>
-        <Register onSubmit={handleSubmit} />
+        <Register />
       </MemoryRouter>
     );
-    const usernameInput = screen.getByLabelText(/Username/i) as HTMLInputElement;
-    const passwordInput = screen.getByLabelText(/Password/i) as HTMLInputElement;
+    
+    const usernameInput = screen.getByLabelText(/Choose your username/i) as HTMLInputElement;
+    const passwordInput = screen.getByLabelText(/Choose your password/i) as HTMLInputElement;
 
     fireEvent.change(usernameInput, { target: { value: 'resetuser' } });
     fireEvent.change(passwordInput, { target: { value: 'resetpass' } });
+    
+    expect(usernameInput.value).toBe('resetuser');
+    expect(passwordInput.value).toBe('resetpass');
+    
     fireEvent.click(screen.getByRole('button', { name: /Register/i }));
 
-    expect(usernameInput.value).toBe(''); 
-    expect(passwordInput.value).toBe(''); 
+    await waitFor(() => 
+    {
+      expect(usernameInput.value).toBe(''); 
+      expect(passwordInput.value).toBe(''); 
+    });
   });
 });

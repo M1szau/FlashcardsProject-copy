@@ -19,7 +19,7 @@ export default function App()
     const [flipped, setFlipped] = useState(false);
     const [editing, setEditing] = useState(false);
 
-    // Helper function to truncate flashcard text
+    //Function to truncate flashcard text
     const truncateFlashcardText = (text: string, maxLength: number = 50) => {
         if (!text) return '';
         if (text.length <= maxLength) return text;
@@ -78,7 +78,7 @@ export default function App()
 
     //Handlers
     //Edit flashcard
-    // Start editing
+    //Start editing
     const handleEditFlashcard = (e: React.MouseEvent) => 
     {
         e.stopPropagation();
@@ -89,7 +89,7 @@ export default function App()
         }
     };
 
-    // Cancel editing
+    //Cancel editing
     const handleCancelEdit = (e: React.MouseEvent) => 
     {
         e.stopPropagation();
@@ -97,7 +97,7 @@ export default function App()
         setEditValues(null);
     };
 
-    // Save editing
+    //Save editing
     const handleSaveEdit = (e: React.MouseEvent) => 
     {
         e.stopPropagation();
@@ -145,7 +145,7 @@ export default function App()
         }
     };
 
-    // Handle input changes
+    //Handle input changes
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => 
     {
         if (!editValues) return;
