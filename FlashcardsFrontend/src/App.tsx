@@ -10,6 +10,7 @@ import Dashboard from './components/Dashboard.tsx';
 import Statistics from './components/Statistics.tsx';
 import Flashcards from './components/Flashcards.tsx';
 import LearnForm from './components/LearnForm.tsx';
+import FlashcardLearning from './components/FlashcardLearning.tsx';
 
 
 
@@ -101,11 +102,21 @@ export default function App()
                     <Statistics />
                 } />
 
-                <Route path='/set/:setId' element={<Flashcards />}/>
+                <Route path='/set/:setId' element=
+                {
+                    <Flashcards />
+                }
+                />
 
                 <Route path='/learnForm' element=
                 {
                     <LearnForm />
+                }
+                />
+
+                <Route path='/learn/practice/:setId' element=
+                {
+                    <FlashcardLearning />
                 }
                 />
 

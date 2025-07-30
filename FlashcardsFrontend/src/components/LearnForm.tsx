@@ -41,7 +41,7 @@ export default function LearnForm()
                 }
 
                 const data = await res.json();
-                // Extract sets array from the response object
+                //Sets array from the response object
                 const setsArray = data.sets || data || [];
                 setSets(Array.isArray(setsArray) ? setsArray : []);
                 setLoading(false);
@@ -68,12 +68,11 @@ export default function LearnForm()
         //Navigation to learn page
         const params = new URLSearchParams(
             {
-                setId: selectedSetId,
                 mode: learnMode
             }
         );
 
-        navigate(`/learn/practice?${params.toString()}`);
+        navigate(`/learn/practice/${selectedSetId}?${params.toString()}`);
     }
 
     if(loading)
@@ -123,7 +122,9 @@ export default function LearnForm()
                         {sets.length === 0 && (< div style = { { textAlign: 'center', color: '#8F00BF', marginTop: '1rem', fontStyle: 'italic'} }>You don't have any sets yet. Please create one in Dashboard.</div>)}
 
                         <div className = 'flashcard-actions-bottom' style = { {justifyContent: 'flex-end'}}>
-                            <button className = 'flashcard-add-save-button' type = 'submit' disabled = {sets.length === 0 } aria-label = 'Start Learning'>Start Learning</button>
+                            <button className = 'flashcard-add-save-button' type = 'submit' disabled = {sets.length === 0 } aria-label = 'Start Learning'>
+                                Start Learning
+                            </button>
                         </div>
                     </form>
                 </div>
