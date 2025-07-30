@@ -154,7 +154,10 @@ describe('LearnForm', () =>
 
     it('Handles fetch error gracefully', async () =>
     {
-        vi.stubGlobal('fetch', vi.fn(() => Promise.reject('API error')));
+        // Mock console.error to verify it's called
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        
+        vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new Error('Network error'))));
         render(
             <BrowserRouter>
                 <LearnForm />
@@ -166,6 +169,12 @@ describe('LearnForm', () =>
             expect(screen.getByText(/You don't have any sets yet/i)).toBeInTheDocument();
             expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
         });
+
+        // Verify that console.error was called with the error
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching sets:', expect.any(Error));
+        
+        // Restore console.error
+        consoleErrorSpy.mockRestore();
     });
 
     //HTTP error
@@ -191,5 +200,33 @@ describe('LearnForm', () =>
             expect(screen.getByText(/You don't have any sets yet/i)).toBeInTheDocument();
             expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
         });
+    });
+
+    it('Handles network errors in catch block', async () => 
+    {
+        const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        
+        // Mock fetch to throw a network error
+        vi.stubGlobal('fetch', vi.fn(() => {
+            throw new Error('Network connection failed');
+        }));
+
+        render(
+            <BrowserRouter>
+                <LearnForm />
+            </BrowserRouter>
+        );
+
+        await waitFor(() => 
+        {
+            // Should show empty sets message
+            expect(screen.getByText(/You don't have any sets yet/i)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
+        });
+
+        // Verify console.error was called
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching sets:', expect.any(Error));
+        
+        consoleErrorSpy.mockRestore();
     });
 });

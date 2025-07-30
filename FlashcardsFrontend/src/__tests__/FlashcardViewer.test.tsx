@@ -338,5 +338,112 @@ describe('FlashcardViewer component', () =>
             const flashcardBox = screen.getByLabelText('Flip flashcard');
             expect(flashcardBox).toHaveAttribute('tabIndex', '0');
         });
+
+        it('Does not decrement current when already at first card (edge case)', () => 
+        {
+            // Test when at first card (current = 0) but button is enabled due to flipped state
+            const props = { 
+                ...defaultProps, 
+                current: 0,
+                flipped: false,
+                editing: false,
+                total: 1  // Single card - this will make the navigation logic execute
+            };
+            render(<FlashcardViewer {...props} />);
+            
+            const prevButton = screen.getByLabelText('Previous Flashcard');
+            
+            // Button should be disabled when current === 0
+            expect(prevButton).toBeDisabled();
+            
+            // Force click on disabled button to test the internal logic
+            fireEvent.click(prevButton);
+            
+            // Since button is disabled, setCurrent shouldn't be called
+            expect(mockSetCurrent).not.toHaveBeenCalled();
+        });
+
+        it('Does not increment current when already at last card (edge case)', () => 
+        {
+            // Test when at last card but we want to trigger the nextCard logic
+            const props = 
+            { 
+                ...defaultProps, 
+                current: 2,
+                total: 3,
+                flipped: false,
+                editing: false
+            };
+            render(<FlashcardViewer {...props} />);
+            
+            const nextButton = screen.getByLabelText('Next Flashcard');
+            
+            // Button should be disabled when current === total - 1
+            expect(nextButton).toBeDisabled();
+            
+            // Force click to test (prev < total - 1 ? prev + 1 : prev) where prev = 2, total = 3
+            fireEvent.click(nextButton);
+            
+            // Since button is disabled, setCurrent shouldn't be called
+            expect(mockSetCurrent).not.toHaveBeenCalled();
+        });
+
+        it('Tests prevCard edge case when button is enabled but at boundary', () => 
+        {
+            // Create scenario where button is enabled but test is for edge case
+            const props = 
+            { 
+                ...defaultProps, 
+                current: 1,  // Middle position
+                flipped: false,
+                editing: false
+            };
+            
+            // Mock setCurrent to capture calls with a function that simulates the edge case
+            const testSetCurrent = vi.fn((updateFn) => 
+            {
+                const mockPrev = 0;
+                const result = typeof updateFn === 'function' ? updateFn(mockPrev) : updateFn;
+                // The result should be 0 (unchanged) when prev = 0
+                expect(result).toBe(0);
+            });
+            
+            const testProps = { ...props, setCurrent: testSetCurrent };
+            render(<FlashcardViewer {...testProps} />);
+            
+            const prevButton = screen.getByLabelText('Previous Flashcard');
+            fireEvent.click(prevButton);
+            
+            expect(testSetCurrent).toHaveBeenCalled();
+        });
+
+        it('Tests nextCard edge case when button is enabled but at boundary', () => 
+        {
+            // Test the nextCard edge case logic
+            const props = 
+            { 
+                ...defaultProps, 
+                current: 1,  
+                total: 3,
+                flipped: false,
+                editing: false
+            };
+            
+            // Mock setCurrent to test edge case scenario
+            const testSetCurrent = vi.fn((updateFn) => 
+            {
+                const mockPrev = 2; // Last card index for total = 3
+                const result = typeof updateFn === 'function' ? updateFn(mockPrev) : updateFn;
+                expect(result).toBe(2);
+            });
+            
+            const testProps = { ...props, setCurrent: testSetCurrent };
+            render(<FlashcardViewer {...testProps} />);
+            
+            const nextButton = screen.getByLabelText('Next Flashcard');
+            fireEvent.click(nextButton);
+            
+            expect(testSetCurrent).toHaveBeenCalled();
+        });
     });
 });

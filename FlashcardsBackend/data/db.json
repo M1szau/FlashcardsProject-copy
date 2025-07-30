@@ -54,7 +54,7 @@
       "translation": "aaaa",
       "translationLang": "English",
       "owner": "admin",
-      "known": false,
+      "known": true,
       "createdAt": "2025-07-29T06:41:24.492Z"
     },
     {
@@ -76,7 +76,7 @@
       "translation": "aaaaa",
       "translationLang": "English",
       "owner": "admin",
-      "known": true,
+      "known": false,
       "createdAt": "2025-07-29T06:57:40.616Z"
     },
     {
@@ -87,7 +87,7 @@
       "translation": "b",
       "translationLang": "German",
       "owner": "admin",
-      "known": true,
+      "known": false,
       "createdAt": "2025-07-29T07:46:57.680Z"
     },
     {
@@ -98,7 +98,7 @@
       "translation": "bb",
       "translationLang": "German",
       "owner": "admin",
-      "known": false,
+      "known": true,
       "createdAt": "2025-07-29T07:47:05.102Z"
     },
     {
@@ -142,7 +142,7 @@
       "translation": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "translationLang": "German",
       "owner": "admin",
-      "known": false,
+      "known": true,
       "createdAt": "2025-07-29T12:28:50.138Z"
     }
   ]
