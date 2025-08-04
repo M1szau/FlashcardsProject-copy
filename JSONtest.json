@@ -1,0 +1,24 @@
+{
+  "set": {
+    "name": "Sample Set JSON",
+    "description": "A set for import testing.",
+    "defaultLanguage": "EN",
+    "translationLanguage": "PL"
+  },
+  "flashcards": [
+    {
+      "content": "Hello",
+      "translation": "Cześć",
+      "language": "EN",
+      "translationLang": "PL",
+      "known": false
+    },
+    {
+      "content": "Goodbye",
+      "translation": "Do widzenia",
+      "language": "EN",
+      "translationLang": "PL",
+      "known": true
+    }
+  ]
+}

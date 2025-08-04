@@ -563,4 +563,93 @@ app.get('/api/sets/:setId/export', authenticateToken, async (req, res) =>
     }
 });
 
+//Import set with flashcards
+app.post('/api/sets/import', authenticateToken, async (req, res) => 
+{
+    try
+    {
+        const requestData = req.body;
+        
+        let setData;
+        let flashcardsData = [];
+
+        //Validate and extract data
+        if (requestData.set && requestData.flashcards) 
+        {
+            //JSON format data
+            setData = 
+            {
+                name: requestData.set.name,
+                description: requestData.set.description || '',
+                defaultLanguage: requestData.set.defaultLanguage || 'EN',
+                translationLanguage: requestData.set.translationLanguage || 'PL'
+            };
+            flashcardsData = requestData.flashcards || [];
+        } else {
+            return res.status(400).json({ success: false, message: 'Invalid data format' });
+        }
+
+        //Validate set data
+        if (!setData.name || setData.name.trim() === '') 
+        {
+            return res.status(400).json({ success: false, message: 'Set name is required' });
+        }
+
+        //Create new set
+        const dbData = readDB();
+        const newSet = 
+        {
+            id: Date.now().toString(),
+            name: setData.name.trim(),
+            description: setData.description.trim(),
+            defaultLanguage: setData.defaultLanguage,
+            translationLanguage: setData.translationLanguage,
+            owner: req.user.username,
+            createdAt: new Date().toISOString()
+        };
+
+        dbData.sets.push(newSet);
+
+        //Create flashcards
+        let createdFlashcards = 0;
+        flashcardsData.forEach((cardData, index) => 
+        {
+            if (cardData.content && cardData.translation) 
+            {
+                const flashcard = 
+                {
+                    id: (Date.now() + index).toString(),
+                    setId: newSet.id,
+                    content: cardData.content.trim(),
+                    translation: cardData.translation.trim(),
+                    language: cardData.language || newSet.defaultLanguage,
+                    translationLang: cardData.translationLang || newSet.translationLanguage,
+                    known: cardData.known || false,
+                    owner: req.user.username,
+                    createdAt: new Date().toISOString()
+                };
+                dbData.flashcards.push(flashcard);
+                createdFlashcards++;
+            }
+        });
+
+        writeDB(dbData);
+
+        res.json(
+        {
+            success: true,
+            message: 'Set imported successfully',
+            set: newSet,
+            flashcardsCount: createdFlashcards
+        });
+
+    } catch (error) {
+        console.error('Error importing set:', error);
+        res.status(400).json({ 
+            success: false, 
+            message: error.message || 'Failed to import set' 
+        });
+    }
+});
+
 export default app;

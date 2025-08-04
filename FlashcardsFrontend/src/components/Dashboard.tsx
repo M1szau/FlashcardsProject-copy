@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from 'react';
-import { AiFillEdit, AiFillDelete, AiOutlineUpload } from "react-icons/ai";
+import { AiFillEdit, AiFillDelete, AiOutlineUpload, AiOutlineDownload } from "react-icons/ai";
 import Navbar from './Navbar.tsx';
 
 type SetType = 
@@ -35,6 +35,9 @@ export default function Dashboard()
     const [addingLoading, setAddingLoading] = useState(false);
     const [exportingSetId, setExportingSetId] = useState<string | null>(null);
     const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [importFile, setImportFile] = useState<File | null>(null);
+    const [importLoading, setImportLoading] = useState(false);
 
     // Helper function to truncate text
     const truncateText = (text: string, maxLength: number) => {
@@ -252,6 +255,172 @@ export default function Dashboard()
         document.body.removeChild(a);
     }
 
+    //Import set functionality
+    function handleImportClick() {
+        setShowImportModal(true);
+    }
+
+    function handleImportCancel() {
+        setShowImportModal(false);
+        setImportFile(null);
+        setImportLoading(false);
+    }
+
+    function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
+        const file = event.target.files?.[0];
+        if (file) {
+            // Validate file type
+            const isValidFile = file.type === 'application/json' || 
+                               file.type === 'text/csv' || 
+                               file.name.endsWith('.json') || 
+                               file.name.endsWith('.csv');
+            
+            if (!isValidFile) {
+                alert('Please select a valid JSON or CSV file.');
+                return;
+            }
+            
+            setImportFile(file);
+        }
+    }
+
+    async function handleImportConfirm() {
+        if (!importFile || importLoading) return;
+        
+        setImportLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            
+            // Read file content
+            const fileContent = await readFileContent(importFile);
+            let importData;
+
+            if (importFile.name.toLowerCase().endsWith('.json')) {
+                // Parse JSON file
+                try {
+                    importData = JSON.parse(fileContent);
+                } catch (error) {
+                    throw new Error('Invalid JSON format');
+                }
+            } else if (importFile.name.toLowerCase().endsWith('.csv')) {
+                // Parse CSV file
+                importData = parseCsvContent(fileContent);
+            } else {
+                throw new Error('Unsupported file format');
+            }
+
+            // Validate data structure
+            if (!importData.set || !importData.set.name) {
+                throw new Error('Invalid file format: missing set information');
+            }
+
+            const response = await fetch('/api/sets/import', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(importData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Import failed');
+            }
+
+            const result = await response.json();
+            
+            // Add the new set to the sets list
+            setSets(prev => [...prev, result.set]);
+            
+            alert(`Successfully imported set "${result.set.name}" with ${result.flashcardsCount} flashcards.`);
+            handleImportCancel();
+        } catch (error) {
+            alert(`Failed to import set: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
+            setImportLoading(false);
+        }
+    }
+
+    // Helper function to read file content
+    function readFileContent(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
+        });
+    }
+
+    // Helper function to parse CSV content
+    function parseCsvContent(csvContent: string) {
+        const lines = csvContent.split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+            throw new Error('CSV file must have header and at least one data row');
+        }
+
+        // Skip header line
+        const dataLines = lines.slice(1);
+        const firstDataLine = dataLines[0];
+        const csvData = parseCsvLine(firstDataLine);
+
+        if (csvData.length < 8) {
+            throw new Error('Invalid CSV format: insufficient columns');
+        }
+
+        const setData = {
+            name: csvData[0],
+            description: csvData[1],
+            defaultLanguage: csvData[2] || 'EN',
+            translationLanguage: csvData[3] || 'PL'
+        };
+
+        const flashcardsData = dataLines.map(line => {
+            const data = parseCsvLine(line);
+            return {
+                content: data[4],
+                translation: data[5],
+                language: data[6] || setData.defaultLanguage,
+                translationLang: data[7] || setData.translationLanguage,
+                known: data[8] === 'true'
+            };
+        }).filter(card => card.content && card.translation);
+
+        return {
+            set: setData,
+            flashcards: flashcardsData
+        };
+    }
+
+    // Helper function to parse CSV line
+    function parseCsvLine(line: string): string[] {
+        const result: string[] = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            const nextChar = line[i + 1];
+            
+            if (char === '"') {
+                if (inQuotes && nextChar === '"') {
+                    current += '"';
+                    i++; // Skip next quote
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (char === ',' && !inQuotes) {
+                result.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        
+        result.push(current.trim());
+        return result;
+    }
+
     // Blocks functionality
     const allBlocks = [];
     
@@ -320,18 +489,13 @@ export default function Dashboard()
                         </select>
                     </div>
                     <div className="addSetButtons">
-                        <button
-                            onClick={async () => await handleAddSetConfirm()}
-                            className="addSetConfirm"
-                            disabled={newSetName.trim() === '' || addingLoading}
-                        >
+                        <button className="addSetImport" title="Import set" onClick={handleImportClick}>
+                            <AiOutlineDownload/>
+                        </button>
+                        <button onClick={async () => await handleAddSetConfirm()} className="addSetConfirm" disabled={newSetName.trim() === '' || addingLoading}>
                             {addingLoading ? 'Adding...' : 'Add'}
                         </button>
-                        <button
-                            onClick={handleAddSetCancel}
-                            className="addSetCancel"
-                            disabled={addingLoading}
-                        >
+                        <button onClick={handleAddSetCancel} className="addSetCancel" disabled={addingLoading}>
                             Cancel
                         </button>
                     </div>
@@ -468,6 +632,76 @@ export default function Dashboard()
                                 Export
                             </button>
                             <button onClick={handleExportCancel} className="export-cancel-btn">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Import Modal */}
+            {showImportModal && (
+                <div className="import-modal">
+                    <div className="import-modal-content">
+                        <h3>Import Flashcard Set</h3>
+                        
+                        <div className="import-instructions">
+                            <h4>Supported File Formats:</h4>
+                            <div className="format-description">
+                                <h5>JSON Format:</h5>
+                                <pre>{`{
+  "set": {
+    "name": "My Set",
+    "description": "Description",
+    "defaultLanguage": "EN",
+    "translationLanguage": "PL"
+  },
+  "flashcards": [
+    {
+      "content": "Hello",
+      "translation": "Cześć",
+      "language": "EN",
+      "translationLang": "PL",
+      "known": false
+    }
+  ]
+}`}</pre>
+                            </div>
+                            
+                            <div className="format-description">
+                                <h5>CSV Format:</h5>
+                                <p>Headers: Set Name, Set Description, Default Language, Translation Language, Content, Translation, Content Language, Translation Language, Known, Created At</p>
+                                <pre>{`"My Set","Description","EN","PL","Hello","Cześć","EN","PL","false","2024-01-01"`}</pre>
+                            </div>
+                        </div>
+
+                        <div className="import-file-section">
+                            <input
+                                type="file"
+                                accept=".json,.csv"
+                                onChange={handleFileSelect}
+                                className="import-file-input"
+                            />
+                            {importFile && (
+                                <p className="selected-file">
+                                    Selected: {importFile.name}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="import-modal-buttons">
+                            <button 
+                                onClick={handleImportConfirm} 
+                                className="import-confirm-btn"
+                                disabled={!importFile || importLoading}
+                            >
+                                {importLoading ? 'Importing...' : 'Import'}
+                            </button>
+                            <button 
+                                onClick={handleImportCancel} 
+                                className="import-cancel-btn"
+                                disabled={importLoading}
+                            >
                                 Cancel
                             </button>
                         </div>

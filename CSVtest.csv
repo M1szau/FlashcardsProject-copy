@@ -1,0 +1,3 @@
+Set Name,Set Description,Default Language,Translation Language,Content,Translation,Content Language,Translation Language,Known,Created At
+Sample Set CSV,A set for import testing.,EN,PL,Hello,Cześć,EN,PL,false,2024-01-01
+Sample Set CSV,A set for import testing.,EN,PL,Goodbye,Do widzenia,EN,PL,true,2024-01-01
