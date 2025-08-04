@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from 'react';
-import { AiFillEdit, AiFillDelete } from "react-icons/ai";
+import { AiFillEdit, AiFillDelete, AiOutlineUpload } from "react-icons/ai";
 import Navbar from './Navbar.tsx';
 
 type SetType = 
@@ -33,6 +33,8 @@ export default function Dashboard()
     const [editSetName, setEditSetName] = useState('');
     const [editSetDescription, setEditSetDescription] = useState('');
     const [addingLoading, setAddingLoading] = useState(false);
+    const [exportingSetId, setExportingSetId] = useState<string | null>(null);
+    const [exportFormat, setExportFormat] = useState<'json' | 'csv'>('json');
 
     // Helper function to truncate text
     const truncateText = (text: string, maxLength: number) => {
@@ -193,6 +195,61 @@ export default function Dashboard()
             });
             setSets(prev => prev.filter((_, i) => i !== idx));
         }
+    }
+
+    //Export set functionality
+    function handleExportClick(setId: string) {
+        setExportingSetId(setId);
+    }
+
+    function handleExportCancel() {
+        setExportingSetId(null);
+        setExportFormat('json');
+    }
+
+    async function handleExportConfirm() {
+        if (!exportingSetId) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/sets/${exportingSetId}/export?format=${exportFormat}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error('Export failed');
+            }
+
+            const setData = sets.find(s => s.id === exportingSetId);
+            const fileName = `${setData?.name || 'flashcard-set'}.${exportFormat}`;
+
+            if (exportFormat === 'json') {
+                const data = await response.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                downloadFile(blob, fileName);
+            } else {
+                const csvText = await response.text();
+                const blob = new Blob([csvText], { type: 'text/csv' });
+                downloadFile(blob, fileName);
+            }
+
+            setExportingSetId(null);
+            setExportFormat('json');
+        } catch (error) {
+            alert('Failed to export set.');
+        }
+    }
+
+    function downloadFile(blob: Blob, fileName: string) {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
     }
 
     // Blocks functionality
@@ -368,19 +425,14 @@ export default function Dashboard()
                         </span>
                     </div>
                     <div className="setBlockActions">
-                        <button
-                            className="setEditBtn"
-                            title="Edit set"
-                            onClick={e => { e.stopPropagation(); handleEditSet(i); }}
-                        >
+                        <button className="setEditBtn" title="Edit set" onClick={e => { e.stopPropagation(); handleEditSet(i); }}>
                             <span><AiFillEdit /></span>
                         </button>
-                        <button
-                            className="setDeleteBtn"
-                            title="Delete set"
-                            onClick={e => { e.stopPropagation(); handleDeleteSet(i); }}
-                        >
+                        <button className="setDeleteBtn" title="Delete set" onClick={e => { e.stopPropagation(); handleDeleteSet(i); }}>
                             <span><AiFillDelete /></span>
+                        </button>
+                        <button className="setExportBtn" title="Export set" onClick={e => { e.stopPropagation(); handleExportClick(set.id); }}>
+                            <span><AiOutlineUpload /></span>
                         </button>
                     </div>
                 </div>
@@ -394,6 +446,34 @@ export default function Dashboard()
             <section className="setsGrid">
                 {allBlocks}
             </section>
+            
+            {/* Export Modal */}
+            {exportingSetId && (
+                <div className="export-modal">
+                    <div className="export-modal-content">
+                        <h3>Export Set</h3>
+                        <p>Choose export format:</p>
+                        <div className="export-format-options">
+                            <label>
+                                <input type="radio" value="json" checked={exportFormat === 'json'} onChange={e => setExportFormat(e.target.value as 'json' | 'csv')}/>
+                                JSON Format
+                            </label>
+                            <label>
+                                <input type="radio" value="csv" checked={exportFormat === 'csv'} onChange={e => setExportFormat(e.target.value as 'json' | 'csv')}/>
+                                CSV Format
+                            </label>
+                        </div>
+                        <div className="export-modal-buttons">
+                            <button onClick={handleExportConfirm} className="export-confirm-btn">
+                                Export
+                            </button>
+                            <button onClick={handleExportCancel} className="export-cancel-btn">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 }

@@ -325,5 +325,4 @@ describe('LearnForm', () =>
             expect(screen.getByRole('button', { name: /Start Learning/i })).toBeDisabled();
         });
     });
-    
 });

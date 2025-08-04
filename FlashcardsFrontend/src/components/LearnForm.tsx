@@ -92,7 +92,7 @@ export default function LearnForm()
                 <div className = 'flashcard-add-modal' style = { {position: 'static', transform: 'none', background: 'transparent'}}>
                     <form className="flashcard-add-form" onSubmit={handleSubmit}>
                         <h2>Choose set to learn</h2>
-                        {/*Choice of set */}
+                        {/*Choice of set*/}
                         <label>
                             Select set
                             <select
@@ -105,7 +105,7 @@ export default function LearnForm()
                                 {Array.isArray(sets) && sets.map(set => ( <option key = {set.id} value = {set.id}> {set.name}</option>))}
                             </select>
                         </label>
-                        {/*Choice of learning mode */}
+                        {/*Choice of learning mode*/}
                         <label>
                             Learning Mode
                             <select

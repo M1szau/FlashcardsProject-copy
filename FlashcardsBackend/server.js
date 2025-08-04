@@ -495,4 +495,72 @@ app.get('/api/statistics', authenticateToken, async (req, res) =>
     }
 });
 
+//Export set with flashcards
+app.get('/api/sets/:setId/export', authenticateToken, async (req, res) => 
+{
+    try 
+    {
+        const { setId } = req.params;
+        const { format = 'json' } = req.query;
+        const dbData = readDB();
+
+        //Find the set
+        const set = dbData.sets.find(s => s.id === setId && s.owner === req.user.username);
+        if (!set) {
+            return res.status(404).json({ success: false, message: 'Set not found' });
+        }
+
+        //Get all flashcards
+        const flashcards = dbData.flashcards.filter(card => card.setId === setId);
+
+        //Export data
+        const exportData = 
+        {
+            set: 
+            {
+                id: set.id,
+                name: set.name,
+                description: set.description,
+                defaultLanguage: set.defaultLanguage,
+                translationLanguage: set.translationLanguage,
+                createdAt: set.createdAt,
+                exportedAt: new Date().toISOString()
+            },
+            flashcards: flashcards.map(card => ({
+                id: card.id,
+                content: card.content,
+                translation: card.translation,
+                language: card.language,
+                translationLang: card.translationLang,
+                known: card.known || false,
+                createdAt: card.createdAt
+            })),
+            totalCards: flashcards.length
+        };
+
+        if (format === 'csv') 
+        {
+            //CSV format
+            const csvHeader = 'Set Name,Set Description,Default Language,Translation Language,Content,Translation,Content Language,Translation Language,Known,Created At\n';
+            const csvRows = flashcards.map(card => 
+                `"${set.name}","${set.description || ''}","${set.defaultLanguage}","${set.translationLanguage}","${card.content}","${card.translation}","${card.language}","${card.translationLang}","${card.known || false}","${card.createdAt}"`
+            ).join('\n');
+            
+            const csvContent = csvHeader + csvRows;
+            
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename="${set.name}.csv"`);
+            res.send(csvContent);
+        } else {
+            //JSON format
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Disposition', `attachment; filename="${set.name}.json"`);
+            res.json(exportData);
+        }
+    } catch (error) {
+        console.error('Error exporting set:', error);
+        res.status(500).json({ error: 'Failed to export set' });
+    }
+});
+
 export default app;
