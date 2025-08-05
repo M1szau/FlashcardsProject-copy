@@ -4,9 +4,12 @@ import React, { useEffect, useState } from "react";
 import { AiFillCheckCircle, AiFillCloseCircle } from "react-icons/ai";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import type { Flashcard } from "../types/flashcard";
+import { useTranslation } from "react-i18next";
 
 export default function FlashcardLearning()
 {
+    const { t } = useTranslation();
+
     const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
     const [filteredFlashcards, setFilteredFlashcards] = useState<Flashcard[]>([]);
     const [sessionFlashcards, setSessionFlashcards] = useState<Flashcard[]>([]); 
@@ -104,6 +107,20 @@ export default function FlashcardLearning()
         return text.substring(0, maxLength) + '...';
     };
 
+    //Translate language code to language name
+    const getLanguageName = (langCode: string) => 
+    {
+        const languageMap: { [key: string]: string } = 
+        {
+            // Handle full language names from database
+            'Polish': t('languages.PL'),
+            'English': t('languages.EN'),
+            'German': t('languages.DE'),
+            'Spanish': t('languages.ES')
+        };
+        return languageMap[langCode] || langCode;
+    };
+
     //Shuffle array randomly 
     const shuffleArray = <T,>(array: T[]): T[] => 
     {
@@ -188,12 +205,12 @@ export default function FlashcardLearning()
                 <div className="flashcard-known-status">
                     {currentCard.known ? 
                     (
-                        <span className="known-label known">Already known</span>
+                        <span className="known-label known">{t('flashcardLearning.alreadyKnown')}</span>
                     ) : (
-                        <span className="known-label unknown">Not known yet</span>
+                        <span className="known-label unknown">{t('flashcardLearning.notKnownYet')}</span>
                     )}
                 </div>
-                <div className="flashcard-language">{language}</div>
+                <div className="flashcard-language">{getLanguageName(language)}</div>
                 <div className="flashcard-content" title={content}>
                     {truncateFlashcardText(content, 50)}
                 </div>
@@ -228,7 +245,7 @@ export default function FlashcardLearning()
             <>
                 <Navbar />
                 <div style={{ textAlign: "center", margin: "2rem", color: "#8F00BF" }}>
-                    Loading flashcards...
+                    {t('flashcardLearning.loadingFlashcards')}
                 </div>
             </>
         );
@@ -237,9 +254,9 @@ export default function FlashcardLearning()
     if (sessionFlashcards.length === 0 && !loading) 
     {
         const message = learnMode === 'unknown' 
-            ? ( <>No unknown flashcards found in this set.<br />All flashcards are marked as known!</> )
-            : ( <>No flashcards found in this set.<br />Click to return to Dashboard.</> );
-            
+            ? ( <>{t('flashcardLearning.noUnknownFlashcards')}<br />{t('flashcardLearning.allFlashcardsKnown')}</> )
+            : ( <>{t('flashcardLearning.noFlashcardsInSet')}<br />{t('flashcardLearning.returnToDashboard')}</> );
+
         return (
             <>
                 <Navbar />
@@ -269,7 +286,7 @@ export default function FlashcardLearning()
                 />
             </div>
             <div style={{ textAlign: 'center', fontSize: '1.5rem', color: '#8F00BF' }}>
-                <h3>Learning Mode: {learnMode === 'all' ? 'All Flashcards' : 'Unknown Flashcards Only'}</h3>
+                <h3>{t('flashcardLearning.learningMode')}: {learnMode === 'all' ? t('flashcardLearning.allFlashcards') : t('flashcardLearning.unknownFlashcards')}</h3>
             </div>
         </>
     );

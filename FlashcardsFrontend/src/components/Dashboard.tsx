@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from 'react';
 import { AiFillEdit, AiFillDelete, AiOutlineUpload, AiOutlineDownload } from "react-icons/ai";
 import Navbar from './Navbar.tsx';
+import { useTranslation } from "react-i18next";
 
 type SetType = 
 {
@@ -13,15 +14,18 @@ type SetType =
     owner: string;
 };
 
-const languageOptions = [
-    { code: 'PL', name: 'Polish' },
-    { code: 'EN', name: 'English' },
-    { code: 'DE', name: 'German' },
-    { code: 'ES', name: 'Spanish' },
-];
-
 export default function Dashboard() 
 {
+    const { t } = useTranslation();
+
+    //Language options with translation keys
+    const languageOptions = [
+        { code: 'PL', name: t('languages.PL') },
+        { code: 'EN', name: t('languages.EN') },
+        { code: 'DE', name: t('languages.DE') },
+        { code: 'ES', name: t('languages.ES') }
+    ];
+
     const navigate = useNavigate();
     const [sets, setSets] = useState<SetType[]>([]);
     const [adding, setAdding] = useState(false);
@@ -39,13 +43,28 @@ export default function Dashboard()
     const [importFile, setImportFile] = useState<File | null>(null);
     const [importLoading, setImportLoading] = useState(false);
 
-    // Helper function to truncate text
-    const truncateText = (text: string, maxLength: number) => {
+    //Function to truncate text
+    const truncateText = (text: string, maxLength: number) => 
+    {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
     };
 
-    // Fetch sets from backend on mount
+    //Function to get translated language name
+    const getLanguageName = (langCode: string) => 
+    {
+        const languageMap: { [key: string]: string } = 
+        {
+            'PL': t('languages.PL'),
+            'EN': t('languages.EN'), 
+            'DE': t('languages.DE'),
+            'ES': t('languages.ES'),
+
+        };
+        return languageMap[langCode] || langCode;
+    };
+
+    //Fetch sets from backend on mount
     useEffect(() => 
     {
         const token = localStorage.getItem('token');
@@ -188,7 +207,7 @@ export default function Dashboard()
     async function handleDeleteSet(idx: number) 
     {
         const setToDelete = sets[idx];
-        if (window.confirm('Delete this set?')) 
+        if (window.confirm(t('dashboard.deleteSet'))) 
         {
             const token = localStorage.getItem('token');
             await fetch(`/api/sets/${setToDelete.id}`, 
@@ -201,32 +220,38 @@ export default function Dashboard()
     }
 
     //Export set functionality
-    function handleExportClick(setId: string) {
+    function handleExportClick(setId: string) 
+    {
         setExportingSetId(setId);
     }
 
-    function handleExportCancel() {
+    function handleExportCancel() 
+    {
         setExportingSetId(null);
         setExportFormat('json');
     }
 
-    async function handleExportConfirm() {
+    async function handleExportConfirm() 
+    {
         if (!exportingSetId) return;
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/sets/${exportingSetId}/export?format=${exportFormat}`, {
+            const response = await fetch(`/api/sets/${exportingSetId}/export?format=${exportFormat}`, 
+            {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            if (!response.ok) {
+            if (!response.ok) 
+            {
                 throw new Error('Export failed');
             }
 
             const setData = sets.find(s => s.id === exportingSetId);
             const fileName = `${setData?.name || 'flashcard-set'}.${exportFormat}`;
 
-            if (exportFormat === 'json') {
+            if (exportFormat === 'json') 
+            {
                 const data = await response.json();
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 downloadFile(blob, fileName);
@@ -243,7 +268,8 @@ export default function Dashboard()
         }
     }
 
-    function downloadFile(blob: Blob, fileName: string) {
+    function downloadFile(blob: Blob, fileName: string) 
+    {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
@@ -256,27 +282,31 @@ export default function Dashboard()
     }
 
     //Import set functionality
-    function handleImportClick() {
+    function handleImportClick() 
+    {
         setShowImportModal(true);
     }
 
-    function handleImportCancel() {
+    function handleImportCancel() 
+    {
         setShowImportModal(false);
         setImportFile(null);
         setImportLoading(false);
     }
 
-    function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
+    function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) 
+    {
         const file = event.target.files?.[0];
         if (file) {
-            // Validate file type
+            //Validate file type
             const isValidFile = file.type === 'application/json' || 
                                file.type === 'text/csv' || 
                                file.name.endsWith('.json') || 
                                file.name.endsWith('.csv');
             
-            if (!isValidFile) {
-                alert('Please select a valid JSON or CSV file.');
+            if (!isValidFile) 
+            {
+                alert(t('dashboard.import.wrongFormat'));
                 return;
             }
             
@@ -284,98 +314,113 @@ export default function Dashboard()
         }
     }
 
-    async function handleImportConfirm() {
+    async function handleImportConfirm() 
+    {
         if (!importFile || importLoading) return;
         
         setImportLoading(true);
-        try {
+        try 
+        {
             const token = localStorage.getItem('token');
             
-            // Read file content
+            //Read file content
             const fileContent = await readFileContent(importFile);
             let importData;
 
-            if (importFile.name.toLowerCase().endsWith('.json')) {
-                // Parse JSON file
+            if (importFile.name.toLowerCase().endsWith('.json')) 
+            {
+                //Parse JSON file
                 try {
                     importData = JSON.parse(fileContent);
                 } catch (error) {
-                    throw new Error('Invalid JSON format');
+                    throw new Error(t('dashboard.import.invalidJson'));
                 }
-            } else if (importFile.name.toLowerCase().endsWith('.csv')) {
-                // Parse CSV file
+            } else if (importFile.name.toLowerCase().endsWith('.csv')) 
+            {
+                //Parse CSV file
                 importData = parseCsvContent(fileContent);
             } else {
-                throw new Error('Unsupported file format');
+                throw new Error(t('dashboard.import.unsupportedFormat'));
             }
 
-            // Validate data structure
-            if (!importData.set || !importData.set.name) {
-                throw new Error('Invalid file format: missing set information');
+            //Validate data structure
+            if (!importData.set || !importData.set.name) 
+            {
+                throw new Error(t('dashboard.import.missingSetInfo'));
             }
 
-            const response = await fetch('/api/sets/import', {
+            const response = await fetch('/api/sets/import', 
+            {
                 method: 'POST',
-                headers: {
+                headers: 
+                {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify(importData)
             });
 
-            if (!response.ok) {
+            if (!response.ok) 
+            {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Import failed');
+                throw new Error(errorData.message || t('dashboard.import.failedMessage', { error: errorData.error || 'Unknown error' }));
             }
 
             const result = await response.json();
             
-            // Add the new set to the sets list
+            //Add the new set to the sets list
             setSets(prev => [...prev, result.set]);
             
-            alert(`Successfully imported set "${result.set.name}" with ${result.flashcardsCount} flashcards.`);
+            alert(t('dashboard.import.successMessage', { setName: result.set.name, count: result.flashcards.length }));
             handleImportCancel();
         } catch (error) {
-            alert(`Failed to import set: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            alert(t('dashboard.import.failedMessage', { error: error instanceof Error ? error.message : 'Unknown error' }));
         } finally {
             setImportLoading(false);
         }
     }
 
-    // Helper function to read file content
-    function readFileContent(file: File): Promise<string> {
-        return new Promise((resolve, reject) => {
+    //Function to read file content
+    function readFileContent(file: File): Promise<string> 
+    {
+        return new Promise((resolve, reject) => 
+        {
             const reader = new FileReader();
             reader.onload = () => resolve(reader.result as string);
-            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.onerror = () => reject(new Error(t('dashboard.import.failedToRead')));
             reader.readAsText(file);
         });
     }
 
-    // Helper function to parse CSV content
-    function parseCsvContent(csvContent: string) {
+    //Function to parse CSV content
+    function parseCsvContent(csvContent: string) 
+    {
         const lines = csvContent.split('\n').filter(line => line.trim());
-        if (lines.length < 2) {
-            throw new Error('CSV file must have header and at least one data row');
+        if (lines.length < 2) 
+        {
+            throw new Error(t('dashboard.import.invalidCsv'));
         }
 
-        // Skip header line
+        //Skip header line
         const dataLines = lines.slice(1);
         const firstDataLine = dataLines[0];
         const csvData = parseCsvLine(firstDataLine);
 
-        if (csvData.length < 8) {
-            throw new Error('Invalid CSV format: insufficient columns');
+        if (csvData.length < 8) 
+        {
+            throw new Error(t('dashboard.import.insufficientColumns'));
         }
 
-        const setData = {
+        const setData = 
+        {
             name: csvData[0],
             description: csvData[1],
             defaultLanguage: csvData[2] || 'EN',
             translationLanguage: csvData[3] || 'PL'
         };
 
-        const flashcardsData = dataLines.map(line => {
+        const flashcardsData = dataLines.map(line => 
+        {
             const data = parseCsvLine(line);
             return {
                 content: data[4],
@@ -393,17 +438,21 @@ export default function Dashboard()
     }
 
     // Helper function to parse CSV line
-    function parseCsvLine(line: string): string[] {
+    function parseCsvLine(line: string): string[] 
+    {
         const result: string[] = [];
         let current = '';
         let inQuotes = false;
         
-        for (let i = 0; i < line.length; i++) {
+        for (let i = 0; i < line.length; i++) 
+        {
             const char = line[i];
             const nextChar = line[i + 1];
             
-            if (char === '"') {
-                if (inQuotes && nextChar === '"') {
+            if (char === '"') 
+            {
+                if (inQuotes && nextChar === '"') 
+                {
                     current += '"';
                     i++; // Skip next quote
                 } else {
@@ -434,7 +483,7 @@ export default function Dashboard()
                             type="text"
                             value={newSetName}
                             autoFocus
-                            placeholder="Set name"
+                            placeholder={t('dashboard.setName')}
                             maxLength={50}
                             onChange={e => setNewSetName(e.target.value)}
                             onKeyDown={async e => 
@@ -446,21 +495,21 @@ export default function Dashboard()
                             disabled={addingLoading}
                         />
                         <small style={{ color: '#666', fontSize: '0.8rem' }}>
-                            {newSetName.length}/50 characters
+                            {newSetName.length}/50 {t('dashboard.characters')}
                         </small>
                     </div>
                     <div>
                         <input
                             type="text"
                             value={newSetDescription}
-                            placeholder="Description"
+                            placeholder={t('dashboard.description')}
                             maxLength={100}
                             onChange={e => setNewSetDescription(e.target.value)}
                             className="addSetInput"
                             disabled={addingLoading}
                         />
                         <small style={{ color: '#666', fontSize: '0.8rem' }}>
-                            {newSetDescription.length}/100 characters
+                            {newSetDescription.length}/100 {t('dashboard.characters')}
                         </small>
                     </div>
                     <div className = 'language-list'>
@@ -489,14 +538,14 @@ export default function Dashboard()
                         </select>
                     </div>
                     <div className="addSetButtons">
-                        <button className="addSetImport" title="Import set" onClick={handleImportClick}>
+                        <button className="addSetImport" title={t('dashboard.import.title')} onClick={handleImportClick}>
                             <AiOutlineDownload/>
                         </button>
                         <button onClick={async () => await handleAddSetConfirm()} className="addSetConfirm" disabled={newSetName.trim() === '' || addingLoading}>
-                            {addingLoading ? 'Adding...' : 'Add'}
+                            {addingLoading ? t('dashboard.adding') : t('dashboard.add')}
                         </button>
                         <button onClick={handleAddSetCancel} className="addSetCancel" disabled={addingLoading}>
-                            Cancel
+                            {t('dashboard.cancel')}
                         </button>
                     </div>
                 </div>
@@ -508,7 +557,7 @@ export default function Dashboard()
         allBlocks.push(
             <div className="addSetBlock" onClick={handleAddSetClick} key="add">
                 <span>+</span>
-                <p>Add new set</p>
+                <p>{t('dashboard.addNewSet')}</p>
             </div>
         );
     }
@@ -525,7 +574,7 @@ export default function Dashboard()
                                 type="text"
                                 value={editSetName}
                                 autoFocus
-                                placeholder="Set name"
+                                placeholder={t('dashboard.setName')}
                                 maxLength={50}
                                 onChange={e => setEditSetName(e.target.value)}
                                 onKeyDown={e => 
@@ -536,30 +585,23 @@ export default function Dashboard()
                                 className="addSetInput"
                             />
                             <small style={{ color: '#666', fontSize: '0.8rem' }}>
-                                {editSetName.length}/50 characters
+                                {editSetName.length}/50 {t('dashboard.characters')}
                             </small>
                         </div>
                         <div>
-                            <input
-                                type="text"
-                                value={editSetDescription}
-                                placeholder="Description"
-                                maxLength={100}
-                                onChange={e => setEditSetDescription(e.target.value)}
-                                className="addSetInput"
-                            />
+                            <input type="text" value={editSetDescription} placeholder={t('dashboard.description')} maxLength={100} onChange={e => setEditSetDescription(e.target.value)} className="addSetInput"/>
                             <small style={{ color: '#666', fontSize: '0.8rem' }}>
-                                {editSetDescription.length}/100 characters
+                                {editSetDescription.length}/100 {t('dashboard.characters')}
                             </small>
                         </div>
                         <div className="edit-language">
-                            <span>{set.defaultLanguage}</span>
+                            <span>{getLanguageName(set.defaultLanguage)}</span>
                             <span className="edit-language-arrow">&rarr;</span>
-                            <span>{set.translationLanguage}</span>
+                            <span>{getLanguageName(set.translationLanguage)}</span>
                         </div>
                         <div className="addSetButtons">
-                            <button onClick={handleEditSetConfirm} className="addSetConfirm">Save</button>
-                            <button onClick={handleEditSetCancel} className="addSetCancel">Cancel</button>
+                            <button onClick={handleEditSetConfirm} className="addSetConfirm">{t('dashboard.save')}</button>
+                            <button onClick={handleEditSetCancel} className="addSetCancel">{t('dashboard.cancel')}</button>
                         </div>
                     </div>
                 </div>
@@ -568,34 +610,30 @@ export default function Dashboard()
         else 
         {
             allBlocks.push(
-                <div
-                    className="setBlock"
-                    key={set.id}
-                    onClick={() => navigate(`/set/${set.id}`)}
-                >
+                <div className="setBlock" key={set.id} onClick={() => navigate(`/set/${set.id}`)}>
                     <div className='setBlock-name' title={set.name}>
                         {truncateText(set.name, 25)}
                     </div>
                     <div className='setBlock-description' title={set.description || ''}>
-                        {set.description ? truncateText(set.description, 40) : 'No description'}
+                        {set.description ? truncateText(set.description, 40) : t('dashboard.noDescription')}
                     </div>
                     <div className="setBlock-languages">
                         <span>
-                            {languageOptions.find(opt => opt.code === set.defaultLanguage)?.name || set.defaultLanguage}
+                            {getLanguageName(set.defaultLanguage)}
                         </span>
                         <span className="language-arrow">&rarr;</span>
                         <span>
-                            {languageOptions.find(opt => opt.code === set.translationLanguage)?.name || set.translationLanguage}
+                            {getLanguageName(set.translationLanguage)}
                         </span>
                     </div>
                     <div className="setBlockActions">
-                        <button className="setEditBtn" title="Edit set" onClick={e => { e.stopPropagation(); handleEditSet(i); }}>
+                        <button className="setEditBtn" title={t('dashboard.edit')} onClick={e => { e.stopPropagation(); handleEditSet(i); }}>
                             <span><AiFillEdit /></span>
                         </button>
-                        <button className="setDeleteBtn" title="Delete set" onClick={e => { e.stopPropagation(); handleDeleteSet(i); }}>
+                        <button className="setDeleteBtn" title={t('dashboard.deleteSet')} onClick={e => { e.stopPropagation(); handleDeleteSet(i); }}>
                             <span><AiFillDelete /></span>
                         </button>
-                        <button className="setExportBtn" title="Export set" onClick={e => { e.stopPropagation(); handleExportClick(set.id); }}>
+                        <button className="setExportBtn" title={t('dashboard.exportAction')} onClick={e => { e.stopPropagation(); handleExportClick(set.id); }}>
                             <span><AiOutlineUpload /></span>
                         </button>
                     </div>
@@ -615,24 +653,24 @@ export default function Dashboard()
             {exportingSetId && (
                 <div className="export-modal">
                     <div className="export-modal-content">
-                        <h3>Export Set</h3>
-                        <p>Choose export format:</p>
+                        <h3>{t('dashboard.export.title')}</h3>
+                        <p>{t('dashboard.export.chooseFormat')}</p>
                         <div className="export-format-options">
                             <label>
                                 <input type="radio" value="json" checked={exportFormat === 'json'} onChange={e => setExportFormat(e.target.value as 'json' | 'csv')}/>
-                                JSON Format
+                                {t('dashboard.export.jsonFormat')}
                             </label>
                             <label>
                                 <input type="radio" value="csv" checked={exportFormat === 'csv'} onChange={e => setExportFormat(e.target.value as 'json' | 'csv')}/>
-                                CSV Format
+                                {t('dashboard.export.csvFormat')}
                             </label>
                         </div>
                         <div className="export-modal-buttons">
                             <button onClick={handleExportConfirm} className="export-confirm-btn">
-                                Export
+                                {t('dashboard.exportAction')}
                             </button>
                             <button onClick={handleExportCancel} className="export-cancel-btn">
-                                Cancel
+                                {t('dashboard.cancel')}
                             </button>
                         </div>
                     </div>
@@ -643,12 +681,12 @@ export default function Dashboard()
             {showImportModal && (
                 <div className="import-modal">
                     <div className="import-modal-content">
-                        <h3>Import Flashcard Set</h3>
-                        
+                        <h3>{t('dashboard.import.title')}</h3>
+
                         <div className="import-instructions">
-                            <h4>Supported File Formats:</h4>
+                            <h4>{t('dashboard.import.supportedFormats')}</h4>
                             <div className="format-description">
-                                <h5>JSON Format:</h5>
+                                <h5>{t('dashboard.import.jsonFormat')}</h5>
                                 <pre>{`{
   "set": {
     "name": "My Set",
@@ -669,40 +707,27 @@ export default function Dashboard()
                             </div>
                             
                             <div className="format-description">
-                                <h5>CSV Format:</h5>
-                                <p>Headers: Set Name, Set Description, Default Language, Translation Language, Content, Translation, Content Language, Translation Language, Known, Created At</p>
+                                <h5>{t('dashboard.import.csvFormat')}</h5>
+                                <p>{t('dashboard.import.csvHeaders')}</p>
                                 <pre>{`"My Set","Description","EN","PL","Hello","Cześć","EN","PL","false","2024-01-01"`}</pre>
                             </div>
                         </div>
 
                         <div className="import-file-section">
-                            <input
-                                type="file"
-                                accept=".json,.csv"
-                                onChange={handleFileSelect}
-                                className="import-file-input"
-                            />
+                            <input type="file" accept=".json,.csv" onChange={handleFileSelect} className="import-file-input"/>
                             {importFile && (
                                 <p className="selected-file">
-                                    Selected: {importFile.name}
+                                    {t('dashboard.import.selectedFile')}: {importFile.name}
                                 </p>
                             )}
                         </div>
 
                         <div className="import-modal-buttons">
-                            <button 
-                                onClick={handleImportConfirm} 
-                                className="import-confirm-btn"
-                                disabled={!importFile || importLoading}
-                            >
+                            <button  onClick={handleImportConfirm} className="import-confirm-btn" disabled={!importFile || importLoading}>
                                 {importLoading ? 'Importing...' : 'Import'}
                             </button>
-                            <button 
-                                onClick={handleImportCancel} 
-                                className="import-cancel-btn"
-                                disabled={importLoading}
-                            >
-                                Cancel
+                            <button onClick={handleImportCancel} className="import-cancel-btn" disabled={importLoading}>
+                                {t('dashboard.cancel')}
                             </button>
                         </div>
                     </div>

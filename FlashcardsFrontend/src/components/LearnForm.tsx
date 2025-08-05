@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
-import type { SetType } from "../types/flashcard.ts"; 
-
+import type { SetType } from "../types/flashcard.ts";
+import { useTranslation } from "react-i18next";
 
 export default function LearnForm()
 {
+    const { t } = useTranslation();
+
     const navigate = useNavigate();
     const [sets, setSets] = useState<SetType[]>([]);
     const [selectedSetId, setSelectedSetId] = useState('');
@@ -61,7 +63,7 @@ export default function LearnForm()
 
         if(!selectedSetId.trim())
         {
-            alert('Please select a set to learn from.');
+            alert(t('learnForm.selectSetError'));
             return;
         }
 
@@ -80,7 +82,7 @@ export default function LearnForm()
         return(
             <>
                 <Navbar />
-                <div style = { {position: 'static', transform: 'none'}}>Loading your sets...</div>
+                <div style = { {position: 'static', transform: 'none'}}>{t("learnForm.loadingSets")}</div>
             </>
         )
     }
@@ -91,39 +93,39 @@ export default function LearnForm()
             <div className = 'flashcard-center'>
                 <div className = 'flashcard-add-modal' style = { {position: 'static', transform: 'none', background: 'transparent'}}>
                     <form className="flashcard-add-form" onSubmit={handleSubmit}>
-                        <h2>Choose set to learn</h2>
+                        <h2>{t("learnForm.title")}</h2>
                         {/*Choice of set*/}
                         <label>
-                            Select set
+                            {t("learnForm.selectSet")}
                             <select
                             value = {selectedSetId}
                             onChange = {(e) => setSelectedSetId(e.target.value)}
                             className="flashcard-edit-input"
                             required
                             >
-                                <option value = "" disabled> Choose a set to practice </option>
+                                <option value = "" disabled> {t("learnForm.chooseSetPlaceholder")} </option>
                                 {Array.isArray(sets) && sets.map(set => ( <option key = {set.id} value = {set.id}> {set.name}</option>))}
                             </select>
                         </label>
                         {/*Choice of learning mode*/}
                         <label>
-                            Learning Mode
+                            {t("learnForm.learningMode")}
                             <select
                             value = {learnMode}
                             onChange = {(e) => setLearnMode(e.target.value)}
                             className="flashcard-edit-input"
                             required
                             >
-                                <option value = "all">Practice all flashcards </option>
-                                <option value = "unknown">Practice only unknown flashcards </option>
+                                <option value = "all">{t("learnForm.practiceAll")}</option>
+                                <option value = "unknown">{t("learnForm.practiceUnknown")}</option>
                             </select>
                         </label>
 
-                        {sets.length === 0 && (< div style = { { textAlign: 'center', color: '#8F00BF', marginTop: '1rem', fontStyle: 'italic'} }>You don't have any sets yet. Please create one in Dashboard.</div>)}
+                        {sets.length === 0 && (< div style = { { textAlign: 'center', color: '#8F00BF', marginTop: '1rem', fontStyle: 'italic'} }>{t("learnForm.noSetsCreated")}</div>)}
 
                         <div className = 'flashcard-actions-bottom' style = { {justifyContent: 'flex-end'}}>
                             <button className = 'flashcard-add-save-button' type = 'submit' disabled = {sets.length === 0 } aria-label = 'Start Learning'>
-                                Start Learning
+                                {t("learnForm.startLearning")}
                             </button>
                         </div>
                     </form>

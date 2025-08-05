@@ -1,6 +1,7 @@
 
 import Navbar from "./Navbar";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type SetStatistics = 
 {
@@ -22,6 +23,8 @@ type Statistics =
 
 export default function Statistics()
 {
+    const { t } = useTranslation();
+
     const [statistics, setStatistics] = useState<Statistics | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -62,7 +65,7 @@ export default function Statistics()
             <>
                 <Navbar />
                 <div style={{ textAlign: "center", margin: "2rem", color: "#8F00BF" }}>
-                    Loading statistics...
+                    {t("statistics.loadingStatistics")}
                 </div>
             </>
         );
@@ -74,7 +77,7 @@ export default function Statistics()
             <>
                 <Navbar />
                 <div style={{ textAlign: "center", margin: "2rem", color: "#8F00BF" }}>
-                    Error loading statistics.
+                    {t("statistics.errorLoadingStatistics")}
                 </div>
             </>
         );
@@ -84,32 +87,32 @@ export default function Statistics()
         <>
             <Navbar />
             <div className="statistics-container">
-                <h1 className="statistics-title">Learning Statistics</h1>
-                
+                <h1 className="statistics-title">{t("statistics.title")}</h1>
+
                 <div className="statistics-overview">
                     <div className="stat-card">
-                        <h3>Total Sets</h3>
+                        <h3>{t("statistics.totalSets")}</h3>
                         <div className="stat-number">{statistics.totalSets}</div>
                     </div>
                     
                     <div className="stat-card">
-                        <h3>Total Flashcards</h3>
+                        <h3>{t("statistics.totalFlashcards")}</h3>
                         <div className="stat-number">{statistics.totalFlashcards}</div>
                     </div>
                     
                     <div className="stat-card known">
-                        <h3>Known Cards</h3>
+                        <h3>{t("statistics.knownCards")}</h3>
                         <div className="stat-number">{statistics.totalKnownCards}</div>
                     </div>
                     
                     <div className="stat-card unknown">
-                        <h3>Not Known Yet</h3>
+                        <h3>{t("statistics.notKnownYet")}</h3>
                         <div className="stat-number">{statistics.totalUnknownCards}</div>
                     </div>
                 </div>
 
                 <div className="learning-progress">
-                    <h3>Learning Progress</h3>
+                    <h3>{t("statistics.learningProgress")}</h3>
                     <div className="progress-bar">
                         <div 
                             className="progress-fill" 
@@ -119,17 +122,17 @@ export default function Statistics()
                     <div className="progress-text">
                         {
                             statistics.totalFlashcards > 0 
-                                ? `${Math.round((statistics.totalKnownCards / statistics.totalFlashcards) * 100)}% mastered`
-                                : 'No flashcards yet'
+                                ? `${Math.round((statistics.totalKnownCards / statistics.totalFlashcards) * 100)}% ${t("statistics.mastered")}`
+                                : t("statistics.noFlashcardsYet")
                         }
                     </div>
                 </div>
 
                 <div className="sets-breakdown">
-                    <h3>Breakdown by sets</h3>
+                    <h3>{t("statistics.breakdownBySets")}</h3>
                     {statistics.setStatistics.length === 0 ? 
                     (
-                        <p>No sets created yet.</p>
+                        <p>{t("statistics.noSetsCreated")}</p>
                     ) : (
                         <div className="sets-list">
                             {statistics.setStatistics.map((setStats) => 
@@ -138,13 +141,13 @@ export default function Statistics()
                                     <h4>{setStats.setName}</h4>
                                     <div className="set-stats">
                                         <span className="total-cards">
-                                            Total: {setStats.totalCards}
+                                            {t("statistics.total")}: {setStats.totalCards}
                                         </span>
                                         <span className="known-cards">
-                                            Known: {setStats.knownCards}
+                                            {t("statistics.known")}: {setStats.knownCards}
                                         </span>
                                         <span className="unknown-cards">
-                                            Unknown: {setStats.unknownCards}
+                                            {t("statistics.unknown")}: {setStats.unknownCards}
                                         </span>
                                     </div>
                                     <div className="set-progress-bar">
@@ -159,8 +162,8 @@ export default function Statistics()
                                     <div className="set-progress-text">
                                         {
                                             setStats.totalCards > 0 
-                                                ? `${Math.round((setStats.knownCards / setStats.totalCards) * 100)}% mastered`
-                                                : 'No cards in this set'
+                                                ? `${Math.round((setStats.knownCards / setStats.totalCards) * 100)}% ${t("statistics.mastered")}`
+                                                : t("statistics.noCardsInSet")
                                         }
                                     </div>
                                 </div>

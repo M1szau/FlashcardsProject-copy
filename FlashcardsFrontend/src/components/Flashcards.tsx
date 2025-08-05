@@ -5,10 +5,20 @@ import React, { useEffect, useState } from "react";
 import { AiFillEdit, AiFillDelete, AiOutlineCheck, AiOutlineClose, AiFillCheckCircle, AiFillCloseCircle } from "react-icons/ai";
 import { useParams } from "react-router-dom";
 import type { Flashcard } from "../types/flashcard";
-import { languageOptions } from "../types/flashcard";
+import { useTranslation } from "react-i18next";
 
 export default function App()
 {
+    const { t } = useTranslation();
+
+    // Language options with translation keys
+    const languageOptions = [
+        { code: 'PL', name: t('languages.PL') },
+        { code: 'EN', name: t('languages.EN') },
+        { code: 'DE', name: t('languages.DE') },
+        { code: 'ES', name: t('languages.ES') }
+    ];
+
     //Consts for database
     const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
     const currentUser = localStorage.getItem('username') || 'unknown';
@@ -20,11 +30,27 @@ export default function App()
     const [editing, setEditing] = useState(false);
 
     //Function to truncate flashcard text
-    const truncateFlashcardText = (text: string, maxLength: number = 50) => {
+    const truncateFlashcardText = (text: string, maxLength: number = 50) => 
+    {
         if (!text) return '';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
     };
+
+    //Translate language code to language name
+    const getLanguageName = (langCode: string) => 
+    {
+        const languageMap: { [key: string]: string } = 
+        {
+            // Handle full language names from database
+            'Polish': t('languages.PL'),
+            'English': t('languages.EN'),
+            'German': t('languages.DE'),
+            'Spanish': t('languages.ES')
+        };
+        return languageMap[langCode] || langCode;
+    };
+
     const [editValues, setEditValues] = useState<Flashcard | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -255,10 +281,10 @@ export default function App()
                         className="flashcard-edit-input"
                         required
                     >
-                        <option value="" disabled>Select {side === "front" ? "language" : "translation language"}</option>
+                        <option value="" disabled>{t('flashcards.select')} {side === "front" ? t('flashcards.language') : t('flashcards.translationLanguage')}</option>
                         {languageOptions.map((lang) => 
                         (
-                            <option key={lang} value={lang}>{lang}</option>
+                            <option key={lang.code} value={lang.code}>{lang.name}</option>
                         ))}
                     </select>
                     <input
@@ -266,7 +292,7 @@ export default function App()
                         name={side === "front" ? "content" : "translation"}
                         value={side === "front" ? editValues?.content ?? "" : editValues?.translation ?? ""}
                         onChange={handleEditChange}
-                        placeholder={side === "front" ? "Word" : "Translation"}
+                        placeholder={side === "front" ? `${t('flashcards.content')}` : `${t('flashcards.translation')}`}
                         maxLength={30}
                         className="flashcard-edit-input"
                         required
@@ -281,13 +307,13 @@ export default function App()
                         <div className="flashcard-known-status">
                             {flashcards[current]?.known ? 
                             (
-                                <span className="known-label known">Already known</span>
+                                <span className="known-label known">{t('flashcards.alreadyKnown')}</span>
                             ) : (
-                                <span className="known-label unknown">Not known yet</span>
+                                <span className="known-label unknown">{t('flashcards.notKnownYet')}</span>
                             )}
                         </div>
                         <div className="flashcard-main-content">
-                            <div className="flashcard-language">{flashcards[current]?.language}</div>
+                            <div className="flashcard-language">{getLanguageName(flashcards[current]?.language)}</div>
                             <div className="flashcard-content" title={flashcards[current]?.content}>
                                 {truncateFlashcardText(flashcards[current]?.content, 50)}
                             </div>
@@ -300,13 +326,13 @@ export default function App()
                     <>
                         <div className="flashcard-known-status">
                             {flashcards[current]?.known ? (
-                                <span className="known-label known">Already known</span>
+                                <span className="known-label known">{t('flashcards.alreadyKnown')}</span>
                             ) : (
-                                <span className="known-label unknown">Not known yet</span>
+                                <span className="known-label unknown">{t('flashcards.notKnownYet')}</span>
                             )}
                         </div>
                         <div className="flashcard-main-content">
-                            <div className="flashcard-language">{flashcards[current]?.translationLang}</div>
+                            <div className="flashcard-language">{getLanguageName(flashcards[current]?.translationLang)}</div>
                             <div className="flashcard-content" title={flashcards[current]?.translation}>
                                 {truncateFlashcardText(flashcards[current]?.translation, 50)}
                             </div>
@@ -328,7 +354,14 @@ export default function App()
                 (
                     <>
                         <button className="flashcard-save-button" onClick={handleSaveEdit} aria-label="Save"><AiOutlineCheck /></button>
-                        <button className="flashcard-cancel-button" onClick={handleCancelEdit} aria-label="Cancel"><AiOutlineClose /></button>
+                        <button 
+                            className="flashcard-cancel-button" 
+                            onClick={handleCancelEdit} 
+                            aria-label="Cancel"
+                            onMouseEnter={(e) => e.currentTarget.blur()}
+                        >
+                            <AiOutlineClose />
+                        </button>
                     </>
                 ): 
                 (
@@ -354,7 +387,7 @@ export default function App()
             <>
                 <Navbar />
                 <div style={{ textAlign: "center", margin: "2rem", color: "#8F00BF" }}>
-                    Loading flashcards...
+                    {t('flashcards.loading')}
                 </div>
             </>
         );
@@ -376,7 +409,7 @@ export default function App()
                 
                 {flashcards.length === 0 ? (
                     <div className = 'no-flashcards-message'>
-                        No flashcards in this set yet. Click "Add Flashcard" to create one!
+                        {t('flashcards.noFlashcards')}
                     </div>
                 ) : (
                     <FlashcardViewer 

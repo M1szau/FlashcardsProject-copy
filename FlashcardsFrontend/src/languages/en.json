@@ -1,0 +1,180 @@
+{
+  "auth": {
+    "login": {
+      "title": "Please log in",
+      "username": "Your username",
+      "password": "Your password",
+      "loginButton": "Log in",
+      "notWithUs": "Not yet with us?",
+      "joinUs": "Join us!",
+      "loginFailed": "Login failed"
+    },
+    "register": {
+      "title": "Please register",
+      "username": "Choose your username",
+      "password": "Choose your password",
+      "registerButton": "Register",
+      "alreadyHaveAccount": "Already have an account?",
+      "loginLink": "Log in",
+      "registrationFailed": "Registration failed"
+    }
+  },
+  "navbar": {
+    "appName": "Flashcards",
+    "learn": "Learn",
+    "statistics": "Statistics",
+    "logout": "Log out"
+  },
+  "dashboard": {
+    "addNewSet": "Add new set",
+    "setName": "Set name",
+    "description": "Description",
+    "defaultLanguage": "Default Language",
+    "translationLanguage": "Translation Language",
+    "add": "Add",
+    "adding": "Adding...",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "exportAction": "Export",
+    "importAction": "Import",
+    "noDescription": "No description",
+    "characters": "characters",
+    "deleteConfirm": "Delete this set?",
+    "failedToAdd": "Failed to add set.",
+    "failedToEdit": "Failed to edit set.",
+    "deleteSet": "Delete this set?",
+
+    "export": {
+      "title": "Export Set",
+      "chooseFormat": "Choose export format:",
+      "jsonFormat": "JSON Format",
+      "csvFormat": "CSV Format",
+      "exportButton": "Export",
+      "cancelButton": "Cancel"
+    },
+    "import": {
+      "title": "Import Flashcard Set",
+      "supportedFormats": "Supported File Formats:",
+      "jsonFormat": "JSON Format:",
+      "csvFormat": "CSV Format:",
+      "csvHeaders": "Headers: Set Name, Set Description, Default Language, Translation Language, Content, Translation, Content Language, Translation Language, Known, Created At",
+      "selectedFile": "Selected:",
+      "importButton": "Import",
+      "importing": "Importing...",
+      "cancelButton": "Cancel",
+      "successMessage": "Successfully imported set \"{setName}\" with {count} flashcards.",
+      "failedMessage": "Failed to import set: {error}",
+      "wrongFormat": "Please select a valid JSON or CSV file.",
+      "invalidJson": "Invalid JSON format.",
+      "unsupportedFormat": "Unsupported file format.",
+      "missingSetInfo": "Invalid file format: missing set information",
+      "failedToRead": "Failed to read file",
+      "invalidCsv": "CSV file must have header and at least one data row",
+      "insufficientColumns": "Invalid CSV format: insufficient columns"
+    }
+  },
+  "statistics": {
+    "title": "Learning Statistics",
+    "totalSets": "Total Sets",
+    "totalFlashcards": "Total Flashcards",
+    "knownCards": "Known Cards",
+    "notKnownYet": "Not Known Yet",
+    "learningProgress": "Learning Progress",
+    "mastered": "mastered",
+    "noFlashcardsYet": "No flashcards yet",
+    "breakdownBySets": "Breakdown by sets",
+    "noSetsCreated": "No sets created yet.",
+    "total": "Total",
+    "known": "Known",
+    "unknown": "Unknown",
+    "noCardsInSet": "No cards in this set",
+    "loadingStatistics": "Loading statistics...",
+    "errorLoadingStatistics": "Error loading statistics"
+  },
+  "learnForm": {
+    "title": "Choose set to learn",
+    "selectSet": "Select set",
+    "chooseSetPlaceholder": "Choose a set to practice",
+    "learningMode": "Learning Mode",
+    "practiceAll": "Practice all flashcards",
+    "practiceUnknown": "Practice only unknown flashcards",
+    "noSetsMessage": "You don't have any sets yet. Please create one in Dashboard.",
+    "startLearning": "Start Learning",
+    "loadingSets": "Loading your sets...",
+    "selectSetError": "Please select a set to learn from."
+  },
+  "flashcardLearning": {
+    "loadingFlashcards": "Loading flashcards...",
+    "noUnknownCards": "No unknown flashcards found in this set.",
+    "allCardsKnown": "All flashcards are marked as known!",
+    "noFlashcardsInSet": "No flashcards found in this set.",
+    "returnToDashboard": "Click to return to Dashboard.",
+    "markAsUnknown": "Mark as unknown",
+    "markAsKnown": "Mark as known",
+    "alreadyKnown": "Already known",
+    "notKnownYet": "Not known yet",
+    "learningMode": "Learning Mode",
+    "allFlashcards": "All Flashcards",
+    "unknownFlashcards": "Unknown Flashcards Only"
+
+  },
+  "flashcardViewer": {
+    "previousFlashcard": "Previous Flashcard",
+    "nextFlashcard": "Next Flashcard",
+    "flipFlashcard": "Flip flashcard"
+  },
+  "flashcards": {
+    "content": "Word",
+    "translation": "Translation",
+    "language": "Language",
+    "translationLanguage": "Translation Language",
+    "select": "Select",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "newFlashcard": "New Flashcard",
+    "noFlashcardsMessage": "No flashcards available.",
+    "loading": "Loading flashcards...",
+    "deleteConfirm": "Are you sure you want to delete this flashcard?",
+    "failedToSave": "Failed to save flashcard.",
+    "failedToDelete": "Failed to delete flashcard.",
+    "alreadyKnown": "Already known",
+    "notKnownYet": "Not known yet",
+    "noFlashcards": "No flashcards in this set yet. Click \"Add Flashcard\" to create one!"
+  },
+  "addFlashcard": {
+    "addNewFlashcard": "Add new flashcard",
+    "content": "Word",
+    "translation": "Translation",
+    "language": "Language",
+    "translationLanguage": "Translation Language",
+    "save": "Save",
+    "cancel": "Cancel",
+    "allFieldsRequired": "All fields are required",
+    "listLanguage": "Select Language",
+    "listTranslationLanguage": "Select Translation Language"
+  },
+  "languages": {
+    "PL": "Polish",
+    "EN": "English", 
+    "DE": "German",
+    "ES": "Spanish"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "error": "Error",
+    "success": "Success"
+  }
+}

@@ -150,11 +150,6 @@ form button:hover
 
 .navButton:hover
 {
-  background-color: #EAB2F0;
-}
-
-.navButton:hover
-{
   background: #EAB2F0;
 }
 
@@ -228,6 +223,7 @@ form button:hover
 
 .language-list
 {
+  width: 105%;
   display: flex;
   gap: 0.5rem;
   align-items: center;
@@ -270,13 +266,13 @@ form button:hover
 
 .addSetInput 
 {
-  width: 100%;
+  width: 105%;
   padding: 0.6rem 0.8rem;
   margin-bottom: 18px;
   border-radius: 8px;
   border: 1.5px solid #8F00BF;
   background: #FFDEF7;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: #141414;
   outline: none;
   box-sizing: border-box;
@@ -1400,3 +1396,99 @@ form button:hover
   }
 }
 
+/* Language Selector Styles */
+.languageSelector 
+{
+    position: relative;
+    display: block;
+}
+
+.languageButton 
+{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.25rem;
+    margin-left: 2rem;
+    border-radius: 6px;
+    border: none;
+    background: #EEC0E3;
+    color: #141414;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.languageButton:hover
+{
+  background: #EAB2F0;
+}
+
+.flagIcon 
+{
+    width: 20px;
+    height: 15px;
+    border-radius: 2px;
+}
+
+.languageName 
+{
+    font-size: 14px;
+}
+
+.languageDropdown 
+{
+  background: #EEC0E3;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 150px;
+    overflow: hidden;
+}
+
+.languageOption 
+{
+    
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.languageOption:hover 
+{
+    background-color: #f5f5f5;
+    background: #EEC0E3;
+}
+
+.languageOption.active 
+{
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) 
+{
+    .languageName 
+    {
+        display: none;
+    }
+    
+    .languageButton 
+    {
+        padding: 8px;
+    }
+}
