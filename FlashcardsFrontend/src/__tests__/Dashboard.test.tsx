@@ -34,6 +34,7 @@ i18n.init(
           edit: "Edit",
           deleteSet: "Are you sure you want to delete this set?",
           noDescription: "No description",
+          noSetsFound: "No sets found. Create your first set!",
           exportAction: "Export",
           export: {
             title: "Export Set",

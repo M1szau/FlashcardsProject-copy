@@ -31,6 +31,7 @@ i18n.init(
           practiceUnknown: "Practice unknown cards",
           startLearning: "Start Learning",
           noSetsCreated: "No sets created yet.",
+          noSetsMessage: "No sets created yet.",
           selectSetError: "Please select a set to learn from."
         },
         navbar: {
@@ -83,22 +84,47 @@ describe('LearnForm', () =>
 {
     it('Renders loading state initially', async () => 
     {
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        //Create a pending promise that doesn't resolve immediately
+        let resolveFetch: (value: any) => void;
+        const pendingPromise = new Promise(resolve => 
+        {
+            resolveFetch = resolve;
+        });
 
+        vi.stubGlobal('fetch', vi.fn(() => pendingPromise));
+
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
+
+        //Should show loading state while fetch is pending
         expect(screen.getByText('Loading your sets...')).toBeInTheDocument();
+
+        //Clean up - resolve the promise to prevent hanging
+        await act(async () => 
+        {
+            resolveFetch!({
+                ok: true,
+                json: async () => mockSets,
+            });
+        });
     });
 
     it('Renders sets after loading', async () => 
     {
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -121,11 +147,14 @@ describe('LearnForm', () =>
             })
         ));
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -138,11 +167,14 @@ describe('LearnForm', () =>
 
     it('Navigates on form submit with correct parameters', async () => 
     {
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -163,11 +195,14 @@ describe('LearnForm', () =>
 
     it('Changes learning mode and navigates with correct params', async () => 
     {
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -200,11 +235,14 @@ describe('LearnForm', () =>
             })
         ));
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -225,11 +263,14 @@ describe('LearnForm', () =>
             Promise.reject(new Error('Network error'))
         ));
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -252,11 +293,14 @@ describe('LearnForm', () =>
             })
         ));
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -281,11 +325,14 @@ describe('LearnForm', () =>
             })
         ));
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -309,11 +356,14 @@ describe('LearnForm', () =>
             })
         ));
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -333,11 +383,14 @@ describe('LearnForm', () =>
             })
         ));
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -350,11 +403,14 @@ describe('LearnForm', () =>
 
     it('Prevents submission when no set is selected', async () => 
     {
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -383,11 +439,14 @@ describe('LearnForm', () =>
         );
         vi.stubGlobal('fetch', fetchSpy);
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -407,11 +466,14 @@ describe('LearnForm', () =>
     {
         localStorage.removeItem('token');
 
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -423,11 +485,14 @@ describe('LearnForm', () =>
     {
         const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
         
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
@@ -457,11 +522,14 @@ describe('LearnForm', () =>
     {
         const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
         
-        render(
-            <TestWrapper>
-                <LearnForm />
-            </TestWrapper>
-        );
+        await act(async () => 
+        {
+            render(
+                <TestWrapper>
+                    <LearnForm />
+                </TestWrapper>
+            );
+        });
 
         await waitFor(() => 
         {
