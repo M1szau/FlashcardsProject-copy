@@ -866,14 +866,92 @@ describe('FlashcardLearning component', () => {
                 expect(screen.getByTestId('flashcard-viewer')).toBeInTheDocument();
             });
 
+            // Click the known button to trigger handleToggleKnown which calls stopPropagation
+            const knownButton = screen.getByRole('button', { name: /Mark as/ });
+            fireEvent.click(knownButton);
+            
+            // Wait for the API call to complete - this confirms handleToggleKnown was executed
             await waitFor(() => {
-                const knownButton = screen.getByRole('button', { name: /Mark as/ });
-                // Simulate the click with our mock event
-                fireEvent(knownButton, new MouseEvent('click', { bubbles: true }));
+                expect(mockFetch).toHaveBeenCalledWith(
+                    expect.stringContaining('/api/sets/set1/flashcards/'),
+                    expect.objectContaining({
+                        method: 'PATCH'
+                    })
+                );
             });
 
             // The component should handle the event properly
             expect(screen.getByTestId('flashcard-viewer')).toBeInTheDocument();
+        });
+
+        it('calls stopPropagation on known button click event', async () => {
+            renderWithProviders(<FlashcardLearning />);
+
+            await waitFor(() => {
+                expect(screen.getByTestId('flashcard-viewer')).toBeInTheDocument();
+            });
+
+            // Test that stopPropagation is called when clicking the known button
+            const knownButton = screen.getByRole('button', { name: /Mark as/ });
+            const stopPropagationSpy = vi.fn();
+            
+            // Create a custom event with a spy
+            const clickEvent = new MouseEvent('click', { bubbles: true });
+            Object.defineProperty(clickEvent, 'stopPropagation', {
+                value: stopPropagationSpy,
+                writable: false
+            });
+
+            fireEvent(knownButton, clickEvent);
+            
+            await waitFor(() => {
+                expect(stopPropagationSpy).toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe('Render Function Coverage', () => {
+        it('renderCardContent returns null when sessionFlashcards is empty', async () => {
+            // Mock empty flashcards to trigger the early return
+            mockFetch.mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve([])
+            });
+
+            renderWithProviders(<FlashcardLearning />);
+
+            await waitFor(() => {
+                // When sessionFlashcards is empty, renderCardContent should return null
+                // This is tested by verifying the empty state is shown instead of flashcard content
+                expect(screen.getByRole('button', { 
+                    name: (_, element) => element?.textContent === 'No flashcards in this set.Click to return to dashboard.'
+                })).toBeInTheDocument();
+                
+                // Verify that flashcard content is not rendered
+                expect(screen.queryByTestId('flashcard-content')).not.toBeInTheDocument();
+            });
+        });
+
+        it('renderActions returns null when sessionFlashcards is empty', async () => {
+            // Mock empty flashcards to trigger the early return
+            mockFetch.mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve([])
+            });
+
+            renderWithProviders(<FlashcardLearning />);
+
+            await waitFor(() => {
+                // When sessionFlashcards is empty, renderActions should return null
+                // This is tested by verifying no action buttons are rendered
+                expect(screen.getByRole('button', { 
+                    name: (_, element) => element?.textContent === 'No flashcards in this set.Click to return to dashboard.'
+                })).toBeInTheDocument();
+                
+                // Verify that action buttons are not rendered
+                expect(screen.queryByTestId('flashcard-actions')).not.toBeInTheDocument();
+                expect(screen.queryAllByRole('button', { name: /Mark as/ })).toHaveLength(0);
+            });
         });
     });
 });
