@@ -1,8 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+import i18n from 'i18next';
 import '@testing-library/jest-dom';
 import Statistics from '../components/Statistics.tsx';
+
+// Initialize i18n for testing
+i18n.init({
+  lng: 'en',
+  fallbackLng: 'en',
+  resources: {
+    en: {
+      translation: {
+        statistics: {
+          title: 'Learning Statistics',
+          totalSets: 'Total Sets',
+          totalFlashcards: 'Total Flashcards',
+          knownCards: 'Known Cards',
+          notKnownYet: 'Not Known Yet',
+          learningProgress: 'Learning Progress',
+          mastered: 'mastered',
+          noFlashcardsYet: 'No flashcards yet',
+          breakdownBySets: 'Breakdown by sets',
+          noSetsCreated: 'No sets created yet.',
+          total: 'Total',
+          known: 'Known',
+          unknown: 'Unknown',
+          noCardsInSet: 'No cards in this set',
+          loadingStatistics: 'Loading statistics...',
+          errorLoadingStatistics: 'Error loading statistics'
+        }
+      }
+    }
+  }
+});
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
@@ -19,14 +51,18 @@ const localStorageMock: Storage =
 
 global.localStorage = localStorageMock;
 
-//Helper function to render component with Router
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <BrowserRouter>
+    <I18nextProvider i18n={i18n}>
+      {children}
+    </I18nextProvider>
+  </BrowserRouter>
+);
+
+//Helper function to render component with Router and i18n
 const renderWithRouter = (component: React.ReactElement) => 
 {
-  return render(
-    <BrowserRouter>
-      {component}
-    </BrowserRouter>
-  );
+  return render(component, { wrapper: TestWrapper });
 };
 
 describe('Statistics Component', () => 
@@ -137,7 +173,7 @@ describe('Statistics Component', () =>
         renderWithRouter(<Statistics />);
 
         await waitFor(() => {
-        expect(screen.getByText('Error loading statistics.')).toBeInTheDocument();
+        expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
         });
     });
 
@@ -153,7 +189,7 @@ describe('Statistics Component', () =>
 
         await waitFor(() => 
         {
-            expect(screen.getByText('Error loading statistics.')).toBeInTheDocument();
+            expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
         });
     });
 
@@ -308,7 +344,101 @@ describe('Statistics Component', () =>
 
         await waitFor(() => 
         {
-            expect(screen.getByText('Error loading statistics.')).toBeInTheDocument();
+            expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
+        });
+    });
+
+    it('Displays correct section titles and labels', async () => 
+    {
+        const mockData = 
+        {
+            totalSets: 1,
+            totalFlashcards: 5,
+            totalKnownCards: 3,
+            totalUnknownCards: 2,
+            setStatistics: 
+            [
+                {
+                setId: '1',
+                setName: 'Test Set',
+                totalCards: 5,
+                knownCards: 3,
+                unknownCards: 2
+                }
+            ]
+        };
+
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => mockData
+        });
+
+        renderWithRouter(<Statistics />);
+
+        await waitFor(() => 
+        {
+            // Check main section titles
+            expect(screen.getByText('Learning Statistics')).toBeInTheDocument();
+            expect(screen.getByText('Learning Progress')).toBeInTheDocument();
+            expect(screen.getByText('Breakdown by sets')).toBeInTheDocument();
+            
+            // Check stat labels
+            expect(screen.getByText('Total Sets')).toBeInTheDocument();
+            expect(screen.getByText('Total Flashcards')).toBeInTheDocument();
+            expect(screen.getByText('Known Cards')).toBeInTheDocument();
+            expect(screen.getByText('Not Known Yet')).toBeInTheDocument();
+        });
+    });
+
+    it('Displays individual set information correctly', async () => 
+    {
+        const mockData = 
+        {
+            totalSets: 2,
+            totalFlashcards: 15,
+            totalKnownCards: 8,
+            totalUnknownCards: 7,
+            setStatistics: 
+            [
+                {
+                setId: '1',
+                setName: 'German Basics',
+                totalCards: 8,
+                knownCards: 5,
+                unknownCards: 3
+                },
+                {
+                setId: '2',
+                setName: 'Spanish Verbs',
+                totalCards: 7,
+                knownCards: 3,
+                unknownCards: 4
+                }
+            ]
+        };
+
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => mockData
+        });
+
+        renderWithRouter(<Statistics />);
+
+        await waitFor(() => 
+        {
+            // Check set names
+            expect(screen.getByText('German Basics')).toBeInTheDocument();
+            expect(screen.getByText('Spanish Verbs')).toBeInTheDocument();
+            
+            // Check individual progress percentages
+            expect(screen.getByText('63% mastered')).toBeInTheDocument(); // 5/8 for German Basics
+            expect(screen.getByText('43% mastered')).toBeInTheDocument(); // 3/7 for Spanish Verbs
+            
+            // Check that the sets section contains the expected structure
+            const setsSection = screen.getByText('Breakdown by sets');
+            expect(setsSection).toBeInTheDocument();
         });
     });
 });

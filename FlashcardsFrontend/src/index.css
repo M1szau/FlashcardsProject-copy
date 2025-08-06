@@ -14,7 +14,7 @@ body
 {
   margin: 0px;
   min-height: 100vh;
-  background: #ffe7f9;
+  background: #FFDEF7;
 }
 
 main 
@@ -102,7 +102,7 @@ form button:hover
     max-width: none !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #ffe7f9;
+    background: #FFDEF7;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -217,7 +217,7 @@ form button:hover
   font-size: 3.5rem;
   font-weight: 900;
   line-height: 1;
-  margin-bottom: 0.2em;
+  margin-bottom: 0.2rem;
   display: block;
 }
 
@@ -227,6 +227,8 @@ form button:hover
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .addSetBlock:hover 
@@ -247,9 +249,8 @@ form button:hover
   max-width: 400px;
   aspect-ratio: 4/3;
   border-radius: 12px;
-  padding: 0;
   color: #141414;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: default;
 }
 
@@ -268,7 +269,7 @@ form button:hover
 {
   width: 105%;
   padding: 0.6rem 0.8rem;
-  margin-bottom: 18px;
+  margin-bottom: 5px;
   border-radius: 8px;
   border: 1.5px solid #8F00BF;
   background: #FFDEF7;
@@ -677,7 +678,7 @@ form button:hover
 
 .export-modal-content 
 {
-  background: #fff;
+  background: #f9f6fc;
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(143,0,191,0.18);
   padding: 2.5rem 2rem;
@@ -759,7 +760,7 @@ form button:hover
 .export-confirm-btn 
 {
   background: #8F00BF;
-  color: #fff;
+  color: #141414;
 }
 
 .export-confirm-btn:hover 

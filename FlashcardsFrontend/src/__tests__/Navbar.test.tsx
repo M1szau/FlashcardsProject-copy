@@ -3,13 +3,51 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import Navbar from '../components/Navbar';
 import { MemoryRouter } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
+import i18n from 'i18next';
 
-// Mock function for navigation
+// Setup i18n for testing
+i18n.init(
+{
+  lng: 'en',
+  fallbackLng: 'en',
+  interpolation: 
+  {
+    escapeValue: false,
+  },
+  resources: 
+  {
+    en: 
+    {
+      translation: 
+      {
+        navbar: 
+        {
+          appName: "Flashcards",
+          learn: "Learn",
+          statistics: "Statistics",
+          logout: "Log out"
+        }
+      }
+    }
+  }
+});
+
+const TestWrapper = ({ children }: { children: React.ReactNode }) => (
+  <MemoryRouter>
+    <I18nextProvider i18n={i18n}>
+      {children}
+    </I18nextProvider>
+  </MemoryRouter>
+);
+
 const navigateMock = vi.fn();
 
-// Add this before your test
 beforeEach(() => 
 {
+  //Force language to 'en' for consistent testing
+  i18n.changeLanguage('en');
+  
   Object.defineProperty(window, 'localStorage', 
   {
     value: 
@@ -23,7 +61,6 @@ beforeEach(() =>
   });
 });
 
-// Properly mock react-router-dom and preserve MemoryRouter
 vi.mock('react-router-dom', async (importOriginal) =>
 {
     const actual = await importOriginal();
@@ -40,21 +77,21 @@ describe('Navbar component', () =>
     it('Renders Logo and buttons', () =>
     {
         render(
-            <MemoryRouter>
+            <TestWrapper>
                 <Navbar />
-            </MemoryRouter>
+            </TestWrapper>
         );
 
-        // Logo check
-        expect(screen.getByText(/Flashcards/i)).toBeInTheDocument();
+        //Logo check
+        expect(screen.getByText('Flashcards')).toBeInTheDocument();
 
-        // Buttons check
-        expect(screen.getByRole('button', { name: /Learn/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Statistics/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Log out/i })).toBeInTheDocument();
+        //Buttons check
+        expect(screen.getByRole('button', { name: 'Learn' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Statistics' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument();
 
-        // Check if the logo is clickable and navigates to /dashboard
-        const logo = screen.getByText(/Flashcards/i);
+        //Check if the logo is clickable and navigates to /dashboard
+        const logo = screen.getByText('Flashcards');
         logo.click();
         expect(navigateMock).toHaveBeenCalledWith('/dashboard');
     });
@@ -62,33 +99,33 @@ describe('Navbar component', () =>
     it('Navigates to /learnForm when Learn button is clicked', () => 
     {
         render(
-            <MemoryRouter>
+            <TestWrapper>
                 <Navbar />
-            </MemoryRouter>
+            </TestWrapper>
         );
-        fireEvent.click(screen.getByRole('button', { name: /Learn/i }));
+        fireEvent.click(screen.getByRole('button', { name: 'Learn' }));
         expect(navigateMock).toHaveBeenCalledWith('/learnForm');
     });
 
     it('Navigates to /statistics when Statistics button is clicked', () => 
     {
         render(
-            <MemoryRouter>
+            <TestWrapper>
                 <Navbar />
-            </MemoryRouter>
+            </TestWrapper>
         );
-        fireEvent.click(screen.getByRole('button', { name: /Statistics/i }));
+        fireEvent.click(screen.getByRole('button', { name: 'Statistics' }));
         expect(navigateMock).toHaveBeenCalledWith('/statistics');
     });
 
-    it('Navigates to /logout when Log out button is clicked', () => 
+    it('Navigates to /login when Log out button is clicked', () => 
     {
         render(
-            <MemoryRouter>
+            <TestWrapper>
                 <Navbar />
-            </MemoryRouter>
+            </TestWrapper>
         );
-        fireEvent.click(screen.getByRole('button', { name: /Log out/i }));
+        fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
         expect(navigateMock).toHaveBeenCalledWith('/login');
     });
 
@@ -96,11 +133,11 @@ describe('Navbar component', () =>
     {
         const removeItemMock = vi.spyOn(window.localStorage, 'removeItem');
         render(
-            <MemoryRouter>
-            <Navbar />
-            </MemoryRouter>
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
         );
-        fireEvent.click(screen.getByRole('button', { name: /Log out/i }));
+        fireEvent.click(screen.getByRole('button', { name: 'Log out' }));
         expect(removeItemMock).toHaveBeenCalledWith('token');
         removeItemMock.mockRestore();
     });
@@ -114,12 +151,214 @@ describe('Navbar component', () =>
             writable: true,
         });
         render(
-            <MemoryRouter>
+            <TestWrapper>
                 <Navbar />
-            </MemoryRouter>
+            </TestWrapper>
         );
-        fireEvent.click(screen.getByText(/Flashcards/i));
+        fireEvent.click(screen.getByText('Flashcards'));
         expect(reloadMock).toHaveBeenCalled();
+    });
+
+    it('Displays language selector with current language', () => 
+    {
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        //Check if language selector shows current language (EN by default)
+        expect(screen.getByText('EN')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /EN/i })).toBeInTheDocument();
+    });
+
+    it('Shows language dropdown on hover', () => 
+    {
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        
+        fireEvent.mouseEnter(languageButton);
+        
+        expect(screen.getByText('PL')).toBeInTheDocument();
+        expect(screen.getByText('DE')).toBeInTheDocument();
+    });
+
+    it('Changes language when language option is clicked', () => 
+    {
+        const changeLanguageSpy = vi.spyOn(i18n, 'changeLanguage');
+        const setItemSpy = vi.spyOn(localStorage, 'setItem');
+        
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        
+        //Dropdown
+        fireEvent.mouseEnter(languageButton);
+        
+        //Click on Polish language option
+        fireEvent.click(screen.getByText('PL'));
+        
+        expect(changeLanguageSpy).toHaveBeenCalledWith('pl');
+        expect(setItemSpy).toHaveBeenCalledWith('selectedLanguage', 'pl');
+        
+        changeLanguageSpy.mockRestore();
+        setItemSpy.mockRestore();
+    });
+
+    it('Toggles language dropdown when language button is clicked', () => 
+    {
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        
+        // Initially dropdown should not be visible
+        expect(screen.queryByText('PL')).not.toBeInTheDocument();
+        
+        // Click to show dropdown
+        fireEvent.click(languageButton);
+        expect(screen.getByText('PL')).toBeInTheDocument();
+        expect(screen.getByText('DE')).toBeInTheDocument();
+        
+        // Click again to hide dropdown
+        fireEvent.click(languageButton);
+        expect(screen.queryByText('PL')).not.toBeInTheDocument();
+        expect(screen.queryByText('DE')).not.toBeInTheDocument();
+    });
+
+    it('Closes language dropdown when mouse leaves dropdown area', () => 
+    {
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        
+        // Show dropdown
+        fireEvent.mouseEnter(languageButton);
+        expect(screen.getByText('PL')).toBeInTheDocument();
+        
+        // Get the dropdown element and trigger mouse leave
+        const dropdown = screen.getByText('PL').closest('.languageDropdown');
+        expect(dropdown).toBeInTheDocument();
+        
+        fireEvent.mouseLeave(dropdown!);
+        
+        // Dropdown should be hidden after mouse leave
+        expect(screen.queryByText('PL')).not.toBeInTheDocument();
+    });
+
+    it('Closes language dropdown when clicking outside', () => 
+    {
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        
+        // Show dropdown
+        fireEvent.click(languageButton);
+        expect(screen.getByText('PL')).toBeInTheDocument();
+        
+        // Click outside the dropdown (on document body)
+        fireEvent.mouseDown(document.body);
+        
+        // Dropdown should be closed
+        expect(screen.queryByText('PL')).not.toBeInTheDocument();
+    });
+
+    it('Highlights current language as active in dropdown', () => 
+    {
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        
+        // Show dropdown
+        fireEvent.mouseEnter(languageButton);
+        
+        // Find all language options
+        const languageOptions = screen.getAllByRole('button');
+        const enOption = languageOptions.find(button => button.textContent?.includes('EN') && button !== languageButton);
+        
+        expect(enOption).toBeInTheDocument();
+        expect(enOption).toHaveClass('active');
+    });
+
+    it('Shows correct flag icon for current language', () => 
+    {
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        // Check if flag icon is present (GB flag for EN language)
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const flagIcon = languageButton.querySelector('.flagIcon');
+        
+        expect(flagIcon).toBeInTheDocument();
+        expect(languageButton).toHaveTextContent('EN');
+    });
+
+    it('Closes dropdown when language is changed', () => 
+    {
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        
+        // Show dropdown
+        fireEvent.mouseEnter(languageButton);
+        expect(screen.getByText('PL')).toBeInTheDocument();
+        
+        // Click on a language option
+        fireEvent.click(screen.getByText('DE'));
+        
+        // Dropdown should be closed after language selection
+        expect(screen.queryByText('PL')).not.toBeInTheDocument();
+    });
+
+    it('Falls back to default language when current language is not in supported languages', () => 
+    {
+        // Set i18n to an unsupported language
+        i18n.changeLanguage('fr'); // French is not in our supported languages
+        
+        render(
+            <TestWrapper>
+                <Navbar />
+            </TestWrapper>
+        );
+        
+        // Should fall back to first language in array (EN)
+        const languageButton = screen.getByRole('button', { name: /EN/i });
+        expect(languageButton).toBeInTheDocument();
+        expect(languageButton).toHaveTextContent('EN');
+        
+        // Reset language for other tests
+        i18n.changeLanguage('en');
     });
 
 });

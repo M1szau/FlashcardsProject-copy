@@ -87,13 +87,19 @@ export default function Dashboard()
                     navigate('/login', { replace: true });
                     return;
                 }
+
+                if (!res.ok) 
+                {
+                    alert('Failed to load sets.');
+                    return;
+                }
+
                 const data = await res.json();
                 setSets(data.sets || []);
             } 
             catch (err) 
             {
-                localStorage.removeItem('token');
-                navigate('/login', { replace: true });
+                alert('Failed to load sets.');
             }
         }
         fetchSets();
@@ -562,10 +568,16 @@ export default function Dashboard()
         );
     }
     
-    sets.forEach((set, i) => 
-    {
-        if (editingIdx === i) 
+    if (Array.isArray(sets)) {
+        sets.forEach((set, i) => 
         {
+            // Skip invalid set objects
+            if (!set || typeof set !== 'object' || !set.id || !set.name) {
+                return;
+            }
+            
+            if (editingIdx === i) 
+            {
             allBlocks.push(
                 <div className="setBlock editing" key={set.id}>
                     <div className="addSetInputContainer">
@@ -641,6 +653,16 @@ export default function Dashboard()
             );
         }
     });
+    } // end if Array.isArray(sets)
+
+    // Show message when no sets exist and not adding
+    if (!adding && Array.isArray(sets) && sets.length === 0) {
+        allBlocks.push(
+            <div key="no-sets" style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                <p>No sets found. Create your first set!</p>
+            </div>
+        );
+    }
 
     return (
         <main className="dashboardMain">
