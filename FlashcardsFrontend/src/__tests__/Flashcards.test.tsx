@@ -1379,12 +1379,15 @@ describe('Flashcards component', () =>
 
                 fireEvent.click(deleteButton);
 
-                setTimeout(async () => 
+                //Use waitFor instead of setTimeout to properly handle async assertions
+                waitFor(async () => 
                 {
                     expect(alertSpy).toHaveBeenCalledWith('Failed to delete flashcard. Please try again.');
+                }).finally(() => 
+                {
                     confirmSpy.mockRestore();
                     alertSpy.mockRestore();
-                }, 100);
+                });
             });
         });
 
