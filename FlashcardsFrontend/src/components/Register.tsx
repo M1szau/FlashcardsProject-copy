@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
-import Img from '../assets/logo2.png';
+import Img from '../assets/logo.png';
 
 export default function Register() 
 {

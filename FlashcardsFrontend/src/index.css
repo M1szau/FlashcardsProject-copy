@@ -477,6 +477,24 @@ form button:hover
   background: #EAB2F0;
 }
 
+/* No sets found message */
+.no-sets-message 
+{
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4/3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  color: #141414;
+  font-size: 1.1rem;
+  background-color: #EAB2F0;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+}
+
 /*Flashcards styles*/
 
 .flashcard-center

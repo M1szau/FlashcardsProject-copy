@@ -121,7 +121,7 @@ export default function LearnForm()
                             </select>
                         </label>
 
-                        {sets.length === 0 && (< div style = { { textAlign: 'center', color: '#8F00BF', marginTop: '1rem', fontStyle: 'italic'} }>{t("learnForm.noSetsCreated")}</div>)}
+                        {sets.length === 0 && (< div style = { { textAlign: 'center', color: '#8F00BF', marginTop: '1rem', fontStyle: 'italic'} }>{t("learnForm.noSetsMessage")}</div>)}
 
                         <div className = 'flashcard-actions-bottom' style = { {justifyContent: 'flex-end'}}>
                             <button className = 'flashcard-add-save-button' type = 'submit' disabled = {sets.length === 0 } aria-label = 'Start Learning'>

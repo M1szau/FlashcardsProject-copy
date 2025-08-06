@@ -336,7 +336,8 @@ export default function Dashboard()
             if (importFile.name.toLowerCase().endsWith('.json')) 
             {
                 //Parse JSON file
-                try {
+                try 
+                {
                     importData = JSON.parse(fileContent);
                 } catch (error) {
                     throw new Error(t('dashboard.import.invalidJson'));
@@ -377,7 +378,10 @@ export default function Dashboard()
             //Add the new set to the sets list
             setSets(prev => [...prev, result.set]);
             
-            alert(t('dashboard.import.successMessage', { setName: result.set.name, count: result.flashcards.length }));
+            //Show success message with proper fallbacks
+            const setName = result.set?.name || 'Unknown Set';
+            const flashcardCount = result.flashcards?.length || 0;
+            alert(t('dashboard.import.successMessage', { setName, count: flashcardCount }));
             handleImportCancel();
         } catch (error) {
             alert(t('dashboard.import.failedMessage', { error: error instanceof Error ? error.message : 'Unknown error' }));
@@ -443,7 +447,7 @@ export default function Dashboard()
         };
     }
 
-    // Helper function to parse CSV line
+    //Function to parse CSV line
     function parseCsvLine(line: string): string[] 
     {
         const result: string[] = [];
@@ -568,11 +572,13 @@ export default function Dashboard()
         );
     }
     
-    if (Array.isArray(sets)) {
+    if (Array.isArray(sets)) 
+    {
         sets.forEach((set, i) => 
         {
-            // Skip invalid set objects
-            if (!set || typeof set !== 'object' || !set.id || !set.name) {
+            //Skip invalid set objects
+            if (!set || typeof set !== 'object' || !set.id || !set.name) 
+            {
                 return;
             }
             
@@ -653,13 +659,14 @@ export default function Dashboard()
             );
         }
     });
-    } // end if Array.isArray(sets)
+    } //end if Array.isArray(sets)
 
-    // Show message when no sets exist and not adding
-    if (!adding && Array.isArray(sets) && sets.length === 0) {
+    //Show message when no sets exist and not adding
+    if (!adding && Array.isArray(sets) && sets.length === 0) 
+    {
         allBlocks.push(
-            <div key="no-sets" style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
-                <p>No sets found. Create your first set!</p>
+            <div key="no-sets" className="no-sets-message">
+                <p>{t('dashboard.noSetsFound')}</p>
             </div>
         );
     }
@@ -739,14 +746,14 @@ export default function Dashboard()
                             <input type="file" accept=".json,.csv" onChange={handleFileSelect} className="import-file-input"/>
                             {importFile && (
                                 <p className="selected-file">
-                                    {t('dashboard.import.selectedFile')}: {importFile.name}
+                                    {t('dashboard.import.selectedFile')} {importFile.name}
                                 </p>
                             )}
                         </div>
 
                         <div className="import-modal-buttons">
                             <button  onClick={handleImportConfirm} className="import-confirm-btn" disabled={!importFile || importLoading}>
-                                {importLoading ? 'Importing...' : 'Import'}
+                                {importLoading ? t('dashboard.import.importing') : t('dashboard.import.importButton')}
                             </button>
                             <button onClick={handleImportCancel} className="import-cancel-btn" disabled={importLoading}>
                                 {t('dashboard.cancel')}

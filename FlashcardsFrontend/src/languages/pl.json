@@ -45,6 +45,7 @@
     "failedToAdd": "Nie udało się dodać zestawu.",
     "failedToEdit": "Nie udało się edytować zestawu.",
     "deleteSet": "Usunąć ten zestaw?",
+    "noSetsFound": "Nie znaleziono zestawów. Utwórz swój pierwszy zestaw!",
 
     "export": {
       "title": "Eksportuj zestaw",
@@ -64,7 +65,7 @@
       "importButton": "Importuj",
       "importing": "Importowanie...",
       "cancelButton": "Anuluj",
-      "successMessage": "Pomyślnie zaimportowano zestaw \"{setName}\" z {count} fiszkami.",
+      "successMessage": "Zestaw zaimportowany pomyślnie.",
       "failedMessage": "Nie udało się zaimportować zestawu: {error}",
       "wrongFormat": "Proszę wybrać prawidłowy plik JSON lub CSV.",
       "invalidJson": "Nieprawidłowy format JSON.",
@@ -100,7 +101,7 @@
     "learningMode": "Tryb nauki",
     "practiceAll": "Ćwicz wszystkie fiszki",
     "practiceUnknown": "Ćwicz tylko nieznane fiszki",
-    "noSetsMessage": "Nie masz jeszcze żadnych zestawów. Utwórz go w panelu.",
+    "noSetsMessage": "Nie masz jeszcze żadnych zestawów. Utwórz set w panelu.",
     "startLearning": "Rozpocznij naukę",
     "loadingSets": "Ładowanie zestawów...",
     "selectSetError": "Proszę wybrać zestaw do nauki."

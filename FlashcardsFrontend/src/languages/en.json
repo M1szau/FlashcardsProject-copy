@@ -45,6 +45,7 @@
     "failedToAdd": "Failed to add set.",
     "failedToEdit": "Failed to edit set.",
     "deleteSet": "Delete this set?",
+    "noSetsFound": "No sets found. Create your first set!",
 
     "export": {
       "title": "Export Set",
@@ -64,7 +65,7 @@
       "importButton": "Import",
       "importing": "Importing...",
       "cancelButton": "Cancel",
-      "successMessage": "Successfully imported set \"{setName}\" with {count} flashcards.",
+      "successMessage": "Set imported successfully.",
       "failedMessage": "Failed to import set: {error}",
       "wrongFormat": "Please select a valid JSON or CSV file.",
       "invalidJson": "Invalid JSON format.",

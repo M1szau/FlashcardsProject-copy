@@ -1,149 +1,173 @@
 {
   "users": [
     {
+      "username": "testuser",
+      "password": "$2b$10$B8otcH5DslqCckJEm0Jb9OHBm3umOn7xHihnZ9Hz5cl0cD7lVWbK."
+    },
+    {
       "username": "admin",
-      "password": "$2b$10$MgRemc0AGye6lc9ymyM9KOusrAC44.BA6osYYNRrpuET4y8TSqhTW"
+      "password": "$2b$10$39SjXtZCPat8.yulqBrkheDCI83U1k8dGU0CV3RYVz4yjtxuGcksK"
     }
   ],
   "sets": [
     {
-      "id": "1753708329773",
+      "id": "1754468859746",
+      "name": "Test Set",
+      "description": "Test Description",
+      "defaultLanguage": "EN",
+      "translationLanguage": "ES",
+      "owner": "testuser",
+      "createdAt": "2025-08-06T08:27:39.746Z"
+    },
+    {
+      "id": "1754477393030",
       "name": "aaa",
-      "description": "aaadescaaaaaaaaaaaaaaasaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "description": "aaadesc",
       "defaultLanguage": "PL",
       "translationLanguage": "EN",
       "owner": "admin",
-      "createdAt": "2025-07-28T13:12:09.773Z"
+      "createdAt": "2025-08-06T10:49:53.030Z"
     },
     {
-      "id": "1753775207246",
+      "id": "1754477498921",
       "name": "bbb",
-      "description": "bbbdesc",
+      "description": "bbbdescbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       "defaultLanguage": "PL",
       "translationLanguage": "DE",
       "owner": "admin",
-      "createdAt": "2025-07-29T07:46:47.246Z"
+      "createdAt": "2025-08-06T10:51:38.921Z"
     },
     {
-      "id": "1753775277247",
+      "id": "1754477569748",
       "name": "ccc",
       "description": "cccdesc",
-      "defaultLanguage": "PL",
+      "defaultLanguage": "DE",
       "translationLanguage": "ES",
       "owner": "admin",
-      "createdAt": "2025-07-29T07:47:57.247Z"
+      "createdAt": "2025-08-06T10:52:49.748Z"
     }
   ],
   "flashcards": [
     {
-      "id": "1753708338134",
-      "setId": "1753708329773",
-      "language": "Polish",
-      "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "translation": "aaa",
-      "translationLang": "English",
-      "owner": "admin",
+      "content": "Hello",
+      "translation": "Hola",
+      "language": "EN",
+      "translationLang": "ES",
       "known": false,
-      "createdAt": "2025-07-28T13:12:18.134Z"
+      "id": "1754468859753",
+      "setId": "1754468859746",
+      "owner": "testuser",
+      "createdAt": "2025-08-06T08:27:39.753Z"
     },
     {
-      "id": "1753771284492",
-      "setId": "1753708329773",
-      "language": "Polish",
-      "content": "aaaa",
-      "translation": "aaaa",
-      "translationLang": "English",
-      "owner": "admin",
-      "known": true,
-      "createdAt": "2025-07-29T06:41:24.492Z"
-    },
-    {
-      "id": "1753771291426",
-      "setId": "1753708329773",
-      "language": "Polish",
+      "id": "1754477399543",
+      "setId": "1754477393030",
+      "language": "PL",
       "content": "a",
       "translation": "a",
-      "translationLang": "English",
+      "translationLang": "EN",
       "owner": "admin",
       "known": true,
-      "createdAt": "2025-07-29T06:41:31.426Z"
+      "createdAt": "2025-08-06T10:49:59.543Z"
     },
     {
-      "id": "1753772260616",
-      "setId": "1753708329773",
-      "language": "Polish",
-      "content": "aaaa",
-      "translation": "aaaaa",
-      "translationLang": "English",
-      "owner": "admin",
-      "known": true,
-      "createdAt": "2025-07-29T06:57:40.616Z"
-    },
-    {
-      "id": "1753775217680",
-      "setId": "1753775207246",
-      "language": "Polish",
-      "content": "b",
-      "translation": "b",
-      "translationLang": "German",
+      "id": "1754477405784",
+      "setId": "1754477393030",
+      "language": "PL",
+      "content": "aa",
+      "translation": "aa",
+      "translationLang": "EN",
       "owner": "admin",
       "known": false,
-      "createdAt": "2025-07-29T07:46:57.680Z"
+      "createdAt": "2025-08-06T10:50:05.784Z"
     },
     {
-      "id": "1753775225102",
-      "setId": "1753775207246",
-      "language": "Polish",
-      "content": "bb",
-      "translation": "bb",
-      "translationLang": "German",
+      "id": "1754477412745",
+      "setId": "1754477393030",
+      "language": "PL",
+      "content": "aaa",
+      "translation": "aaa",
+      "translationLang": "EN",
       "owner": "admin",
       "known": true,
-      "createdAt": "2025-07-29T07:47:05.102Z"
+      "createdAt": "2025-08-06T10:50:12.745Z"
     },
     {
-      "id": "1753775231742",
-      "setId": "1753775207246",
-      "language": "Polish",
-      "content": "bbb",
-      "translation": "bbb",
-      "translationLang": "German",
-      "owner": "admin",
-      "known": true,
-      "createdAt": "2025-07-29T07:47:11.742Z"
-    },
-    {
-      "id": "1753775242463",
-      "setId": "1753775207246",
-      "language": "Polish",
-      "content": "bbbb",
-      "translation": "bbbb",
-      "translationLang": "German",
-      "owner": "admin",
-      "known": false,
-      "createdAt": "2025-07-29T07:47:22.463Z"
-    },
-    {
-      "id": "1753775255638",
-      "setId": "1753775207246",
-      "language": "Polish",
-      "content": "b5",
-      "translation": "b5",
-      "translationLang": "German",
-      "owner": "admin",
-      "known": true,
-      "createdAt": "2025-07-29T07:47:35.638Z"
-    },
-    {
-      "id": "1753792130138",
-      "setId": "1753708329773",
-      "language": "Polish",
+      "id": "1754477421917",
+      "setId": "1754477393030",
+      "language": "PL",
       "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "translation": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "translationLang": "German",
+      "translationLang": "EN",
+      "owner": "admin",
+      "known": false,
+      "createdAt": "2025-08-06T10:50:21.917Z"
+    },
+    {
+      "id": "1754477515849",
+      "setId": "1754477498921",
+      "language": "PL",
+      "content": "b",
+      "translation": "b",
+      "translationLang": "DE",
+      "owner": "admin",
+      "known": false,
+      "createdAt": "2025-08-06T10:51:55.849Z"
+    },
+    {
+      "id": "1754477523681",
+      "setId": "1754477498921",
+      "language": "PL",
+      "content": "bb",
+      "translation": "bb",
+      "translationLang": "DE",
+      "owner": "admin",
+      "known": false,
+      "createdAt": "2025-08-06T10:52:03.681Z"
+    },
+    {
+      "id": "1754477529914",
+      "setId": "1754477498921",
+      "language": "PL",
+      "content": "bbb",
+      "translation": "bbb",
+      "translationLang": "DE",
       "owner": "admin",
       "known": true,
-      "createdAt": "2025-07-29T12:28:50.138Z"
+      "createdAt": "2025-08-06T10:52:09.914Z"
+    },
+    {
+      "id": "1754477538284",
+      "setId": "1754477498921",
+      "language": "PL",
+      "content": "b4",
+      "translation": "b4",
+      "translationLang": "DE",
+      "owner": "admin",
+      "known": true,
+      "createdAt": "2025-08-06T10:52:18.284Z"
+    },
+    {
+      "id": "1754477578148",
+      "setId": "1754477569748",
+      "language": "DE",
+      "content": "c",
+      "translation": "c",
+      "translationLang": "ES",
+      "owner": "admin",
+      "known": false,
+      "createdAt": "2025-08-06T10:52:58.148Z"
+    },
+    {
+      "id": "1754477588917",
+      "setId": "1754477569748",
+      "language": "DE",
+      "content": "cc",
+      "translation": "cc",
+      "translationLang": "ES",
+      "owner": "admin",
+      "known": true,
+      "createdAt": "2025-08-06T10:53:08.917Z"
     }
   ]
 }
