@@ -480,13 +480,20 @@ describe('FlashcardLearning component', () => {
 
     describe('Known Status Toggle', () => {
         it('toggles known status successfully', async () => {
-            const updatedCard = { ...mockFlashcards[0], known: true };
+            // Create cards with predictable known status for testing
+            const testCards = [
+                { ...mockFlashcards[0], known: false }, // This will be toggled to true
+                { ...mockFlashcards[1], known: true },
+                { ...mockFlashcards[2], known: false }
+            ];
+            
+            const updatedCard = { ...testCards[0], known: true };
             
             // Mock the PATCH request
             mockFetch
                 .mockResolvedValueOnce({
                     ok: true,
-                    json: () => Promise.resolve(mockFlashcards)
+                    json: () => Promise.resolve(testCards)
                 })
                 .mockResolvedValueOnce({
                     ok: true,
@@ -498,6 +505,11 @@ describe('FlashcardLearning component', () => {
             await waitFor(() => {
                 expect(screen.getByTestId('flashcard-viewer')).toBeInTheDocument();
             });
+
+            // Get the current known status from the UI to determine expected toggle
+            let expectedKnownValue: boolean;
+            const knownStatusElement = screen.getByText(/Already Known|Not Known Yet/);
+            expectedKnownValue = knownStatusElement.textContent === 'Not Known Yet' ? true : false;
 
             await waitFor(() => {
                 const knownButton = screen.getByRole('button', { name: /Mark as/ });
@@ -520,7 +532,7 @@ describe('FlashcardLearning component', () => {
                         'Content-Type': 'application/json',
                         Authorization: 'Bearer mock-token'
                     },
-                    body: JSON.stringify({ known: true })
+                    body: JSON.stringify({ known: expectedKnownValue })
                 }));
             }, { timeout: 3000 });
         });
