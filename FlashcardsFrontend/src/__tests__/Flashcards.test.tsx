@@ -1317,4 +1317,181 @@ describe('Flashcards component', () =>
             expect(screen.getByDisplayValue('Hello')).toBeInTheDocument();
         });
     });
+
+    describe('Error Handling Edge Cases', () => 
+    {
+        it('Should handle HTTP error status in edit form submission (lines 154-155)', async () => {
+            renderWithProviders(<Flashcards />);
+
+            await waitFor(() => 
+            {
+                const editButton = screen.getByLabelText('Edit Flashcard');
+                fireEvent.click(editButton);
+            });
+
+            await waitFor(() => 
+            {
+                expect(screen.getByLabelText('Save')).toBeInTheDocument();
+            });
+
+            const frontInput = screen.getByDisplayValue('Hello');
+            const submitButton = screen.getByLabelText('Save');
+
+            fireEvent.change(frontInput, { target: { value: 'updated front' } });
+
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: false,
+                status: 400,
+                json: async () => ({})
+            });
+
+            const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+            fireEvent.click(submitButton);
+
+            await waitFor(() => 
+            {
+                expect(alertSpy).toHaveBeenCalledWith('Failed to update flashcard. Please try again.');
+            });
+
+            alertSpy.mockRestore();
+        });
+
+        it('Should handle HTTP error status in delete flashcard (lines 205-206)', async () => 
+        {
+            renderWithProviders(<Flashcards />);
+
+            await waitFor(() => 
+            {
+                const deleteButton = screen.getByLabelText('Delete Flashcard');
+                
+                const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+                
+                mockFetch.mockResolvedValueOnce(
+                {
+                    ok: false,
+                    status: 404,
+                    json: async () => ({})
+                });
+
+                const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+
+                fireEvent.click(deleteButton);
+
+                setTimeout(async () => 
+                {
+                    expect(alertSpy).toHaveBeenCalledWith('Failed to delete flashcard. Please try again.');
+                    confirmSpy.mockRestore();
+                    alertSpy.mockRestore();
+                }, 100);
+            });
+        });
+
+        it('Should render known status label correctly for known flashcard (line 329)', async () => 
+        {
+            const mockFlashcardsKnown = [
+                { id: 1, language: 'English', content: 'Hello', translationLang: 'pl', translation: 'Cześć', known: true },
+                { id: 2, language: 'English', content: 'Goodbye', translationLang: 'pl', translation: 'Do widzenia', known: false },
+                { id: 3, language: 'English', content: 'Thank you', translationLang: 'pl', translation: 'Dziękuję', known: false }
+            ];
+
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockFlashcardsKnown
+            });
+
+            renderWithProviders(<Flashcards />);
+            
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Hello')).toBeInTheDocument();
+            });
+
+            expect(screen.getByText('Already known')).toBeInTheDocument();
+            expect(screen.getByText('Already known')).toHaveClass('known-label', 'known');
+        });
+
+        it('Should render unknown status label correctly for unknown flashcard (line 329)', async () => 
+        {
+            renderWithProviders(<Flashcards />);
+            
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Hello')).toBeInTheDocument();
+            });
+
+            expect(screen.getByText('Not known yet')).toBeInTheDocument();
+            expect(screen.getByText('Not known yet')).toHaveClass('known-label', 'unknown');
+        });
+
+        it('Should trigger beforeunload event handler during editing (lines 93-96)', async () => 
+        {
+            // Mock window.addEventListener to capture the event handler
+            const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
+            
+            renderWithProviders(<Flashcards />);
+
+            await waitFor(() => 
+            {
+                const editButton = screen.getByLabelText('Edit Flashcard');
+                fireEvent.click(editButton);
+            });
+
+            await waitFor(() => 
+            {
+                expect(screen.getByLabelText('Save')).toBeInTheDocument();
+            });
+
+            //Verify that beforeunload event listener was added
+            expect(addEventListenerSpy).toHaveBeenCalledWith('beforeunload', expect.any(Function));
+
+            //Get the handler function that was registered
+            const beforeunloadCalls = addEventListenerSpy.mock.calls.filter(call => call[0] === 'beforeunload');
+            expect(beforeunloadCalls.length).toBeGreaterThan(0);
+            
+            const handler = beforeunloadCalls[0][1] as EventListener;
+
+            //Create a mock event and test the handler directly
+            const mockEvent = 
+            {
+                preventDefault: vi.fn(),
+                returnValue: ''
+            } as any;
+
+            //Call the handler directly
+            handler(mockEvent);
+
+            //Verify that preventDefault was called and returnValue was set
+            expect(mockEvent.preventDefault).toHaveBeenCalled();
+            expect(mockEvent.returnValue).toBe('');
+
+            addEventListenerSpy.mockRestore();
+        });
+
+        it('Should handle known flashcard ternary operator (line 329)', async () => 
+        {
+            const mockFlashcardsWithKnown = [
+                { id: 1, language: 'English', content: 'Test', translationLang: 'pl', translation: 'Test', known: true }
+            ];
+
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockFlashcardsWithKnown
+            });
+
+            renderWithProviders(<Flashcards />);
+            
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Test')).toBeInTheDocument();
+            });
+
+            // Test the true branch of the ternary operator (line 329)
+            expect(screen.getByText('Already known')).toBeInTheDocument();
+            expect(screen.getByText('Already known')).toHaveClass('known-label', 'known');
+        });
+    });
 });
