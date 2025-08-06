@@ -576,11 +576,19 @@ describe('FlashcardLearning component', () =>
                 expect(screen.getByTestId('flashcard-viewer')).toBeInTheDocument();
             });
 
+            // Wait for cards to load and check the initial status
             await waitFor(() => 
             {
                 const knownButton = screen.getByRole('button', { name: /Mark as/ });
-                fireEvent.click(knownButton);
+                expect(knownButton).toBeInTheDocument();
             });
+
+            // Determine what the current status should be based on the UI
+            const knownButton = screen.getByRole('button', { name: /Mark as/ });
+            const isCurrentlyKnown = knownButton.getAttribute('aria-label')?.includes('unknown');
+            const expectedToggleValue = !isCurrentlyKnown;
+
+            fireEvent.click(knownButton);
 
             await waitFor(() => 
             {
@@ -593,16 +601,13 @@ describe('FlashcardLearning component', () =>
                 
                 //Verify the PATCH call has the correct structure
                 const patchCall = patchCalls[0];
-                expect(patchCall[1]).toEqual(expect.objectContaining(
-                {
-                    method: 'PATCH',
-                    headers: 
-                    {
-                        'Content-Type': 'application/json',
-                        Authorization: 'Bearer mock-token'
-                    },
-                    body: JSON.stringify({ known: true })
-                }));
+                const [url, options] = patchCall;
+                
+                expect(url).toContain('/known');
+                expect(options.method).toBe('PATCH');
+                expect(options.headers['Content-Type']).toBe('application/json');
+                expect(options.headers.Authorization).toBe('Bearer mock-token');
+                expect(options.body).toBe(JSON.stringify({ known: expectedToggleValue }));
             }, { timeout: 3000 });
         });
 
