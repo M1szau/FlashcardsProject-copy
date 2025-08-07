@@ -1,16 +1,8 @@
 import React, { useState } from "react";
-import type { Flashcard } from "../types/flashcard";
+import type { Flashcard } from "../../types and interfaces/types";
+import type { AddFlashcardButtonProps } from "../../types and interfaces/interfaces.ts";
 import { useTranslation } from "react-i18next";
 
-interface AddFlashcardButtonProps 
-{
-    selectedSetId: string | null;
-    currentUser: string;
-    flashcards: Flashcard[];
-    setFlashcards: React.Dispatch<React.SetStateAction<Flashcard[]>>;
-    setCurrent: React.Dispatch<React.SetStateAction<number>>;
-    setFlipped: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
 export default function AddFlashcardButton({ selectedSetId, currentUser, flashcards, setFlashcards, setCurrent, setFlipped }: AddFlashcardButtonProps) 
 {

@@ -1,8 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@testing-library/jest-dom';
-import AddFlashcardButton from '../components/AddFlashcardButton';
-import type { Flashcard } from '../types/flashcard';
+import AddFlashcardButton from '../components/flashcards/AddFlashcardButton';
+import type { Flashcard } from '../types and interfaces/types';
 import { I18nextProvider } from 'react-i18next';
 import i18n from 'i18next';
 

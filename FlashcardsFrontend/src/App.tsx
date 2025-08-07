@@ -1,11 +1,11 @@
 
 import { Navigate, BrowserRouter, Routes, Route} from 'react-router-dom'
 
-import LogIn from './components/LogIn.tsx';
-import Register from './components/Register.tsx'
-import Dashboard from './components/Dashboard.tsx';
+import LogIn from './components/login and register/LogIn.tsx';
+import Register from './components/login and register/Register.tsx'
+import Dashboard from './components/dashboard/Dashboard.tsx';
 import Statistics from './components/Statistics.tsx';
-import Flashcards from './components/Flashcards.tsx';
+import Flashcards from './components/flashcards/Flashcards.tsx';
 import LearnForm from './components/LearnForm.tsx';
 import FlashcardLearning from './components/FlashcardLearning.tsx';
 

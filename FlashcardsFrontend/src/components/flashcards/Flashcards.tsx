@@ -1,10 +1,10 @@
-import Navbar from "./Navbar";
+import Navbar from "../Navbar";
 import AddFlashcardButton from "./AddFlashcardButton";
 import FlashcardViewer from "./FlashcardViewer";
 import React, { useEffect, useState } from "react";
 import { AiFillEdit, AiFillDelete, AiOutlineCheck, AiOutlineClose, AiFillCheckCircle, AiFillCloseCircle } from "react-icons/ai";
 import { useParams } from "react-router-dom";
-import type { Flashcard } from "../types/flashcard";
+import type { Flashcard } from "../../types and interfaces/types";
 import { useTranslation } from "react-i18next";
 
 export default function App()

@@ -1,17 +1,4 @@
-import React from "react";
-
-interface FlashcardViewerProps 
-{
-    current: number;
-    total: number;
-    flipped: boolean;
-    editing: boolean;
-    setCurrent: React.Dispatch<React.SetStateAction<number>>;
-    setFlipped: React.Dispatch<React.SetStateAction<boolean>>;
-    setEditing: React.Dispatch<React.SetStateAction<boolean>>;
-    renderCardContent: (side: "front" | "back") => React.ReactNode;
-    renderActions: () => React.ReactNode;
-}
+import type { FlashcardViewerProps } from '../../types and interfaces/interfaces.ts';
 
 export default function FlashcardViewer(
 { 

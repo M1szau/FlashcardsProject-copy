@@ -1,25 +1,7 @@
-
 import Navbar from "./Navbar";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-type SetStatistics = 
-{
-    setId: string;
-    setName: string;
-    totalCards: number;
-    knownCards: number;
-    unknownCards: number;
-};
-
-type Statistics = 
-{
-    totalSets: number;
-    totalFlashcards: number;
-    totalKnownCards: number;
-    totalUnknownCards: number;
-    setStatistics: SetStatistics[];
-};
+import type { Statistics } from '../types and interfaces/types.ts';
 
 export default function Statistics()
 {

@@ -1,14 +1,14 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
-import Img from '../assets/logo.png';
+import Img from '../../assets/logo.png';
 
-export default function LogIn() 
+export default function Register() 
 {
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
-    const [loginError, setLoginError] = useState('');
+    const [registerError, setRegisterError] = useState('');
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) 
     {
@@ -18,11 +18,11 @@ export default function LogIn()
         const enteredPassword = passwordRef.current!.value;
         const form = event.currentTarget; // Capture form reference before async operations
 
-        setLoginError('');
+        setRegisterError('');
         
         try 
         {
-            const response = await fetch('/api/login', 
+            const response = await fetch('/api/register', 
             {
                 method: 'POST', 
                 headers: {'Content-Type': 'application/json'}, 
@@ -33,12 +33,12 @@ export default function LogIn()
             if(data.success) 
             {
                 localStorage.setItem('token', data.token);
-                window.location.href = '/dashboard'; 
+                window.location.href = '/dashboard';
             } else {
-                setLoginError(data.message || 'Login failed');
+                setRegisterError(data.message || 'Registration failed');
             }
         } catch (err) {
-            setLoginError('Login failed');
+            setRegisterError('Registration failed');
         }
 
         form.reset(); // Use captured form reference
@@ -46,27 +46,27 @@ export default function LogIn()
 
     return (
         <main>
-            <Header image={{ src: Img, alt: 'Log in sheet' }}>
-                <h1>Please log in</h1>
+            <Header image={{ src: Img, alt: 'Registration sheet' }}>
+                <h1>Please register</h1>
             </Header>
             <form onSubmit={handleSubmit}>
                 <div>
                     <p>
-                        <label htmlFor='username'>Your username</label>
-                        <input id='username' type='text' ref={usernameRef} />
+                        <label htmlFor='regUsername'>Choose your username</label>
+                        <input id='regUsername' type='text' ref={usernameRef} />
                     </p>
                     <p>
-                        <label htmlFor='password'>Your password</label>
-                        <input id='password' type='password' ref={passwordRef} />
-                        {loginError && <div className='error-box' style={{color: 'red', marginTop: '5px', fontSize: '14px'}}>{loginError}</div>}
+                        <label htmlFor='regPassword'>Choose your password</label>
+                        <input id='regPassword' type='password' ref={passwordRef} />
+                        {registerError && <div className = 'error-box' style={{color: 'red', marginTop: '5px', fontSize: '14px'}}>{registerError}</div>}
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
                         <div>
-                            <button type="submit">Log in</button>
+                            <button type="submit">Register</button>
                         </div>
                         <div>
-                            <label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}>Not yet with us?</label>
-                            <button type="button" onClick={() => navigate('/register')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}>Join us!</button>
+                            <label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}>Already have an account?</label>
+                            <button type="button" onClick={() => navigate('/')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}>Log in</button>
                         </div>
                     </div>
                 </div>

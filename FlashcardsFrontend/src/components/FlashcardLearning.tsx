@@ -1,9 +1,9 @@
 import Navbar from "./Navbar";
-import FlashcardViewer from "./FlashcardViewer";
+import FlashcardViewer from "./flashcards/FlashcardViewer";
 import React, { useEffect, useState } from "react";
 import { AiFillCheckCircle, AiFillCloseCircle } from "react-icons/ai";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import type { Flashcard } from "../types/flashcard";
+import type { Flashcard } from "../types and interfaces/types";
 import { useTranslation } from "react-i18next";
 
 export default function FlashcardLearning()

@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from 'i18next';
 import FlashcardLearning from '../components/FlashcardLearning';
-import type { Flashcard } from '../types/flashcard';
+import type { Flashcard } from '../types and interfaces/types';
 
 vi.mock('../components/Navbar', () => (
 {

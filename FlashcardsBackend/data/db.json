@@ -38,13 +38,13 @@
       "createdAt": "2025-08-06T10:51:38.921Z"
     },
     {
-      "id": "1754477569748",
+      "id": "1754551965688",
       "name": "ccc",
       "description": "cccdesc",
       "defaultLanguage": "DE",
       "translationLanguage": "ES",
       "owner": "admin",
-      "createdAt": "2025-08-06T10:52:49.748Z"
+      "createdAt": "2025-08-07T07:32:45.688Z"
     }
   ],
   "flashcards": [
@@ -148,26 +148,26 @@
       "createdAt": "2025-08-06T10:52:18.284Z"
     },
     {
-      "id": "1754477578148",
-      "setId": "1754477569748",
-      "language": "DE",
+      "id": "1754551965688",
+      "setId": "1754551965688",
       "content": "c",
       "translation": "c",
+      "language": "DE",
       "translationLang": "ES",
-      "owner": "admin",
       "known": false,
-      "createdAt": "2025-08-06T10:52:58.148Z"
+      "owner": "admin",
+      "createdAt": "2025-08-07T07:32:45.688Z"
     },
     {
-      "id": "1754477588917",
-      "setId": "1754477569748",
-      "language": "DE",
+      "id": "1754551965689",
+      "setId": "1754551965688",
       "content": "cc",
       "translation": "cc",
+      "language": "DE",
       "translationLang": "ES",
-      "owner": "admin",
       "known": true,
-      "createdAt": "2025-08-06T10:53:08.917Z"
+      "owner": "admin",
+      "createdAt": "2025-08-07T07:32:45.688Z"
     }
   ]
 }

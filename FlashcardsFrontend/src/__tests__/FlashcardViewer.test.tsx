@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
-import FlashcardViewer from '../components/FlashcardViewer';
+import FlashcardViewer from '../components/flashcards/FlashcardViewer';
 
 describe('FlashcardViewer component', () => 
 {

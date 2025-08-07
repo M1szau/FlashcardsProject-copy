@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
-import type { SetType } from "../types/flashcard.ts";
+import type { SetType } from "../types and interfaces/types.ts";
 import { useTranslation } from "react-i18next";
 
 export default function LearnForm()
