@@ -1,13 +1,12 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
-import FlashcardViewer from '../components/flashcards/FlashcardViewer';
+import FlashcardViewer from '../../components/flashcards/FlashcardViewer';
 
 describe('FlashcardViewer component', () => 
 {
     const mockSetCurrent = vi.fn();
     const mockSetFlipped = vi.fn();
-    const mockSetEditing = vi.fn();
     const mockRenderCardContent = vi.fn();
     const mockRenderActions = vi.fn();
 
@@ -16,10 +15,9 @@ describe('FlashcardViewer component', () =>
         current: 0,
         total: 3,
         flipped: false,
-        editing: false,
+        isEditing: false,
         setCurrent: mockSetCurrent,
         setFlipped: mockSetFlipped,
-        setEditing: mockSetEditing,
         renderCardContent: mockRenderCardContent,
         renderActions: mockRenderActions
     };
@@ -82,7 +80,6 @@ describe('FlashcardViewer component', () =>
             
             expect(mockSetCurrent).toHaveBeenCalledWith(expect.any(Function));
             expect(mockSetFlipped).toHaveBeenCalledWith(false);
-            expect(mockSetEditing).toHaveBeenCalledWith(false);
         });
 
         it('Calls setCurrent with next index when next button is clicked', () => 
@@ -95,7 +92,6 @@ describe('FlashcardViewer component', () =>
             
             expect(mockSetCurrent).toHaveBeenCalledWith(expect.any(Function));
             expect(mockSetFlipped).toHaveBeenCalledWith(false);
-            expect(mockSetEditing).toHaveBeenCalledWith(false);
         });
 
         it('Does not change current when at first card and prev is clicked', () => 
@@ -187,7 +183,7 @@ describe('FlashcardViewer component', () =>
 
         it('Disables both buttons when editing', () => 
         {
-            const props = { ...defaultProps, editing: true };
+            const props = { ...defaultProps, isEditing: true };
             render(<FlashcardViewer {...props} />);
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
@@ -222,7 +218,7 @@ describe('FlashcardViewer component', () =>
 
         it('Changes cursor style when editing', () => 
         {
-            const props = { ...defaultProps, editing: true };
+            const props = { ...defaultProps, isEditing: true };
             render(<FlashcardViewer {...props} />);
             
             const flashcardBox = screen.getByLabelText('Flip flashcard');
@@ -347,7 +343,7 @@ describe('FlashcardViewer component', () =>
                 ...defaultProps, 
                 current: 0,
                 flipped: false,
-                editing: false,
+                isEditing: false,
                 total: 1 
             };
             render(<FlashcardViewer {...props} />);
@@ -371,7 +367,7 @@ describe('FlashcardViewer component', () =>
                 current: 2,
                 total: 3,
                 flipped: false,
-                editing: false
+                isEditing: false
             };
             render(<FlashcardViewer {...props} />);
             
@@ -393,7 +389,7 @@ describe('FlashcardViewer component', () =>
                 ...defaultProps, 
                 current: 1, 
                 flipped: false,
-                editing: false
+                isEditing: false
             };
             
             const testSetCurrent = vi.fn((updateFn) => 
@@ -422,7 +418,7 @@ describe('FlashcardViewer component', () =>
                 current: 1,  
                 total: 3,
                 flipped: false,
-                editing: false
+                isEditing: false
             };
             
             const testSetCurrent = vi.fn((updateFn) => 

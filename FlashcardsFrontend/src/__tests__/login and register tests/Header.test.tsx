@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import '@testing-library/jest-dom';
-import Header from '../components/login and register/Header';
+import Header from '../../components/login and register/Header.tsx';
 import { MemoryRouter } from 'react-router-dom';
 
 describe('Header component', () =>

@@ -31,6 +31,14 @@ export interface DashboardImportModalProps
     onImportCancel: () => void;
 }
 
+export interface AddFlashcardModalProps 
+{
+    addValues: Flashcard;
+    onAddChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+    onSaveAdd: (e: React.FormEvent) => void;
+    onCancelAdd: () => void;
+}
+
 export interface AddFlashcardButtonProps 
 {
     selectedSetId: string | null;
@@ -46,10 +54,9 @@ export interface FlashcardViewerProps
     current: number;
     total: number;
     flipped: boolean;
-    editing: boolean;
+    isEditing: boolean;
     setCurrent: React.Dispatch<React.SetStateAction<number>>;
     setFlipped: React.Dispatch<React.SetStateAction<boolean>>;
-    setEditing: React.Dispatch<React.SetStateAction<boolean>>;
     renderCardContent: (side: "front" | "back") => React.ReactNode;
     renderActions: () => React.ReactNode;
 }
@@ -105,3 +112,30 @@ export interface DashboardSetBlockRef
 {
     //No methods needed to be exposed
 }
+
+export interface FlashcardKnownStatusProps 
+{
+    flashcard: Flashcard;
+    selectedSetId: string | null;
+    onKnownStatusChange: (updatedCard: Flashcard) => void;
+    showButton?: boolean; //Whether to show the toggle button or just the status label
+}
+
+export interface FlashcardKnownStatusRef 
+{
+    //No methods need to be exposed for now
+}
+
+export interface FlashcardDeleteBtnProps 
+{
+    flashcard: Flashcard;
+    selectedSetId: string | null;
+    onDeleteSuccess: () => void;
+    flashcardsLength: number;
+}
+
+export interface FlashcardDeleteBtnRef 
+{
+    //No methods need to be exposed for now
+}
+

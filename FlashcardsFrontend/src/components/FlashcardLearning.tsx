@@ -277,10 +277,9 @@ export default function FlashcardLearning()
                     current={current}
                     total={sessionFlashcards.length}
                     flipped={flipped}
-                    editing={false}
+                    isEditing={false} // No editing in learning mode
                     setCurrent={setCurrent}
                     setFlipped={setFlipped}
-                    setEditing={() => {}} //No editing in learning mode
                     renderCardContent={renderCardContent}
                     renderActions={renderActions}
                 />

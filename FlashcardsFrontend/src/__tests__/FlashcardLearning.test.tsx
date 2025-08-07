@@ -12,15 +12,17 @@ vi.mock('../components/Navbar', () => (
     default: () => <div data-testid="navbar">Navbar</div>
 }));
 
-vi.mock('../components/FlashcardViewer', () => (
+vi.mock('../components/flashcards/FlashcardViewer', () => (
 {
     default: (
     { 
         current, 
         total, 
         flipped, 
+        editing: _editing,
         setCurrent, 
         setFlipped,
+        setEditing: _setEditing,
         renderCardContent,
         renderActions 
     }: any) => (

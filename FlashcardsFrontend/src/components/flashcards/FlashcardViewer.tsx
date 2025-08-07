@@ -5,10 +5,9 @@ export default function FlashcardViewer(
     current, 
     total, 
     flipped, 
-    editing,
+    isEditing,
     setCurrent,
     setFlipped,
-    setEditing,
     renderCardContent,
     renderActions
 }:  FlashcardViewerProps) 
@@ -18,20 +17,16 @@ export default function FlashcardViewer(
         { 
             setCurrent((prev) => (prev > 0 ? prev - 1 : prev));
             setFlipped(false); //Must be front when changing card
-            setEditing(false); 
-        };
-        
-        const nextCard = () => 
+        };        const nextCard = () => 
         { 
             setCurrent((prev) => (prev < total - 1 ? prev + 1 : prev));
             setFlipped(false); 
-            setEditing(false);
         };
 
         //Flip
         const handleFlip = () => 
         {
-            if (total > 0) 
+            if (total > 0 && !isEditing) // Don't flip when editing
             {
                 setFlipped((prev) => !prev);
             }
@@ -47,7 +42,7 @@ export default function FlashcardViewer(
                 <button 
                     className="flashcard-arrow" 
                     onClick={prevCard} 
-                    disabled={current === 0 || flipped || editing} 
+                    disabled={current === 0 || flipped || isEditing} 
                     aria-label="Previous Flashcard"
                 >
                     &#8592;
@@ -57,7 +52,7 @@ export default function FlashcardViewer(
                     className="flashcard-box" 
                     onClick={handleFlip} 
                     tabIndex={0} 
-                    style={{ cursor: editing ? "default" : "pointer" }} 
+                    style={{ cursor: isEditing ? "default" : "pointer" }} 
                     aria-label="Flip flashcard"
                 >
                     <div className={`flashcard-inner${flipped ? " flipped" : ""}`}>
@@ -75,7 +70,7 @@ export default function FlashcardViewer(
                 <button 
                     className="flashcard-arrow" 
                     onClick={nextCard} 
-                    disabled={current === total - 1 || flipped || editing} 
+                    disabled={current === total - 1 || flipped || isEditing} 
                     aria-label="Next Flashcard"
                 >
                     &#8594;

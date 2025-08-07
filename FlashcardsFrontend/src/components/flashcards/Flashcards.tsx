@@ -1,33 +1,44 @@
 import Navbar from "../Navbar";
 import AddFlashcardButton from "./AddFlashcardButton";
 import FlashcardViewer from "./FlashcardViewer";
-import React, { useEffect, useState } from "react";
-import { AiFillEdit, AiFillDelete, AiOutlineCheck, AiOutlineClose, AiFillCheckCircle, AiFillCloseCircle } from "react-icons/ai";
+import FlashcardDeleteBtn from "./FlashcardDeleteBtn";
+import FlashcardKnownStatus from "./FlashcardKnownStatus";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import type { Flashcard } from "../../types and interfaces/types";
 import { useTranslation } from "react-i18next";
+import { useFlashcardsManagement } from "../../hooks/useFlashcardsManagement";
+import { AiOutlineCheck, AiOutlineClose, AiFillEdit } from "react-icons/ai";
 
 export default function App()
 {
     const { t } = useTranslation();
+    const { setId } = useParams<{ setId: string }>();
+    const selectedSetId = setId ?? null;
+    const currentUser = localStorage.getItem('username') || 'unknown';
 
-    // Language options with translation keys
+    //Use the custom hook for flashcard management
+    const { 
+        flashcards, 
+        current, 
+        flipped, 
+        loading, 
+        setCurrent, 
+        setFlipped, 
+        flashcardActions,
+        setFlashcards //For AddFlashcardButton
+    } = useFlashcardsManagement(selectedSetId);
+    
+    //Editing state and ref
+    const [isEditing, setIsEditing] = useState(false);
+    const [editValues, setEditValues] = useState<any>(null);
+
+    //Language options with translation keys
     const languageOptions = [
         { code: 'PL', name: t('languages.PL') },
         { code: 'EN', name: t('languages.EN') },
         { code: 'DE', name: t('languages.DE') },
         { code: 'ES', name: t('languages.ES') }
     ];
-
-    //Consts for database
-    const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
-    const currentUser = localStorage.getItem('username') || 'unknown';
-    const { setId } = useParams<{ setId: string }>();
-    const selectedSetId = setId ?? null;
-
-    const [current, setCurrent] = useState(0);
-    const [flipped, setFlipped] = useState(false);
-    const [editing, setEditing] = useState(false);
 
     //Function to truncate flashcard text
     const truncateFlashcardText = (text: string, maxLength: number = 50) => 
@@ -42,7 +53,7 @@ export default function App()
     {
         const languageMap: { [key: string]: string } = 
         {
-            // Handle full language names from database
+            //Handle full language names from database
             'Polish': t('languages.PL'),
             'English': t('languages.EN'),
             'German': t('languages.DE'),
@@ -50,41 +61,6 @@ export default function App()
         };
         return languageMap[langCode] || langCode;
     };
-
-    const [editValues, setEditValues] = useState<Flashcard | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() =>
-    {
-        console.log("Selected Set ID:", selectedSetId);
-        if(selectedSetId)
-        {
-            setLoading(true);
-            console.log("Fetching flashcards for set:", selectedSetId);
-            fetch(`/api/sets/${selectedSetId}/flashcards`)
-                .then(res => {
-                    console.log("Response status:", res.status);
-                    if (!res.ok) 
-                    {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    console.log("Fetched flashcards:", data);
-                    setFlashcards(data || []);
-                    setLoading(false);
-                })
-                .catch(error => {
-                    console.error("Fetch error:", error);
-                    setFlashcards([]);
-                    setLoading(false);
-                });
-        } else 
-        {
-            setLoading(false);
-        }
-    }, [selectedSetId]);
 
     useEffect(() =>
     {
@@ -102,39 +78,25 @@ export default function App()
             }
     }, []);
 
-    //Handlers
-    //Edit flashcard
-    //Start editing
+    //Edit button
     const handleEditFlashcard = (e: React.MouseEvent) => 
     {
         e.stopPropagation();
         if (flashcards.length > 0) 
         {
-            setEditing(true);
+            setIsEditing(true);
             setEditValues({ ...flashcards[current] });
         }
     };
 
-    //Cancel editing
-    const handleCancelEdit = (e: React.MouseEvent) => 
-    {
-        e.stopPropagation();
-        setEditing(false);
-        setEditValues(null);
-    };
-
-    //Save editing
-    const handleSaveEdit = (e: React.MouseEvent) => 
-    {
-        e.stopPropagation();
+    const handleEditSave = () => {
         if (
             editValues &&
             editValues.language.trim() &&
             editValues.content.trim() &&
             editValues.translationLang.trim() &&
             editValues.translation.trim()
-        ) 
-        {
+        ) {
             const token = localStorage.getItem('token');
             
             fetch(`/api/sets/${selectedSetId}/flashcards/${editValues.id}`, 
@@ -157,11 +119,9 @@ export default function App()
             })
             .then(card => 
             {
-                const updated = [...flashcards];
-                updated[current] = card;
-                setFlashcards(updated);
-                setEditing(false);
+                flashcardActions.update(card);
                 setEditValues(null);
+                setIsEditing(false);
             })
             .catch(error => 
             {
@@ -171,175 +131,91 @@ export default function App()
         }
     };
 
-    //Handle input changes
-    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => 
-    {
+    const handleEditCancel = () => {
+        setEditValues(null);
+        setIsEditing(false);
+    };
+
+    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         if (!editValues) return;
         setEditValues({ ...editValues, [e.target.name]: e.target.value });
     };
 
-    //Delete flashcard
-    const handleDeleteFlashcard = (e: React.MouseEvent) => 
-    {
-        e.stopPropagation();
-        if (flashcards.length === 1) 
-        {
-            alert("You must have at least one flashcard.");
-            return;
-        }
-        if (window.confirm("Are you sure you want to delete this flashcard?")) 
-        {
-            const token = localStorage.getItem('token');
-            
-            fetch(`/api/sets/${selectedSetId}/flashcards/${flashcards[current].id}`, 
-            {
-                method: 'DELETE',
-                headers: 
-                {
-                    Authorization: `Bearer ${token}`
-                }
-            })
-            .then(res => {
-                if (!res.ok) 
-                {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(() => 
-            {
-                const updated = flashcards.filter((_, idx) => idx !== current);
-                setFlashcards(updated);
-                setCurrent((prev) => (prev > 0 ? prev - 1 : 0));
-                setFlipped(false);
-                setEditing(false);
-            })
-            .catch(error => 
-            {
-                console.error('Error deleting flashcard:', error);
-                alert('Failed to delete flashcard. Please try again.');
-            });
-        }
-    };
-
-    //Toggle known status
-    const handleToggleKnown = (e: React.MouseEvent) => 
-    {
-        e.stopPropagation();
-        if (flashcards.length === 0) return;
-        
-        const currentCard = flashcards[current];
-        const currentKnownStatus = currentCard.known || false; //Undefined as false
-        const newKnownStatus = !currentKnownStatus;
-        
-        const token = localStorage.getItem('token');
-        
-        fetch(`/api/sets/${selectedSetId}/flashcards/${currentCard.id}/known`, 
-        {
-            method: 'PATCH',
-            headers: 
-            { 
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}` 
-            },
-            body: JSON.stringify({ known: newKnownStatus }),
-        })
-        .then(res => 
-        {
-            if (!res.ok) 
-            {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
-            return res.json();
-        })
-        .then(updatedCard => 
-        {
-            const updated = [...flashcards];
-            updated[current] = updatedCard;
-            setFlashcards(updated);
-        })
-        .catch(error => 
-        {
-            console.error('Error updating known status:', error);
-            alert('Failed to update known status. Please try again.');
-        });
-    };
-
-    //Rendering card or edit form
+    //Rendering card content (shows edit form when editing, otherwise shows card content)
     const renderCardContent = (side: "front" | "back") => 
     {
         if (flashcards.length === 0) return null; 
         
-        if (editing) 
-        {
+        if (isEditing && editValues) 
+        {            
             return (
-                <form className="flashcard-edit-form" onClick={e => e.stopPropagation()} onSubmit={e => { e.preventDefault(); handleSaveEdit(e as any); }}>
+                <form 
+                    className="flashcard-edit-form" 
+                    onClick={e => e.stopPropagation()} 
+                    onSubmit={e => { e.preventDefault(); handleEditSave(); }}
+                >
                     <select
                         name={side === "front" ? "language" : "translationLang"}
-                        value={side === "front" ? editValues?.language ?? "" : editValues?.translationLang ?? ""}
+                        value={side === "front" ? editValues.language ?? "" : editValues.translationLang ?? ""}
                         onChange={handleEditChange}
                         className="flashcard-edit-input"
                         required
                     >
                         <option value="" disabled>{t('flashcards.select')} {side === "front" ? t('flashcards.language') : t('flashcards.translationLanguage')}</option>
-                        {languageOptions.map((lang) => 
-                        (
+                        {languageOptions.map((lang) => (
                             <option key={lang.code} value={lang.code}>{lang.name}</option>
                         ))}
                     </select>
                     <input
                         type="text"
                         name={side === "front" ? "content" : "translation"}
-                        value={side === "front" ? editValues?.content ?? "" : editValues?.translation ?? ""}
+                        value={side === "front" ? editValues.content ?? "" : editValues.translation ?? ""}
                         onChange={handleEditChange}
-                        placeholder={side === "front" ? `${t('flashcards.content')}` : `${t('flashcards.translation')}`}
+                        placeholder={side === "front" ? t('flashcards.content') : t('flashcards.translation')}
                         maxLength={30}
                         className="flashcard-edit-input"
                         required
                     />
                 </form>
             );
-        } else {
-            if (side === "front") 
-            {
-                return (
-                    <>
-                        <div className="flashcard-known-status">
-                            {flashcards[current]?.known ? 
-                            (
-                                <span className="known-label known">{t('flashcards.alreadyKnown')}</span>
-                            ) : (
-                                <span className="known-label unknown">{t('flashcards.notKnownYet')}</span>
-                            )}
+        }
+        
+        if (side === "front") 
+        {
+            return (
+                <>
+                    <FlashcardKnownStatus 
+                        flashcard={flashcards[current]}
+                        selectedSetId={selectedSetId}
+                        onKnownStatusChange={(updatedCard) => flashcardActions.update(updatedCard)}
+                        showButton={false} //Just show the status label
+                    />
+                    <div className="flashcard-main-content">
+                        <div className="flashcard-language">{getLanguageName(flashcards[current]?.language)}</div>
+                        <div className="flashcard-content" title={flashcards[current]?.content}>
+                            {truncateFlashcardText(flashcards[current]?.content, 50)}
                         </div>
-                        <div className="flashcard-main-content">
-                            <div className="flashcard-language">{getLanguageName(flashcards[current]?.language)}</div>
-                            <div className="flashcard-content" title={flashcards[current]?.content}>
-                                {truncateFlashcardText(flashcards[current]?.content, 50)}
-                            </div>
+                    </div>
+                </>
+            );
+        } else 
+        {
+            return (
+                <>
+                    <FlashcardKnownStatus 
+                        flashcard={flashcards[current]}
+                        selectedSetId={selectedSetId}
+                        onKnownStatusChange={(updatedCard) => flashcardActions.update(updatedCard)}
+                        showButton={false} 
+                    />
+                    <div className="flashcard-main-content">
+                        <div className="flashcard-language">{getLanguageName(flashcards[current]?.translationLang)}</div>
+                        <div className="flashcard-content" title={flashcards[current]?.translation}>
+                            {truncateFlashcardText(flashcards[current]?.translation, 50)}
                         </div>
-                    </>
-                );
-            } else 
-            {
-                return (
-                    <>
-                        <div className="flashcard-known-status">
-                            {flashcards[current]?.known ? (
-                                <span className="known-label known">{t('flashcards.alreadyKnown')}</span>
-                            ) : (
-                                <span className="known-label unknown">{t('flashcards.notKnownYet')}</span>
-                            )}
-                        </div>
-                        <div className="flashcard-main-content">
-                            <div className="flashcard-language">{getLanguageName(flashcards[current]?.translationLang)}</div>
-                            <div className="flashcard-content" title={flashcards[current]?.translation}>
-                                {truncateFlashcardText(flashcards[current]?.translation, 50)}
-                            </div>
-                        </div>
-                    </>
-                );
-            }
+                    </div>
+                </>
+            );
         }
     };
 
@@ -348,35 +224,46 @@ export default function App()
     {
         if (flashcards.length === 0) return null;
         
+        if (isEditing) {
+            return (
+                <div className="flashcard-actions-bottom">
+                    <button className="flashcard-save-button" onClick={handleEditSave} aria-label="Save">
+                        <AiOutlineCheck />
+                    </button>
+                    <button 
+                        className="flashcard-cancel-button" 
+                        onClick={handleEditCancel} 
+                        aria-label="Cancel"
+                        onMouseEnter={(e) => e.currentTarget.blur()}
+                    >
+                        <AiOutlineClose />
+                    </button>
+                </div>
+            );
+        }
+        
         return (
             <div className="flashcard-actions-bottom">
-                {editing ? 
-                (
-                    <>
-                        <button className="flashcard-save-button" onClick={handleSaveEdit} aria-label="Save"><AiOutlineCheck /></button>
-                        <button 
-                            className="flashcard-cancel-button" 
-                            onClick={handleCancelEdit} 
-                            aria-label="Cancel"
-                            onMouseEnter={(e) => e.currentTarget.blur()}
-                        >
-                            <AiOutlineClose />
-                        </button>
-                    </>
-                ): 
-                (
-                    <>
-                        <button 
-                            className={`flashcard-known-button ${flashcards[current]?.known ? 'known' : 'unknown'}`} 
-                            onClick={handleToggleKnown} 
-                            aria-label={flashcards[current]?.known ? "Mark as unknown" : "Mark as known"}
-                        >
-                            {flashcards[current]?.known ? <AiFillCheckCircle /> : <AiFillCloseCircle />}
-                        </button>
-                        <button className="flashcard-edit-button" onClick={handleEditFlashcard} aria-label="Edit Flashcard"><AiFillEdit /></button>
-                        <button className="flashcard-delete-button" onClick={handleDeleteFlashcard} aria-label="Delete Flashcard"><AiFillDelete /></button>
-                    </>
-                )}
+                <FlashcardKnownStatus 
+                    flashcard={flashcards[current]}
+                    selectedSetId={selectedSetId}
+                    onKnownStatusChange={(updatedCard) => flashcardActions.update(updatedCard)}
+                    showButton={true} //Show as clickable button
+                />
+                <button className="flashcard-edit-button" onClick={handleEditFlashcard} aria-label="Edit Flashcard"><AiFillEdit /></button>
+                <FlashcardDeleteBtn 
+                    flashcard={flashcards[current]}
+                    selectedSetId={selectedSetId}
+                    onDeleteSuccess={() => 
+                    {
+                        const updated = flashcards.filter(card => card.id !== flashcards[current].id);
+                        const newCurrent = current > 0 ? current - 1 : 0;
+                        setFlashcards(updated);
+                        setCurrent(newCurrent);
+                        setFlipped(false);
+                    }}
+                    flashcardsLength={flashcards.length}
+                />
             </div>
         );
     };
@@ -416,10 +303,9 @@ export default function App()
                         current={current}
                         total={flashcards.length}
                         flipped={flipped}
-                        editing={editing}
+                        isEditing={isEditing}
                         setCurrent={setCurrent}
                         setFlipped={setFlipped}
-                        setEditing={setEditing}
                         renderCardContent={renderCardContent}
                         renderActions={renderActions}
                     />

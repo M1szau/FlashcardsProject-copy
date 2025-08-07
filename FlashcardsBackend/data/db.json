@@ -74,7 +74,7 @@
       "id": "1754477405784",
       "setId": "1754477393030",
       "language": "PL",
-      "content": "aa",
+      "content": "a2",
       "translation": "aa",
       "translationLang": "EN",
       "owner": "admin",
@@ -159,15 +159,26 @@
       "createdAt": "2025-08-07T07:32:45.688Z"
     },
     {
-      "id": "1754551965689",
+      "id": "1754555599646",
       "setId": "1754551965688",
+      "language": "DE",
       "content": "cc",
       "translation": "cc",
-      "language": "DE",
       "translationLang": "ES",
-      "known": true,
       "owner": "admin",
-      "createdAt": "2025-08-07T07:32:45.688Z"
+      "known": false,
+      "createdAt": "2025-08-07T08:33:19.646Z"
+    },
+    {
+      "id": "1754558299684",
+      "setId": "1754477393030",
+      "language": "PL",
+      "content": "aaaa",
+      "translation": "aaaa",
+      "translationLang": "ES",
+      "owner": "admin",
+      "known": true,
+      "createdAt": "2025-08-07T09:18:19.684Z"
     }
   ]
 }
