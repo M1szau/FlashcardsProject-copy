@@ -114,7 +114,7 @@ describe('Flashcards', () =>
     });
 
     describe('Component rendering', () => {
-        it('renders loading state when loading is true', () => 
+        it('Renders loading state when loading is true', () => 
         {
             mockFlashcardsManagement.loading = true;
             
@@ -127,7 +127,7 @@ describe('Flashcards', () =>
             expect(screen.getByText('Loading flashcards...')).toBeInTheDocument();
         });
 
-        it('renders empty state when no flashcards exist', () => 
+        it('Renders empty state when no flashcards exist', () => 
         {
             render(
                 <BrowserRouter>
@@ -141,7 +141,7 @@ describe('Flashcards', () =>
             expect(screen.queryByLabelText('Delete Flashcard')).not.toBeInTheDocument();
         });
 
-        it('renders flashcard when flashcards exist', () => 
+        it('Renders flashcard when flashcards exist', () => 
         {
             mockFlashcardsManagement.flashcards = [mockFlashcard];
             
@@ -165,7 +165,7 @@ describe('Flashcards', () =>
             mockLocalStorageGetItem.mockReturnValue('test-token');
         });
 
-        it('enters edit mode when edit button is clicked', () => 
+        it('Enters edit mode when edit button is clicked', () => 
         {
             render(
                 <BrowserRouter>
@@ -179,7 +179,7 @@ describe('Flashcards', () =>
             expect(screen.getByDisplayValue('Hello World')).toBeInTheDocument();
         });
 
-        it('saves changes when save button is clicked', async () => 
+        it('Saves changes when save button is clicked', async () => 
         {
             mockFetch.mockResolvedValue(
             {
@@ -214,7 +214,7 @@ describe('Flashcards', () =>
             );
         });
 
-        it('handles save errors gracefully', async () => 
+        it('Handles save errors gracefully', async () => 
         {
             mockFetch.mockResolvedValue(
             {
@@ -240,7 +240,7 @@ describe('Flashcards', () =>
             });
         });
 
-        it('cancels edit mode when cancel button is clicked', () => 
+        it('Cancels edit mode when cancel button is clicked', () => 
         {
             render(
                 <BrowserRouter>
@@ -257,7 +257,7 @@ describe('Flashcards', () =>
             expect(screen.queryByDisplayValue('Hello World')).not.toBeInTheDocument();
         });
 
-        it('validates maxLength on edit input fields', () => 
+        it('Validates maxLength on edit input fields', () => 
         {
             render(
                 <BrowserRouter>
@@ -275,7 +275,7 @@ describe('Flashcards', () =>
             expect(translationInput).toHaveAttribute('maxLength', '30');
         });
 
-        it('handles edit form changes for language select and content input', () => 
+        it('Handles edit form changes for language select and content input', () => 
         {
             const { container } = render(
                 <BrowserRouter>
@@ -299,7 +299,7 @@ describe('Flashcards', () =>
             expect(contentInput).toHaveValue('New Content');
         });
 
-        it('handles edit form changes for translation fields', () => 
+        it('Handles edit form changes for translation fields', () => 
         {
             const { container } = render(
                 <BrowserRouter>
@@ -326,7 +326,7 @@ describe('Flashcards', () =>
 
     describe('Content handling', () => 
     {
-        it('handles long content with title attribute', () => 
+        it('Handles long content with title attribute', () => 
         {
             const longContent = 'This is a very long flashcard content that should be truncated when displayed';
             const flashcardWithLongContent = { ...mockFlashcard, content: longContent };
@@ -342,7 +342,7 @@ describe('Flashcards', () =>
             expect(contentElement).toBeInTheDocument();
         });
 
-        it('handles empty content gracefully', () => 
+        it('Handles empty content gracefully', () => 
         {
             const flashcardWithEmptyContent = { ...mockFlashcard, content: '' };
             mockFlashcardsManagement.flashcards = [flashcardWithEmptyContent];
@@ -364,7 +364,7 @@ describe('Flashcards', () =>
             mockFlashcardsManagement.flashcards = [mockFlashcard];
         });
 
-        it('displays language options in edit mode', () => 
+        it('Displays language options in edit mode', () => 
         {
             render(
                 <BrowserRouter>
@@ -381,7 +381,7 @@ describe('Flashcards', () =>
             expect(englishOptions.length).toBeGreaterThan(0);
         });
 
-        it('handles different language mappings', () => 
+        it('Handles different language mappings', () => 
         {
             const flashcardWithDifferentLanguage = { ...mockFlashcard, language: 'Polish' };
             mockFlashcardsManagement.flashcards = [flashcardWithDifferentLanguage];
@@ -403,7 +403,7 @@ describe('Flashcards', () =>
             mockFlashcardsManagement.flashcards = [mockFlashcard];
         });
 
-        it('renders known status elements', () => 
+        it('Renders known status elements', () => 
         {
             render(
                 <BrowserRouter>
@@ -411,12 +411,11 @@ describe('Flashcards', () =>
                 </BrowserRouter>
             );
             
-            // Should have known status indicators (multiple due to front/back)
             const knownStatusElements = screen.getAllByText('Not Known Yet');
             expect(knownStatusElements.length).toBeGreaterThan(0);
         });
 
-        it('renders action buttons', () => 
+        it('Renders action buttons', () => 
         {
             render(
                 <BrowserRouter>
@@ -430,7 +429,7 @@ describe('Flashcards', () =>
             expect(deleteButtons.length).toBeGreaterThan(0);
         });
 
-        it('has add flashcard button', () => 
+        it('Has add flashcard button', () => 
         {
             render(
                 <BrowserRouter>
@@ -441,7 +440,7 @@ describe('Flashcards', () =>
             expect(screen.getByLabelText('Add Flashcard')).toBeInTheDocument();
         });
 
-        it('handles flashcard deletion with state updates', async () => 
+        it('Handles flashcard deletion with state updates', async () => 
         {
             const secondCard = { ...mockFlashcard, id: 'card-2', content: 'Second Card' };
             mockFlashcardsManagement.flashcards = [mockFlashcard, secondCard];
@@ -495,7 +494,7 @@ describe('Flashcards', () =>
             });
         });
 
-        it('handles flashcard deletion at index 0 with correct current update', async () => 
+        it('Handles flashcard deletion at index 0 with correct current update', async () => 
         {
             const secondCard = { ...mockFlashcard, id: 'card-2', content: 'Second Card' };
             mockFlashcardsManagement.flashcards = [mockFlashcard, secondCard];
@@ -546,7 +545,7 @@ describe('Flashcards', () =>
 
     describe('Page lifecycle', () => 
     {
-        it('sets up beforeunload event listener', () => 
+        it('Sets up beforeunload event listener', () => 
         {
             render(
                 <BrowserRouter>
@@ -557,7 +556,7 @@ describe('Flashcards', () =>
             expect(mockAddEventListener).toHaveBeenCalledWith('beforeunload', expect.any(Function));
         });
 
-        it('prevents page unload when beforeunload event is triggered', () => 
+        it('[Prevents page unload when beforeunload event is triggered', () => 
         {
             render(
                 <BrowserRouter>
@@ -583,7 +582,7 @@ describe('Flashcards', () =>
             expect(mockEvent.returnValue).toBe('');
         });
 
-        it('cleans up event listener on unmount', () => 
+        it('Cleans up event listener on unmount', () => 
         {
             const { unmount } = render(
                 <BrowserRouter>
@@ -599,7 +598,7 @@ describe('Flashcards', () =>
 
     describe('Hook integration', () => 
     {
-        it('calls hook with expected parameters', () => 
+        it('Calls hook with expected parameters', () => 
         {
             render(
                 <BrowserRouter>
@@ -613,7 +612,7 @@ describe('Flashcards', () =>
             expect(mockFlashcardsManagement.setFlipped).toBeDefined();
         });
 
-        it('responds to current flashcard changes', () => 
+        it('Responds to current flashcard changes', () => 
         {
             mockFlashcardsManagement.flashcards = [mockFlashcard, { ...mockFlashcard, id: 'card-2', content: 'Second Card' }];
             mockFlashcardsManagement.current = 1;
