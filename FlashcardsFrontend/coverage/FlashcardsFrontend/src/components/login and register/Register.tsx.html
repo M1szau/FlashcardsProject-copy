@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for FlashcardsFrontend/src/components/LogIn.tsx</title>
+    <title>Code coverage report for FlashcardsFrontend/src/components/login and register/Register.tsx</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../../prettify.css" />
-    <link rel="stylesheet" href="../../../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <link rel="stylesheet" href="../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../../../sort-arrow-sprite.png);
+            background-image: url(../../../../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,7 +19,7 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">FlashcardsFrontend/src/components</a> LogIn.tsx</h1>
+        <h1><a href="../../../../index.html">All files</a> / <a href="index.html">FlashcardsFrontend/src/components/login and register</a> Register.tsx</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
@@ -216,14 +216,14 @@
 <span class="cline-any cline-yes">15x</span></td><td class="text"><pre class="prettyprint lang-js">import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
-import Img from '../assets/logo.png';
+import Img from '../../assets/logo.png';
 &nbsp;
-export default function LogIn() 
+export default function Register() 
 {
     const usernameRef = useRef&lt;HTMLInputElement&gt;(null);
     const passwordRef = useRef&lt;HTMLInputElement&gt;(null);
     const navigate = useNavigate();
-    const [loginError, setLoginError] = useState('');
+    const [registerError, setRegisterError] = useState('');
 &nbsp;
     async function handleSubmit(event: FormEvent&lt;HTMLFormElement&gt;) 
     {
@@ -233,11 +233,11 @@ export default function LogIn()
         const enteredPassword = passwordRef.current!.value;
         const form = event.currentTarget; // Capture form reference before async operations
 &nbsp;
-        setLoginError('');
+        setRegisterError('');
         
         try 
         {
-            const response = await fetch('/api/login', 
+            const response = await fetch('/api/register', 
             {
                 method: 'POST', 
                 headers: {'Content-Type': 'application/json'}, 
@@ -248,12 +248,12 @@ export default function LogIn()
             if(data.success) 
             {
                 localStorage.setItem('token', data.token);
-                window.location.href = '/dashboard'; 
+                window.location.href = '/dashboard';
             } else {
-                setLoginError(data.message || 'Login failed');
+                setRegisterError(data.message || 'Registration failed');
             }
         } catch (err) {
-            setLoginError('Login failed');
+            setRegisterError('Registration failed');
         }
 &nbsp;
         form.reset(); // Use captured form reference
@@ -261,27 +261,27 @@ export default function LogIn()
 &nbsp;
     return (
         &lt;main&gt;
-            &lt;Header image={{ src: Img, alt: 'Log in sheet' }}&gt;
-                &lt;h1&gt;Please log in&lt;/h1&gt;
+            &lt;Header image={{ src: Img, alt: 'Registration sheet' }}&gt;
+                &lt;h1&gt;Please register&lt;/h1&gt;
             &lt;/Header&gt;
             &lt;form onSubmit={handleSubmit}&gt;
                 &lt;div&gt;
                     &lt;p&gt;
-                        &lt;label htmlFor='username'&gt;Your username&lt;/label&gt;
-                        &lt;input id='username' type='text' ref={usernameRef} /&gt;
+                        &lt;label htmlFor='regUsername'&gt;Choose your username&lt;/label&gt;
+                        &lt;input id='regUsername' type='text' ref={usernameRef} /&gt;
                     &lt;/p&gt;
                     &lt;p&gt;
-                        &lt;label htmlFor='password'&gt;Your password&lt;/label&gt;
-                        &lt;input id='password' type='password' ref={passwordRef} /&gt;
-                        {loginError &amp;&amp; &lt;div className='error-box' style={{color: 'red', marginTop: '5px', fontSize: '14px'}}&gt;{loginError}&lt;/div&gt;}
+                        &lt;label htmlFor='regPassword'&gt;Choose your password&lt;/label&gt;
+                        &lt;input id='regPassword' type='password' ref={passwordRef} /&gt;
+                        {registerError &amp;&amp; &lt;div className = 'error-box' style={{color: 'red', marginTop: '5px', fontSize: '14px'}}&gt;{registerError}&lt;/div&gt;}
                     &lt;/p&gt;
                     &lt;div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}&gt;
                         &lt;div&gt;
-                            &lt;button type="submit"&gt;Log in&lt;/button&gt;
+                            &lt;button type="submit"&gt;Register&lt;/button&gt;
                         &lt;/div&gt;
                         &lt;div&gt;
-                            &lt;label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}&gt;Not yet with us?&lt;/label&gt;
-                            &lt;button type="button" onClick={() =&gt; navigate('/register')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}&gt;Join us!&lt;/button&gt;
+                            &lt;label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}&gt;Already have an account?&lt;/label&gt;
+                            &lt;button type="button" onClick={() =&gt; navigate('/')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}&gt;Log in&lt;/button&gt;
                         &lt;/div&gt;
                     &lt;/div&gt;
                 &lt;/div&gt;
@@ -295,16 +295,16 @@ export default function LogIn()
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-08-06T10:34:15.531Z
+                at 2025-08-07T11:01:51.556Z
             </div>
-        <script src="../../../prettify.js"></script>
+        <script src="../../../../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../../../sorter.js"></script>
-        <script src="../../../block-navigation.js"></script>
+        <script src="../../../../sorter.js"></script>
+        <script src="../../../../block-navigation.js"></script>
     </body>
 </html>
     
