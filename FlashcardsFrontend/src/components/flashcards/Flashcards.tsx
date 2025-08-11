@@ -6,27 +6,30 @@ import FlashcardKnownStatus from "./FlashcardKnownStatus";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useFlashcardsManagement } from "../../hooks/useFlashcardsManagement";
+import { useFlashcards, useAuth } from "../../contexts";
 import { AiOutlineCheck, AiOutlineClose, AiFillEdit } from "react-icons/ai";
 
 export default function App()
 {
     const { t } = useTranslation();
     const { setId } = useParams<{ setId: string }>();
-    const selectedSetId = setId ?? null;
-    const currentUser = localStorage.getItem('username') || 'unknown';
+    const { user } = useAuth();
+    const {
+        flashcards,
+        current,
+        flipped,
+        loading,
+        actions: flashcardActions
+    } = useFlashcards();
 
-    //Use the custom hook for flashcard management
-    const { 
-        flashcards, 
-        current, 
-        flipped, 
-        loading, 
-        setCurrent, 
-        setFlipped, 
-        flashcardActions,
-        setFlashcards //For AddFlashcardButton
-    } = useFlashcardsManagement(selectedSetId);
+    // Set the current set when component mounts
+    useEffect(() => {
+        if (setId) {
+            flashcardActions.setCurrentSet(setId);
+        }
+    }, [setId]);
+
+    const currentUser = user?.username || 'unknown';
     
     //Editing state and ref
     const [isEditing, setIsEditing] = useState(false);
@@ -97,9 +100,9 @@ export default function App()
             editValues.translationLang.trim() &&
             editValues.translation.trim()
         ) {
-            const token = localStorage.getItem('token');
+            const { token } = useAuth();
             
-            fetch(`/api/sets/${selectedSetId}/flashcards/${editValues.id}`, 
+            fetch(`/api/sets/${setId}/flashcards/${editValues.id}`, 
             {
                 method: 'PUT',
                 headers: 
@@ -186,7 +189,7 @@ export default function App()
                 <>
                     <FlashcardKnownStatus 
                         flashcard={flashcards[current]}
-                        selectedSetId={selectedSetId}
+                        selectedSetId={setId ?? null}
                         onKnownStatusChange={(updatedCard) => flashcardActions.update(updatedCard)}
                         showButton={false} //Just show the status label
                     />
@@ -204,7 +207,7 @@ export default function App()
                 <>
                     <FlashcardKnownStatus 
                         flashcard={flashcards[current]}
-                        selectedSetId={selectedSetId}
+                        selectedSetId={setId ?? null}
                         onKnownStatusChange={(updatedCard) => flashcardActions.update(updatedCard)}
                         showButton={false} 
                     />
@@ -246,21 +249,17 @@ export default function App()
             <div className="flashcard-actions-bottom">
                 <FlashcardKnownStatus 
                     flashcard={flashcards[current]}
-                    selectedSetId={selectedSetId}
+                    selectedSetId={setId ?? null}
                     onKnownStatusChange={(updatedCard) => flashcardActions.update(updatedCard)}
                     showButton={true} //Show as clickable button
                 />
                 <button className="flashcard-edit-button" onClick={handleEditFlashcard} aria-label="Edit Flashcard"><AiFillEdit /></button>
                 <FlashcardDeleteBtn 
                     flashcard={flashcards[current]}
-                    selectedSetId={selectedSetId}
+                    selectedSetId={setId ?? null}
                     onDeleteSuccess={() => 
                     {
-                        const updated = flashcards.filter(card => card.id !== flashcards[current].id);
-                        const newCurrent = current > 0 ? current - 1 : 0;
-                        setFlashcards(updated);
-                        setCurrent(newCurrent);
-                        setFlipped(false);
+                        flashcardActions.remove();
                     }}
                     flashcardsLength={flashcards.length}
                 />
@@ -286,12 +285,8 @@ export default function App()
             <div className="flashcard-center">
                 {/* Add new flashcard button */}
                 <AddFlashcardButton 
-                    selectedSetId={selectedSetId}
+                    selectedSetId={setId ?? null}
                     currentUser={currentUser}
-                    flashcards={flashcards}
-                    setFlashcards={setFlashcards}
-                    setCurrent={setCurrent}
-                    setFlipped={setFlipped}
                 />
                 
                 {flashcards.length === 0 ? (
@@ -304,8 +299,6 @@ export default function App()
                         total={flashcards.length}
                         flipped={flipped}
                         isEditing={isEditing}
-                        setCurrent={setCurrent}
-                        setFlipped={setFlipped}
                         renderCardContent={renderCardContent}
                         renderActions={renderActions}
                     />

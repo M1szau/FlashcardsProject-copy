@@ -1,5 +1,6 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { AiFillDelete } from "react-icons/ai";
+import { useAuth } from '../../contexts';
 import type { FlashcardDeleteBtnProps, FlashcardDeleteBtnRef } from '../../types and interfaces/interfaces.ts';
 
 
@@ -7,6 +8,7 @@ import type { FlashcardDeleteBtnProps, FlashcardDeleteBtnRef } from '../../types
 const FlashcardDeleteBtn = forwardRef<FlashcardDeleteBtnRef, FlashcardDeleteBtnProps>((props, ref) => 
 {
     const { flashcard, selectedSetId, onDeleteSuccess, flashcardsLength } = props;
+    const { token } = useAuth();
 
     const handleDeleteFlashcard = (e: React.MouseEvent) => 
     {
@@ -20,8 +22,6 @@ const FlashcardDeleteBtn = forwardRef<FlashcardDeleteBtnRef, FlashcardDeleteBtnP
         
         if (window.confirm("Are you sure you want to delete this flashcard?")) 
         {
-            const token = localStorage.getItem('token');
-            
             fetch(`/api/sets/${selectedSetId}/flashcards/${flashcard.id}`, 
             {
                 method: 'DELETE',

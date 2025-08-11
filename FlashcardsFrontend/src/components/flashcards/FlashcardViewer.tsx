@@ -1,4 +1,5 @@
 import type { FlashcardViewerProps } from '../../types and interfaces/interfaces.ts';
+import { useFlashcards } from '../../contexts';
 
 export default function FlashcardViewer(
 { 
@@ -6,21 +7,39 @@ export default function FlashcardViewer(
     total, 
     flipped, 
     isEditing,
-    setCurrent,
-    setFlipped,
+    setCurrent: propSetCurrent,
+    setFlipped: propSetFlipped,
     renderCardContent,
     renderActions
 }:  FlashcardViewerProps) 
     {
+        const { actions: flashcardActions } = useFlashcards();
+        
+        // Use passed-in functions if available, otherwise use context
+        const setCurrent = propSetCurrent || flashcardActions.setCurrent;
+        const setFlipped = propSetFlipped || flashcardActions.setFlipped;
+        
         //Move between flashcards
         const prevCard = () => 
         { 
-            setCurrent((prev) => (prev > 0 ? prev - 1 : prev));
-            setFlipped(false); //Must be front when changing card
-        };        const nextCard = () => 
+            if (propSetCurrent) {
+                propSetCurrent((prev: number) => (prev > 0 ? prev - 1 : prev));
+                propSetFlipped && propSetFlipped(false);
+            } else {
+                setCurrent(current > 0 ? current - 1 : current);
+                setFlipped(false);
+            }
+        };        
+        
+        const nextCard = () => 
         { 
-            setCurrent((prev) => (prev < total - 1 ? prev + 1 : prev));
-            setFlipped(false); 
+            if (propSetCurrent) {
+                propSetCurrent((prev: number) => (prev < total - 1 ? prev + 1 : prev));
+                propSetFlipped && propSetFlipped(false);
+            } else {
+                setCurrent(current < total - 1 ? current + 1 : current);
+                setFlipped(false);
+            }
         };
 
         //Flip
@@ -28,7 +47,11 @@ export default function FlashcardViewer(
         {
             if (total > 0 && !isEditing) // Don't flip when editing
             {
-                setFlipped((prev) => !prev);
+                if (propSetFlipped) {
+                    propSetFlipped((prev: boolean) => !prev);
+                } else {
+                    setFlipped(!flipped);
+                }
             }
         };
 

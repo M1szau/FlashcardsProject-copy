@@ -1,6 +1,7 @@
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { useTranslation } from "react-i18next";
 import { AiOutlineDownload } from "react-icons/ai";
+import { useAuth } from '../../contexts';
 import type { DashboardAddNewSetProps } from '../../types and interfaces/interfaces.ts';
 import type { DashboardAddNewSetRef } from '../../types and interfaces/interfaces.ts';
 
@@ -8,10 +9,12 @@ import type { DashboardAddNewSetRef } from '../../types and interfaces/interface
 const DashboardAddNewSet = forwardRef<DashboardAddNewSetRef, DashboardAddNewSetProps>(({ 
     onAddSuccess, 
     onImportClick 
-}, ref) => {
+}, ref) => 
+    {
     const { t } = useTranslation();
+    const { token } = useAuth();
     
-    // Language options with translation keys
+    //Language options with translation keys
     const languageOptions = [
         { code: 'PL', name: t('languages.PL') },
         { code: 'EN', name: t('languages.EN') },
@@ -41,7 +44,6 @@ const DashboardAddNewSet = forwardRef<DashboardAddNewSetRef, DashboardAddNewSetP
         setAddingLoading(true);
         try 
         {
-            const token = localStorage.getItem('token');
             const res = await fetch('/api/sets', 
                 {
                 method: 'POST',

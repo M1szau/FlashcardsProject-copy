@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useTranslation } from "react-i18next";
-import { useSetsManagement } from '../../hooks/useSetsManagement.ts';
+import { useSets } from '../../contexts';
 
 import Navbar from '../Navbar.tsx';
 import DashboardImport from './DashboardImport.tsx';
@@ -12,7 +12,7 @@ import type { DashboardExportRef, DashboardImportRef, DashboardAddNewSetRef } fr
 export default function Dashboard() 
 {
     const { t } = useTranslation();
-    const { sets, setsActions } = useSetsManagement();
+    const { sets, actions: setsActions } = useSets();
 
     const exportRef = useRef<DashboardExportRef>(null);
     const importRef = useRef<DashboardImportRef>(null);

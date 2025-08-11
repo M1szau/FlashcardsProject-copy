@@ -1,19 +1,19 @@
 import Navbar from "./Navbar";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../contexts";
 import type { Statistics } from '../types and interfaces/types.ts';
 
 export default function Statistics()
 {
     const { t } = useTranslation();
+    const { token } = useAuth();
 
     const [statistics, setStatistics] = useState<Statistics | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => 
     {
-        const token = localStorage.getItem('token');
-        
         fetch('/api/statistics', 
         {
             headers: 

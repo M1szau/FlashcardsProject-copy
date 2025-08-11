@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts';
 import Header from './Header';
 import Img from '../../assets/logo.png';
 
@@ -8,6 +9,7 @@ export default function LogIn()
     const usernameRef = useRef<HTMLInputElement>(null);
     const passwordRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [loginError, setLoginError] = useState('');
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) 
@@ -16,7 +18,7 @@ export default function LogIn()
 
         const enteredUsername = usernameRef.current!.value;
         const enteredPassword = passwordRef.current!.value;
-        const form = event.currentTarget; // Capture form reference before async operations
+        const form = event.currentTarget;
 
         setLoginError('');
         
@@ -32,8 +34,8 @@ export default function LogIn()
             const data = await response.json();
             if(data.success) 
             {
-                localStorage.setItem('token', data.token);
-                window.location.href = '/dashboard'; 
+                login(data.token, data.user);
+                navigate('/dashboard');
             } else {
                 setLoginError(data.message || 'Login failed');
             }
@@ -41,7 +43,7 @@ export default function LogIn()
             setLoginError('Login failed');
         }
 
-        form.reset(); // Use captured form reference
+        form.reset();
     }
 
     return (

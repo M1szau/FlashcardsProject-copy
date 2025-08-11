@@ -2,11 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { GB, PL, DE } from "country-flag-icons/react/3x2";
+import { useAuth } from "../contexts";
 
 export default function Navbar() 
 {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
+    const { logout } = useAuth();
     const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -21,8 +23,7 @@ export default function Navbar()
     //logout button functionality
     function handleLogout() 
     {
-        localStorage.removeItem('token');
-        navigate('/login');
+        logout();
     }
 
     //language change functionality

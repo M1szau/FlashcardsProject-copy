@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { AiFillCheckCircle, AiFillCloseCircle } from "react-icons/ai";
 import { useTranslation } from "react-i18next";
+import { useAuth } from '../../contexts';
 import type { FlashcardKnownStatusProps, FlashcardKnownStatusRef } from '../../types and interfaces/interfaces.ts';
 
 
@@ -8,6 +9,7 @@ const FlashcardKnownStatus = forwardRef<FlashcardKnownStatusRef, FlashcardKnownS
 {
     const { flashcard, selectedSetId, onKnownStatusChange, showButton = false } = props;
     const { t } = useTranslation();
+    const { token } = useAuth();
 
     const handleToggleKnown = (e: React.MouseEvent) => 
     {
@@ -15,8 +17,6 @@ const FlashcardKnownStatus = forwardRef<FlashcardKnownStatusRef, FlashcardKnownS
         
         const currentKnownStatus = flashcard.known || false; // Undefined as false
         const newKnownStatus = !currentKnownStatus;
-        
-        const token = localStorage.getItem('token');
         
         fetch(`/api/sets/${selectedSetId}/flashcards/${flashcard.id}/known`, 
         {

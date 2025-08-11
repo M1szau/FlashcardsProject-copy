@@ -3,11 +3,14 @@ import type { Flashcard } from "../../types and interfaces/types";
 import type { AddFlashcardButtonProps } from "../../types and interfaces/interfaces.ts";
 import AddFlashcardModal from "./AddFlashcardModal";
 import { useTranslation } from "react-i18next";
+import { useFlashcards, useAuth } from "../../contexts";
 
 
-export default function AddFlashcardButton({ selectedSetId, currentUser, flashcards, setFlashcards, setCurrent, setFlipped }: AddFlashcardButtonProps) 
+export default function AddFlashcardButton({ selectedSetId, currentUser }: AddFlashcardButtonProps) 
 {
     const { t } = useTranslation();
+    const { actions: flashcardActions } = useFlashcards();
+    const { token } = useAuth();
     
     const [adding, setAdding] = useState(false);
     const [addValues, setAddValues] = useState<Flashcard>(
@@ -60,8 +63,6 @@ export default function AddFlashcardButton({ selectedSetId, currentUser, flashca
                 owner: currentUser
             };
 
-            const token = localStorage.getItem('token'); 
-
             fetch(`/api/sets/${selectedSetId}/flashcards`, 
             {
                 method: 'POST',
@@ -75,10 +76,8 @@ export default function AddFlashcardButton({ selectedSetId, currentUser, flashca
             .then(res => res.json())
             .then(card => 
             {
-                // Handle new flashcard added -> old handleFlashcardAdded
-                setFlashcards([...flashcards, card]);
-                setCurrent(flashcards.length);
-                setFlipped(false);
+                // Handle new flashcard added using context
+                flashcardActions.add(card);
                 setAdding(false);
             })
             .catch(error => 

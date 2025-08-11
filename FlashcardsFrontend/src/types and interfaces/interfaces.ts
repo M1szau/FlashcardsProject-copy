@@ -43,10 +43,6 @@ export interface AddFlashcardButtonProps
 {
     selectedSetId: string | null;
     currentUser: string;
-    flashcards: Flashcard[];
-    setFlashcards: React.Dispatch<React.SetStateAction<Flashcard[]>>;
-    setCurrent: React.Dispatch<React.SetStateAction<number>>;
-    setFlipped: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface FlashcardViewerProps 
@@ -55,8 +51,8 @@ export interface FlashcardViewerProps
     total: number;
     flipped: boolean;
     isEditing: boolean;
-    setCurrent: React.Dispatch<React.SetStateAction<number>>;
-    setFlipped: React.Dispatch<React.SetStateAction<boolean>>;
+    setCurrent?: React.Dispatch<React.SetStateAction<number>>;
+    setFlipped?: React.Dispatch<React.SetStateAction<boolean>>;
     renderCardContent: (side: "front" | "back") => React.ReactNode;
     renderActions: () => React.ReactNode;
 }
