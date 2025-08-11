@@ -1,15 +1,15 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import LogIn from '../../components/login and register/LogIn';
-import { MemoryRouter } from 'react-router-dom';
+import { renderWithProviders } from '../test-utils';
 
 //Mock function for navigation
 const navigateMock = vi.fn();
 
 global.fetch = vi.fn();
 
-//Properly mock react-router-dom and preserve MemoryRouter
+//Properly mock react-router-dom 
 vi.mock('react-router-dom', async (importOriginal) => 
 {
   const actual = await importOriginal();
@@ -28,21 +28,14 @@ describe('LogIn component', () =>
     vi.clearAllMocks();
     Object.defineProperty(window, 'location', 
     {
-      value: 
-      {
-        href: '',
-      },
+      value: { href: '' },
       writable: true,
     });
   });
 
   it('Renders all required fields and buttons', () => 
   {
-    render(
-      <MemoryRouter>
-        <LogIn />
-      </MemoryRouter>
-    );
+    renderWithProviders(<LogIn />);
     
     expect(screen.getByLabelText(/Your username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Your password/i)).toBeInTheDocument();
@@ -60,11 +53,7 @@ describe('LogIn component', () =>
       json: () => Promise.resolve(mockResponse),
     });
 
-    render(
-      <MemoryRouter>
-        <LogIn />
-      </MemoryRouter>
-    );
+    renderWithProviders(<LogIn />);
 
     fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'testuser' } });
     fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'testpass' } });
@@ -89,11 +78,7 @@ describe('LogIn component', () =>
       json: () => Promise.resolve(mockResponse),
     });
 
-    render(
-      <MemoryRouter>
-        <LogIn />
-      </MemoryRouter>
-    );
+    renderWithProviders(<LogIn />);
 
     fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'testuser' } });
     fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'wrongpass' } });
@@ -107,17 +92,13 @@ describe('LogIn component', () =>
 
   it('Shows fallback error message when login fails without message', async () => 
   {
-    const mockResponse = { success: false }; //line 38 
+    const mockResponse = { success: false };
     (global.fetch as any).mockResolvedValueOnce(
     {
       json: () => Promise.resolve(mockResponse),
     });
 
-    render(
-      <MemoryRouter>
-        <LogIn />
-      </MemoryRouter>
-    );
+    renderWithProviders(<LogIn />);
 
     fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'testuser' } });
     fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'wrongpass' } });
@@ -133,11 +114,7 @@ describe('LogIn component', () =>
   {
     (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
 
-    render(
-      <MemoryRouter>
-        <LogIn />
-      </MemoryRouter>
-    );
+    renderWithProviders(<LogIn />);
 
     fireEvent.change(screen.getByLabelText(/Your username/i), { target: { value: 'testuser' } });
     fireEvent.change(screen.getByLabelText(/Your password/i), { target: { value: 'testpass' } });
@@ -151,11 +128,7 @@ describe('LogIn component', () =>
 
   it('Navigates to /register when Join us! button is clicked', () => 
   {
-    render(
-      <MemoryRouter>
-        <LogIn />
-      </MemoryRouter>
-    );
+    renderWithProviders(<LogIn />);
     fireEvent.click(screen.getByRole('button', { name: /Join us!/i }));
     expect(navigateMock).toHaveBeenCalledWith('/register');
   });
@@ -168,11 +141,7 @@ describe('LogIn component', () =>
       json: () => Promise.resolve(mockResponse),
     });
 
-    render(
-      <MemoryRouter>
-        <LogIn />
-      </MemoryRouter>
-    );
+    renderWithProviders(<LogIn />);
     
     const usernameInput = screen.getByLabelText(/Your username/i) as HTMLInputElement;
     const passwordInput = screen.getByLabelText(/Your password/i) as HTMLInputElement;

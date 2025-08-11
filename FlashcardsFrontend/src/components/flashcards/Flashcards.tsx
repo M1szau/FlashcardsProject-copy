@@ -22,8 +22,9 @@ export default function App()
         actions: flashcardActions
     } = useFlashcards();
 
-    // Set the current set when component mounts
-    useEffect(() => {
+    //Set the current set when component mounts
+    useEffect(() => 
+    {
         if (setId) {
             flashcardActions.setCurrentSet(setId);
         }

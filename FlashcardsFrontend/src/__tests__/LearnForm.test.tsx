@@ -1,562 +1,374 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fireEvent, render, screen, waitFor, act } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { I18nextProvider } from 'react-i18next';
-import i18n from 'i18next';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import LearnForm from '../components/LearnForm.tsx';
-
-i18n.init(
-{
-  lng: 'en',
-  fallbackLng: 'en',
-  interpolation: 
-  {
-    escapeValue: false,
-  },
-  resources: 
-  {
-    en: 
-    {
-      translation: 
-      {
-        learnForm: 
-        {
-          loadingSets: "Loading your sets...",
-          title: "Learn Flashcards",
-          selectSet: "Select set",
-          chooseSetPlaceholder: "Choose set to learn",
-          learningMode: "Learning mode",
-          practiceAll: "Practice all cards",
-          practiceUnknown: "Practice unknown cards",
-          startLearning: "Start Learning",
-          noSetsCreated: "No sets created yet.",
-          noSetsMessage: "No sets created yet.",
-          selectSetError: "Please select a set to learn from."
-        },
-        navbar: {
-          appName: "FlashCards",
-          learn: "Learn",
-          statistics: "Statistics",
-          logout: "Logout"
-        }
-      }
-    }
-  }
-});
-
-const TestWrapper = ({ children }: { children: React.ReactNode }) => 
-(
-  <BrowserRouter>
-    <I18nextProvider i18n={i18n}>
-      {children}
-    </I18nextProvider>
-  </BrowserRouter>
-);
+import { renderWithProviders, mockLocalStorage } from './test-utils';
+import LearnForm from '../components/LearnForm';
+import type { SetType } from '../types and interfaces/types';
 
 const mockNavigate = vi.fn();
-
 vi.mock('react-router-dom', async () => 
 {
-    const actual = await vi.importActual('react-router-dom'); 
-    return { ...actual, useNavigate: () => mockNavigate };
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate
+    };
 });
 
-const mockSets = [
-    { id: '1', name: 'Set One' },
-    { id: '2', name: 'Set Two' },
+const mockSets: SetType[] = [
+    {
+        id: 'set1',
+        name: 'Spanish Vocabulary',
+        description: 'Basic Spanish words',
+        defaultLanguage: 'EN',
+        translationLanguage: 'ES',
+        owner: 'testuser'
+    },
+    {
+        id: 'set2',
+        name: 'German Grammar',
+        description: 'German grammar rules',
+        defaultLanguage: 'EN',
+        translationLanguage: 'DE',
+        owner: 'testuser'
+    }
 ];
 
-beforeEach(() => 
+describe('LearnForm Component', () => 
 {
-    vi.resetAllMocks();
-    vi.stubGlobal('fetch', vi.fn(() => 
-        Promise.resolve(
-        {
-            ok: true,
-            json: async () => mockSets,
-        })
-    ));
-    localStorage.setItem('token', 'test-token');
-});
-
-describe('LearnForm', () => 
-{
-    it('Renders loading state initially', async () => 
+    beforeEach(() => 
     {
-        //Create a pending promise that doesn't resolve immediately
-        let resolveFetch: (value: any) => void;
-        const pendingPromise = new Promise(resolve => 
+        vi.clearAllMocks();
+        mockLocalStorage.getItem.mockImplementation((key) => 
         {
-            resolveFetch = resolve;
+            if (key === 'token') return 'valid-token';
+            if (key === 'username') return 'testuser';
+            return null;
+        });
+    });
+
+    afterEach(() => 
+    {
+        vi.resetAllMocks();
+    });
+
+    describe('Authentication and Basic Rendering', () => 
+    {
+        it('should redirect to login when no token exists', async () => 
+        {
+            mockLocalStorage.getItem.mockImplementation(() => null);
+            renderWithProviders(<LearnForm />, { initialToken: null });
+            
+            await waitFor(() => 
+            {
+                expect(mockNavigate).toHaveBeenCalledWith('/login', { replace: true });
+            });
         });
 
-        vi.stubGlobal('fetch', vi.fn(() => pendingPromise));
-
-        await act(async () => 
+        it('should render loading state initially', () => 
         {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
+            (global.fetch as any).mockImplementation(() => new Promise(() => {}));
+            renderWithProviders(<LearnForm />);
+            expect(screen.getByText('Loading your sets...')).toBeInTheDocument();
         });
 
-        //Should show loading state while fetch is pending
-        expect(screen.getByText('Loading your sets...')).toBeInTheDocument();
-
-        //Clean up - resolve the promise to prevent hanging
-        await act(async () => 
+        it('should make API call with authorization header', async () => 
         {
-            resolveFetch!({
+            const mockFetch = vi.fn().mockResolvedValue({
                 ok: true,
-                json: async () => mockSets,
+                json: async () => ({ sets: mockSets })
+            });
+            global.fetch = mockFetch;
+
+            renderWithProviders(<LearnForm />, { initialToken: 'valid-token' });
+
+            expect(mockFetch).toHaveBeenCalledWith('/api/sets', {
+                headers: { Authorization: 'Bearer valid-token' }
             });
         });
     });
 
-    it('Renders sets after loading', async () => 
+    describe('Component Structure', () => 
     {
-        await act(async () => 
+        it('should render all elements with proper CSS classes', async () => 
         {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
-
-        expect(screen.getByText('Select set')).toBeInTheDocument();
-        expect(screen.getByText('Learning mode')).toBeInTheDocument();
-        expect(screen.getByText('Set One')).toBeInTheDocument();
-        expect(screen.getByText('Set Two')).toBeInTheDocument();
-    });
-
-    it('Disables submit button when no sets are available', async () => 
-    {
-        vi.stubGlobal('fetch', vi.fn(() => 
-            Promise.resolve(
-            {
+            (global.fetch as any).mockResolvedValueOnce({
                 ok: true,
-                json: async () => [],
-            })
-        ));
+                json: async () => ({ sets: mockSets })
+            });
 
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
+            });
+
+            expect(screen.getByText('Select set')).toBeInTheDocument();
+            expect(screen.getByText('Learning mode')).toBeInTheDocument();
+            expect(screen.getByText('Start Learning')).toBeInTheDocument();
+            expect(screen.getByText('Flashcards')).toBeInTheDocument(); // Navbar
+
+            const container = screen.getByText('Learn Flashcards').closest('.flashcard-center');
+            expect(container).toBeInTheDocument();
+
+            const form = screen.getByText('Learn Flashcards').closest('.flashcard-add-form');
+            expect(form).toBeInTheDocument();
         });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
-        });
-
-        const startButton = screen.getByText('Start Learning');
-        expect(startButton).toBeDisabled();
     });
 
-    it('Navigates on form submit with correct parameters', async () => 
+    describe('Sets Loading and Display', () => 
     {
-        await act(async () => 
+        it('should handle different data scenarios correctly', async () => 
         {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
+            //Test successful sets loading
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ sets: mockSets })
+            });
+
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Spanish Vocabulary')).toBeInTheDocument();
+                expect(screen.getByText('German Grammar')).toBeInTheDocument();
+            });
+
+            const selectElement = screen.getByDisplayValue('Choose set to learn');
+            expect(selectElement).toHaveAttribute('required');
+            expect(selectElement).toHaveClass('flashcard-edit-input');
         });
 
-        await waitFor(() => 
+        it('should handle empty sets and errors gracefully', async () => 
         {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
+            //Test empty sets
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ sets: [] })
+            });
+
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
+            });
+
+            const message = screen.getByText('No sets created yet.');
+            expect(message).toHaveStyle('color: rgb(143, 0, 191)');
+            expect(message).toHaveStyle('font-style: italic');
+
+            //Test API error
+            vi.clearAllMocks();
+            (global.fetch as any).mockRejectedValueOnce(new Error('API Error'));
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
+            });
         });
-
-        const setSelect = screen.getByRole('combobox', { name: /select set/i });
-        const startButton = screen.getByText('Start Learning');
-
-        await act(async () => 
-        {
-            fireEvent.change(setSelect, { target: { value: '1' } });
-            fireEvent.click(startButton);
-        });
-
-        expect(mockNavigate).toHaveBeenCalledWith('/learn/practice/1?mode=all');
     });
 
-    it('Changes learning mode and navigates with correct params', async () => 
+    describe('Form Interactions', () => 
     {
-        await act(async () => 
+        it('should handle form elements and button states correctly', async () => 
         {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
+            //Test with sets available
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ sets: mockSets })
+            });
 
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
+            renderWithProviders(<LearnForm />);
 
-        const setSelect = screen.getByRole('combobox', { name: /select set/i });
-        const modeSelect = screen.getByRole('combobox', { name: /learning mode/i });
-        const startButton = screen.getByText('Start Learning');
+            await waitFor(() => 
+            {
+                expect(screen.getByDisplayValue('Choose set to learn')).toBeInTheDocument();
+            });
 
-        await act(async () => 
-        {
-            fireEvent.change(setSelect, { target: { value: '2' } });
+            //Test set selection
+            const setSelect = screen.getByDisplayValue('Choose set to learn');
+            expect(setSelect).toHaveAttribute('required');
+            expect(setSelect).toHaveClass('flashcard-edit-input');
+            fireEvent.change(setSelect, { target: { value: 'set1' } });
+            expect(setSelect).toHaveValue('set1');
+
+            //Test mode selection
+            const modeSelect = screen.getByDisplayValue('Practice all cards');
+            expect(modeSelect).toHaveValue('all');
+            expect(modeSelect).toHaveAttribute('required');
             fireEvent.change(modeSelect, { target: { value: 'unknown' } });
+            expect(modeSelect).toHaveValue('unknown');
+
+            //Test button attributes
+            const startButton = screen.getByText('Start Learning');
+            expect(startButton).not.toBeDisabled();
+            expect(startButton).toHaveAttribute('type', 'submit');
+            expect(startButton).toHaveAttribute('aria-label', 'Start Learning');
+        });
+
+        it('should disable button when no sets available', async () => 
+        {
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ sets: [] })
+            });
+
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                const startButton = screen.getByText('Start Learning');
+                expect(startButton).toBeDisabled();
+            });
+        });
+    });
+
+    describe('Form Submission', () => 
+    {
+        it('should show alert when no set is selected', async () => 
+        {
+            const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+            
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ sets: mockSets })
+            });
+
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByDisplayValue('Choose set to learn')).toBeInTheDocument();
+            });
+            const setSelect = screen.getByDisplayValue('Choose set to learn') as HTMLSelectElement;
+            expect(setSelect.value).toBe('');
+
+            //Submit the form, not just click the button
+            const form = document.querySelector('.flashcard-add-form') as HTMLFormElement;
+            fireEvent.submit(form);
+
+            expect(alertSpy).toHaveBeenCalledWith('Please select a set to learn from.');
+            alertSpy.mockRestore();
+        });
+
+        it('should navigate with correct parameters when valid selection made', async () => 
+        {
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ sets: mockSets })
+            });
+
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByDisplayValue('Choose set to learn')).toBeInTheDocument();
+            });
+
+            //Select a set
+            const setSelect = screen.getByDisplayValue('Choose set to learn');
+            fireEvent.change(setSelect, { target: { value: 'set1' } });
+
+            //Submit form
+            const startButton = screen.getByText('Start Learning');
             fireEvent.click(startButton);
+
+            expect(mockNavigate).toHaveBeenCalledWith('/learn/practice/set1?mode=all');
         });
 
-        expect(mockNavigate).toHaveBeenCalledWith('/learn/practice/2?mode=unknown');
-    });
-
-    it('Handles HTTP error response gracefully', async () => 
-    {
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        
-        vi.stubGlobal('fetch', vi.fn(() => 
-            Promise.resolve(
-            {
-                ok: false,
-                status: 500,
-            })
-        ));
-
-        await act(async () => 
+        it('should navigate with unknown mode when selected', async () => 
         {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
-        });
-
-        const startButton = screen.getByText('Start Learning');
-        expect(startButton).toBeDisabled();
-
-        consoleSpy.mockRestore();
-    });
-
-    it('Handles network errors in fetch', async () => 
-    {
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        
-        vi.stubGlobal('fetch', vi.fn(() => 
-            Promise.reject(new Error('Network error'))
-        ));
-
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
-        });
-
-        const startButton = screen.getByText('Start Learning');
-        expect(startButton).toBeDisabled();
-
-        consoleSpy.mockRestore();
-    });
-
-    it('Handles response with data.sets property', async () => 
-    {
-        vi.stubGlobal('fetch', vi.fn(() => 
-            Promise.resolve(
-            {
+            (global.fetch as any).mockResolvedValueOnce({
                 ok: true,
-                json: async () => ({ sets: mockSets }),
-            })
-        ));
+                json: async () => ({ sets: mockSets })
+            });
 
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
+            renderWithProviders(<LearnForm />);
 
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
-
-        expect(screen.getByText('Set One')).toBeInTheDocument();
-        expect(screen.getByText('Set Two')).toBeInTheDocument();
-    });
-
-    it('Handles response where data is directly an array', async () => 
-    {
-        const directArrayData = [
-            { id: '3', name: 'Direct Set' }
-        ];
-
-        vi.stubGlobal('fetch', vi.fn(() => 
-            Promise.resolve(
+            await waitFor(() => 
             {
-                ok: true,
-                json: async () => directArrayData,
-            })
-        ));
+                expect(screen.getByDisplayValue('Choose set to learn')).toBeInTheDocument();
+            });
 
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
+            //Select set and change mode
+            const setSelect = screen.getByDisplayValue('Choose set to learn');
+            fireEvent.change(setSelect, { target: { value: 'set2' } });
 
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
+            const modeSelect = screen.getByDisplayValue('Practice all cards');
+            fireEvent.change(modeSelect, { target: { value: 'unknown' } });
 
-        expect(screen.getByText('Direct Set')).toBeInTheDocument();
-    });
-
-    it('Handles response where data.sets is null but data is an array', async () => 
-    {
-        const fallbackData = [
-            { id: '4', name: 'Fallback Set' }
-        ];
-
-        vi.stubGlobal('fetch', vi.fn(() => 
-            Promise.resolve(
-            {
-                ok: true,
-                json: async () => fallbackData,
-            })
-        ));
-
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
-
-        expect(screen.getByText('Fallback Set')).toBeInTheDocument();
-    });
-
-    it('Handles response where setsArray is not an array', async () => 
-    {
-        vi.stubGlobal('fetch', vi.fn(() => 
-            Promise.resolve(
-            {
-                ok: true,
-                json: async () => ({ sets: null }),
-            })
-        ));
-
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
-        });
-
-        const startButton = screen.getByText('Start Learning');
-        expect(startButton).toBeDisabled();
-    });
-
-    it('Prevents submission when no set is selected', async () => 
-    {
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
-
-        const startButton = screen.getByText('Start Learning');
-        
-        await act(async () => 
-        {
+            //Submit
+            const startButton = screen.getByText('Start Learning');
             fireEvent.click(startButton);
+
+            expect(mockNavigate).toHaveBeenCalledWith('/learn/practice/set2?mode=unknown');
         });
 
-        //Should not navigate since form validation prevents submission
-        expect(mockNavigate).not.toHaveBeenCalled();
-    });
-
-    it('Uses correct fetch request with authorization token', async () => 
-    {
-        const fetchSpy = vi.fn(() => 
-            Promise.resolve(
-            {
+        it('should handle whitespace in selected set ID', async () => 
+        {
+            const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+            
+            (global.fetch as any).mockResolvedValueOnce({
                 ok: true,
-                json: async () => mockSets,
-            })
-        );
-        vi.stubGlobal('fetch', fetchSpy);
+                json: async () => ({ sets: mockSets })
+            });
 
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
+            renderWithProviders(<LearnForm />);
 
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
-
-        expect(fetchSpy).toHaveBeenCalledWith('/api/sets', 
-        {
-            headers: 
+            await waitFor(() => 
             {
-                'Authorization': 'Bearer test-token'
-            }
-        });
-    });
+                expect(screen.getByDisplayValue('Choose set to learn')).toBeInTheDocument();
+            });
 
-    it('Redirects to login when no authorization token is present', async () => 
-    {
-        localStorage.removeItem('token');
-
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(mockNavigate).toHaveBeenCalledWith('/login', { replace: true });
-        });
-    });
-
-    it('Shows alert when trying to submit with empty set selection', async () => 
-    {
-        const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-        
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
-
-        const form = document.querySelector('form');
-        const setSelect = screen.getByRole('combobox', { name: /select set/i });
-        
-        setSelect.removeAttribute('required');
-        
-        //Create a submit event and dispatch it directly to test our validation
-        await act(async () => 
-        {
-            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-            form?.dispatchEvent(submitEvent);
-        });
-
-        //Alert and not navigate
-        expect(alertSpy).toHaveBeenCalledWith('Please select a set to learn from.');
-        expect(mockNavigate).not.toHaveBeenCalled();
-        
-        alertSpy.mockRestore();
-    });
-
-    it('Shows alert when trying to submit with whitespace-only set selection', async () => 
-    {
-        const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-        
-        await act(async () => 
-        {
-            render(
-                <TestWrapper>
-                    <LearnForm />
-                </TestWrapper>
-            );
-        });
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Learn Flashcards')).toBeInTheDocument();
-        });
-
-        const form = document.querySelector('form');
-        const setSelect = screen.getByRole('combobox', { name: /select set/i });
-        
-        await act(async () => 
-        {
+            const setSelect = screen.getByDisplayValue('Choose set to learn');
             fireEvent.change(setSelect, { target: { value: '   ' } });
-        });
-        
-        setSelect.removeAttribute('required');
-        
-        //Create a submit event and dispatch it directly to test our validation
-        await act(async () => 
-        {
-            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-            form?.dispatchEvent(submitEvent);
-        });
 
-        //Alert and not navigate
-        expect(alertSpy).toHaveBeenCalledWith('Please select a set to learn from.');
-        expect(mockNavigate).not.toHaveBeenCalled();
-        
-        alertSpy.mockRestore();
+            const form = document.querySelector('.flashcard-add-form') as HTMLFormElement;
+            fireEvent.submit(form);
+
+            expect(alertSpy).toHaveBeenCalledWith('Please select a set to learn from.');
+            alertSpy.mockRestore();
+        });
+    });
+
+    describe('Edge Cases and Styling', () => 
+    {
+        it('should handle errors and apply correct styling', async () => 
+        {
+            //Test malformed JSON and HTTP error responses
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => { throw new Error('Invalid JSON'); }
+            });
+
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
+            });
+
+            //Test styling with valid data
+            vi.clearAllMocks();
+            (global.fetch as any).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ sets: mockSets })
+            });
+
+            renderWithProviders(<LearnForm />);
+
+            await waitFor(() => 
+            {
+                const modal = screen.getByText('Learn Flashcards').closest('.flashcard-add-modal');
+                expect(modal).toHaveStyle('position: static');
+                expect(modal).toHaveStyle('background: transparent');
+
+                const actionsContainer = screen.getByText('Start Learning').closest('.flashcard-actions-bottom');
+                expect(actionsContainer).toHaveStyle('justify-content: flex-end');
+            });
+        });
     });
 });

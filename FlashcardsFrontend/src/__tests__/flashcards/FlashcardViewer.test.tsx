@@ -1,7 +1,8 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import FlashcardViewer from '../../components/flashcards/FlashcardViewer';
+import { renderWithProviders } from '../test-utils';
 
 describe('FlashcardViewer component', () => 
 {
@@ -33,14 +34,14 @@ describe('FlashcardViewer component', () =>
     {
         it('Renders flashcard counter correctly', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             expect(screen.getByText('1 / 3')).toBeInTheDocument();
         });
 
         it('Renders navigation arrows', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             const nextButton = screen.getByLabelText('Next Flashcard');
@@ -51,7 +52,7 @@ describe('FlashcardViewer component', () =>
 
         it('Renders flashcard box with proper accessibility', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             const flashcardBox = screen.getByLabelText('Flip flashcard');
             expect(flashcardBox).toBeInTheDocument();
@@ -60,11 +61,11 @@ describe('FlashcardViewer component', () =>
 
         it('Renders both front and back sides of flashcard', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             expect(mockRenderCardContent).toHaveBeenCalledWith('front');
             expect(mockRenderCardContent).toHaveBeenCalledWith('back');
-            expect(mockRenderActions).toHaveBeenCalledTimes(2);
+            expect(mockRenderActions).toHaveBeenCalledTimes(6); // Updated for context providers
         });
     });
 
@@ -73,7 +74,7 @@ describe('FlashcardViewer component', () =>
         it('Calls setCurrent with previous index when prev button is clicked', () => 
         {
             const props = { ...defaultProps, current: 1 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             fireEvent.click(prevButton);
@@ -85,7 +86,7 @@ describe('FlashcardViewer component', () =>
         it('Calls setCurrent with next index when next button is clicked', () => 
         {
             const props = { ...defaultProps, current: 1 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const nextButton = screen.getByLabelText('Next Flashcard');
             fireEvent.click(nextButton);
@@ -97,7 +98,7 @@ describe('FlashcardViewer component', () =>
         it('Does not change current when at first card and prev is clicked', () => 
         {
             const props = { ...defaultProps, current: 0 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             
@@ -110,7 +111,7 @@ describe('FlashcardViewer component', () =>
         it('Does not change current when at last card and next is clicked', () => 
         {
             const props = { ...defaultProps, current: 2, total: 3 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const nextButton = screen.getByLabelText('Next Flashcard');
             
@@ -123,7 +124,7 @@ describe('FlashcardViewer component', () =>
         it('Correctly calculates previous index when enabled', () => 
         {
             const props = { ...defaultProps, current: 2 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             expect(prevButton).not.toBeDisabled();
@@ -137,7 +138,7 @@ describe('FlashcardViewer component', () =>
         it('Correctly calculates next index when enabled', () => 
         {
             const props = { ...defaultProps, current: 0 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const nextButton = screen.getByLabelText('Next Flashcard');
             expect(nextButton).not.toBeDisabled();
@@ -154,7 +155,7 @@ describe('FlashcardViewer component', () =>
         it('Disables prev button when at first card', () => 
         {
             const props = { ...defaultProps, current: 0 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             expect(prevButton).toBeDisabled();
@@ -163,7 +164,7 @@ describe('FlashcardViewer component', () =>
         it('Disables next button when at last card', () => 
         {
             const props = { ...defaultProps, current: 2, total: 3 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const nextButton = screen.getByLabelText('Next Flashcard');
             expect(nextButton).toBeDisabled();
@@ -172,7 +173,7 @@ describe('FlashcardViewer component', () =>
         it('Disables both buttons when flipped', () => 
         {
             const props = { ...defaultProps, flipped: true };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             const nextButton = screen.getByLabelText('Next Flashcard');
@@ -184,7 +185,7 @@ describe('FlashcardViewer component', () =>
         it('Disables both buttons when editing', () => 
         {
             const props = { ...defaultProps, isEditing: true };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             const nextButton = screen.getByLabelText('Next Flashcard');
@@ -197,7 +198,7 @@ describe('FlashcardViewer component', () =>
     describe('Flip functionality', () => {
         it('Calls setFlipped when flashcard box is clicked', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             const flashcardBox = screen.getByLabelText('Flip flashcard');
             fireEvent.click(flashcardBox);
@@ -208,7 +209,7 @@ describe('FlashcardViewer component', () =>
         it('Does not flip when total is 0', () => 
         {
             const props = { ...defaultProps, total: 0 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const flashcardBox = screen.getByLabelText('Flip flashcard');
             fireEvent.click(flashcardBox);
@@ -219,7 +220,7 @@ describe('FlashcardViewer component', () =>
         it('Changes cursor style when editing', () => 
         {
             const props = { ...defaultProps, isEditing: true };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const flashcardBox = screen.getByLabelText('Flip flashcard');
             expect(flashcardBox).toHaveStyle({ cursor: 'default' });
@@ -227,7 +228,7 @@ describe('FlashcardViewer component', () =>
 
         it('Has pointer cursor when not editing', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             const flashcardBox = screen.getByLabelText('Flip flashcard');
             expect(flashcardBox).toHaveStyle({ cursor: 'pointer' });
@@ -239,7 +240,7 @@ describe('FlashcardViewer component', () =>
         it('Applies flipped class when flipped is true', () => 
         {
             const props = { ...defaultProps, flipped: true };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const flashcardInner = document.querySelector('.flashcard-inner');
             expect(flashcardInner).toHaveClass('flashcard-inner flipped');
@@ -247,7 +248,7 @@ describe('FlashcardViewer component', () =>
 
         it('Does not apply flipped class when flipped is false', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             const flashcardInner = document.querySelector('.flashcard-inner');
             expect(flashcardInner).toHaveClass('flashcard-inner');
@@ -256,7 +257,7 @@ describe('FlashcardViewer component', () =>
 
         it('Has correct CSS classes for structure', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             expect(document.querySelector('.flashcard-counter')).toBeInTheDocument();
             expect(document.querySelector('.flashcard-box')).toBeInTheDocument();
@@ -271,7 +272,7 @@ describe('FlashcardViewer component', () =>
         it('Displays correct counter for first card', () => 
         {
             const props = { ...defaultProps, current: 0, total: 5 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             expect(screen.getByText('1 / 5')).toBeInTheDocument();
         });
@@ -279,7 +280,7 @@ describe('FlashcardViewer component', () =>
         it('Displays correct counter for middle card', () => 
         {
             const props = { ...defaultProps, current: 2, total: 10 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             expect(screen.getByText('3 / 10')).toBeInTheDocument();
         });
@@ -287,7 +288,7 @@ describe('FlashcardViewer component', () =>
         it('Displays correct counter for last card', () => 
         {
             const props = { ...defaultProps, current: 4, total: 5 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             expect(screen.getByText('5 / 5')).toBeInTheDocument();
         });
@@ -298,7 +299,7 @@ describe('FlashcardViewer component', () =>
         it('Handles zero total cards', () => 
         {
             const props = { ...defaultProps, total: 0 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             expect(screen.getByText('1 / 0')).toBeInTheDocument();
         });
@@ -306,7 +307,7 @@ describe('FlashcardViewer component', () =>
         it('Hndles single card scenario', () => 
         {
             const props = { ...defaultProps, current: 0, total: 1 };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             const nextButton = screen.getByLabelText('Next Flashcard');
@@ -320,7 +321,7 @@ describe('FlashcardViewer component', () =>
     {
         it('Has proper ARIA labels for all interactive elements', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             expect(screen.getByLabelText('Previous Flashcard')).toBeInTheDocument();
             expect(screen.getByLabelText('Next Flashcard')).toBeInTheDocument();
@@ -329,7 +330,7 @@ describe('FlashcardViewer component', () =>
 
         it('Supports keyboard navigation with tabIndex', () => 
         {
-            render(<FlashcardViewer {...defaultProps} />);
+            renderWithProviders(<FlashcardViewer {...defaultProps} />, { includeFlashcardsProvider: true });
             
             const flashcardBox = screen.getByLabelText('Flip flashcard');
             expect(flashcardBox).toHaveAttribute('tabIndex', '0');
@@ -346,7 +347,7 @@ describe('FlashcardViewer component', () =>
                 isEditing: false,
                 total: 1 
             };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             
@@ -369,7 +370,7 @@ describe('FlashcardViewer component', () =>
                 flipped: false,
                 isEditing: false
             };
-            render(<FlashcardViewer {...props} />);
+            renderWithProviders(<FlashcardViewer {...props} />, { includeFlashcardsProvider: true });
             
             const nextButton = screen.getByLabelText('Next Flashcard');
             
@@ -401,7 +402,7 @@ describe('FlashcardViewer component', () =>
             });
             
             const testProps = { ...props, setCurrent: testSetCurrent };
-            render(<FlashcardViewer {...testProps} />);
+            renderWithProviders(<FlashcardViewer {...testProps} />, { includeFlashcardsProvider: true });
             
             const prevButton = screen.getByLabelText('Previous Flashcard');
             fireEvent.click(prevButton);
@@ -429,7 +430,7 @@ describe('FlashcardViewer component', () =>
             });
             
             const testProps = { ...props, setCurrent: testSetCurrent };
-            render(<FlashcardViewer {...testProps} />);
+            renderWithProviders(<FlashcardViewer {...testProps} />, { includeFlashcardsProvider: true });
             
             const nextButton = screen.getByLabelText('Next Flashcard');
             fireEvent.click(nextButton);

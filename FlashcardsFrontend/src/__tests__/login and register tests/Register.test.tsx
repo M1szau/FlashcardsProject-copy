@@ -1,196 +1,301 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
+import { BrowserRouter } from 'react-router-dom';
 import Register from '../../components/login and register/Register';
-import { MemoryRouter } from 'react-router-dom';
+import { AuthProvider } from '../../contexts/AuthContext';
+import type { ReactNode } from 'react';
 
-//Mock function for navigation
-const navigateMock = vi.fn();
-
-global.fetch = vi.fn();
-
-//Properly mock react-router-dom and preserve MemoryRouter
-vi.mock('react-router-dom', async (importOriginal) => 
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => 
 {
-  const actual = await importOriginal();
-  const actualTyped = actual as Record<string, any>;
-  return {
-    ...actualTyped,
-    useNavigate: () => navigateMock,
-    MemoryRouter: actualTyped.MemoryRouter,
-  };
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => mockNavigate,
+    };
 });
 
-describe('Register component', () => 
+vi.mock('../../components/login and register/Header', () => 
+({
+    default: ({ image, children }: { image: { src: string; alt: string }; children: ReactNode }) => (
+        <header data-testid="header">
+            <img src={image.src} alt={image.alt} data-testid="header-image" />
+            {children}
+        </header>
+    ),
+}));
+
+vi.mock('../../assets/logo.png', () => 
+({
+    default: '/mock-logo.png',
+}));
+
+function renderWithProviders(ui: ReactNode) 
 {
-  beforeEach(() => 
-  {
-    vi.clearAllMocks();
-    Object.defineProperty(window, 'location', 
-    {
-      value: 
-      {
-        href: '',
-      },
-      writable: true,
-    });
-  });
-
-  //Test that all form fields and buttons are rendered
-  it('Renders all required fields and buttons', () => 
-  {
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>
+    return render(
+        <BrowserRouter>
+            <AuthProvider>
+                {ui}
+            </AuthProvider>
+        </BrowserRouter>
     );
-    expect(screen.getByLabelText(/Choose your username/i)).toBeInTheDocument(); // username field
-    expect(screen.getByLabelText(/Choose your password/i)).toBeInTheDocument(); // password field
-    expect(screen.getByRole('button', { name: /Register/i })).toBeInTheDocument(); // register button
-    expect(screen.getByText(/Already have an account\?/i)).toBeInTheDocument(); // info text
-    expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument(); // log in button
-    expect(screen.getByText(/Please register/i)).toBeInTheDocument();
-  });
+}
 
-  it('Handles successful registration', async () =>
-  {
-    const mockResponse = { success: true, token: 'fake-token' };
-    (global.fetch as any).mockResolvedValueOnce(
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+const localStorageMock = { getItem: vi.fn(), setItem: vi.fn(), removeItem: vi.fn(), clear: vi.fn() };
+Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+
+describe('Register Component', () => 
+{
+    beforeEach(() => 
     {
-      json: () => Promise.resolve(mockResponse),
+        vi.clearAllMocks();
+        localStorageMock.getItem.mockReturnValue(null);
     });
 
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
-    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
-    fireEvent.click(screen.getByRole('button', { name: /Register/i }));
-
-    await waitFor(() => 
+    it('renders all form elements correctly', () => 
     {
-      expect(global.fetch).toHaveBeenCalledWith('/api/register', 
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'newuser', password: 'newpass' }),
-      });
-    });
-  });
-
-  it('Shows error message when registration fails', async () => 
-  {
-    const mockResponse = { success: false, message: 'Registration failed' };
-    (global.fetch as any).mockResolvedValueOnce(
-    {
-      json: () => Promise.resolve(mockResponse),
+        renderWithProviders(<Register />);
+        
+        expect(screen.getByText('Please register')).toBeInTheDocument();
+        expect(screen.getByLabelText('Choose your username')).toHaveAttribute('type', 'text');
+        expect(screen.getByLabelText('Choose your password')).toHaveAttribute('type', 'password');
+        expect(screen.getByRole('button', { name: 'Register' })).toHaveAttribute('type', 'submit');
+        expect(screen.getByRole('button', { name: 'Log in' })).toHaveAttribute('type', 'button');
+        expect(screen.getByText('Already have an account?')).toBeInTheDocument();
     });
 
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
-    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
-    fireEvent.click(screen.getByRole('button', { name: /Register/i }));
-
-    await waitFor(() => 
+    it('renders header with correct image props', () => 
     {
-      expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
-    });
-  });
-
-  //line 37
-  it('Shows fallback error message when registration fails without message', async () => 
-  {
-    const mockResponse = { success: false }; 
-    (global.fetch as any).mockResolvedValueOnce(
-    {
-      json: () => Promise.resolve(mockResponse),
+        renderWithProviders(<Register />);
+        
+        const image = screen.getByTestId('header-image');
+        expect(image).toHaveAttribute('src', '/mock-logo.png');
+        expect(image).toHaveAttribute('alt', 'Registration sheet');
     });
 
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
-    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
-    fireEvent.click(screen.getByRole('button', { name: /Register/i }));
-
-    await waitFor(() => 
+    it('allows typing in form fields', () => 
     {
-      expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
-    });
-  });
-
-  it('Shows error message when network error occurs', async () => 
-  {
-    (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
-
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>
-    );
-
-    fireEvent.change(screen.getByLabelText(/Choose your username/i), { target: { value: 'newuser' } });
-    fireEvent.change(screen.getByLabelText(/Choose your password/i), { target: { value: 'newpass' } });
-    fireEvent.click(screen.getByRole('button', { name: /Register/i }));
-
-    await waitFor(() => 
-    {
-      expect(screen.getByText(/Registration failed/i)).toBeInTheDocument();
-    });
-  });
-
-  //Navigation to Log in when button is clicked
-  it('Navigates to Log in when button is clicked', () => 
-  {
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>
-    );
-    fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
-    expect(navigateMock).toHaveBeenCalledWith('/');
-  });
-
-  it('Resets the form after submit', async () => 
-  {
-    const mockResponse = { success: false, message: 'Registration failed' };
-    (global.fetch as any).mockResolvedValueOnce(
-    {
-      json: () => Promise.resolve(mockResponse),
+        renderWithProviders(<Register />);
+        
+        const usernameInput = screen.getByLabelText('Choose your username') as HTMLInputElement;
+        const passwordInput = screen.getByLabelText('Choose your password') as HTMLInputElement;
+        
+        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+        fireEvent.change(passwordInput, { target: { value: 'testpass' } });
+        
+        expect(usernameInput.value).toBe('testuser');
+        expect(passwordInput.value).toBe('testpass');
     });
 
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>
-    );
-    
-    const usernameInput = screen.getByLabelText(/Choose your username/i) as HTMLInputElement;
-    const passwordInput = screen.getByLabelText(/Choose your password/i) as HTMLInputElement;
-
-    fireEvent.change(usernameInput, { target: { value: 'resetuser' } });
-    fireEvent.change(passwordInput, { target: { value: 'resetpass' } });
-    
-    expect(usernameInput.value).toBe('resetuser');
-    expect(passwordInput.value).toBe('resetpass');
-    
-    fireEvent.click(screen.getByRole('button', { name: /Register/i }));
-
-    await waitFor(() => 
+    it('navigates to login when "Log in" button is clicked', () => 
     {
-      expect(usernameInput.value).toBe(''); 
-      expect(passwordInput.value).toBe(''); 
+        renderWithProviders(<Register />);
+        
+        const loginButton = screen.getByRole('button', { name: 'Log in' });
+        fireEvent.click(loginButton);
+        
+        expect(mockNavigate).toHaveBeenCalledWith('/');
     });
-  });
+
+    it('handles successful registration', async () => 
+    {
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ success: true, token: 'mock-token' }),
+        });
+
+        renderWithProviders(<Register />);
+        
+        const usernameInput = screen.getByLabelText('Choose your username');
+        const passwordInput = screen.getByLabelText('Choose your password');
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+        
+        fireEvent.change(usernameInput, { target: { value: 'newuser' } });
+        fireEvent.change(passwordInput, { target: { value: 'newpass' } });
+        fireEvent.click(submitButton);
+        
+        expect(mockFetch).toHaveBeenCalledWith('/api/register', 
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: 'newuser', password: 'newpass' }),
+        });
+        
+        await waitFor(() => 
+        {
+            expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+            expect(localStorageMock.setItem).toHaveBeenCalledWith('token', 'mock-token');
+            expect(localStorageMock.setItem).toHaveBeenCalledWith('username', 'newuser');
+        });
+    });
+
+    it('resets form after successful submission', async () => 
+    {
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ success: true, token: 'mock-token' }),
+        });
+
+        renderWithProviders(<Register />);
+        
+        const usernameInput = screen.getByLabelText('Choose your username') as HTMLInputElement;
+        const passwordInput = screen.getByLabelText('Choose your password') as HTMLInputElement;
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+        
+        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+        fireEvent.change(passwordInput, { target: { value: 'testpass' } });
+        fireEvent.click(submitButton);
+        
+        await waitFor(() => 
+        {
+            expect(usernameInput.value).toBe('');
+            expect(passwordInput.value).toBe('');
+        });
+    });
+
+    //Failed Registration
+    it('displays error message when registration fails', async () => 
+    {
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ success: false, message: 'Username already exists' }),
+        });
+
+        renderWithProviders(<Register />);
+        
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+        fireEvent.click(submitButton);
+        
+        await waitFor(() => 
+        {
+            expect(screen.getByText('Username already exists')).toBeInTheDocument();
+        });
+        
+        expect(mockNavigate).not.toHaveBeenCalledWith('/dashboard');
+    });
+
+    it('displays generic error for failed registration without message', async () => 
+    {
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ success: false }),
+        });
+
+        renderWithProviders(<Register />);
+        
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+        fireEvent.click(submitButton);
+        
+        await waitFor(() => 
+        {
+            expect(screen.getByText('Registration failed')).toBeInTheDocument();
+        });
+    });
+
+    it('handles network errors gracefully', async () => 
+    {
+        mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+        renderWithProviders(<Register />);
+        
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+        fireEvent.click(submitButton);
+        
+        await waitFor(() => 
+        {
+            expect(screen.getByText('Registration failed')).toBeInTheDocument();
+        });
+    });
+
+    //Error Display
+    it('displays error message with correct styling', async () => 
+    {
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ success: false, message: 'Test error' }),
+        });
+
+        renderWithProviders(<Register />);
+        
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+        fireEvent.click(submitButton);
+        
+        await waitFor(() => 
+        {
+            const errorElement = screen.getByText('Test error');
+            expect(errorElement).toBeInTheDocument();
+            expect(errorElement).toHaveClass('error-box');
+            expect(errorElement).toHaveStyle({ 
+                color: 'rgb(255, 0, 0)',
+                marginTop: '5px', 
+                fontSize: '14px' 
+            });
+        });
+    });
+
+    //Form Submission 
+    it('handles form submission with empty fields', async () => 
+    {
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ success: true, token: 'mock-token' }),
+        });
+
+        renderWithProviders(<Register />);
+        
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+        fireEvent.click(submitButton);
+        
+        expect(mockFetch).toHaveBeenCalledWith('/api/register', 
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: '', password: '' }),
+        });
+    });
+
+    //Accessibility
+    it('provides proper form accessibility', () => 
+    {
+        renderWithProviders(<Register />);
+        
+        const usernameInput = screen.getByLabelText('Choose your username');
+        const passwordInput = screen.getByLabelText('Choose your password');
+        const heading = screen.getByRole('heading', { level: 1 });
+        
+        expect(usernameInput).toBeInTheDocument();
+        expect(passwordInput).toBeInTheDocument();
+        expect(heading).toHaveTextContent('Please register');
+    });
+
+    //Integration 
+    it('does not call login function when registration fails', async () => 
+    {
+        mockFetch.mockResolvedValueOnce(
+        {
+            ok: true,
+            json: async () => ({ success: false, message: 'Registration failed' }),
+        });
+
+        renderWithProviders(<Register />);
+        
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+        fireEvent.click(submitButton);
+        
+        await waitFor(() => 
+        {
+            expect(screen.getByText('Registration failed')).toBeInTheDocument();
+        });
+        
+        expect(localStorageMock.setItem).not.toHaveBeenCalledWith('token', expect.anything());
+    });
 });

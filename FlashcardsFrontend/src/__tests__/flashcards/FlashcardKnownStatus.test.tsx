@@ -1,8 +1,9 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import FlashcardKnownStatus from '../../components/flashcards/FlashcardKnownStatus';
 import type { Flashcard } from '../../types and interfaces/types';
+import { renderWithProviders } from '../test-utils';
 
 vi.mock('react-icons/ai', () => (
 {
@@ -10,21 +11,8 @@ vi.mock('react-icons/ai', () => (
     AiFillCloseCircle: () => <span data-testid="close-icon">Close Icon</span>
 }));
 
-vi.mock('react-i18next', () => (
-{
-    useTranslation: () => (
-    {
-        t: (key: string) => 
-        {
-            const translations: { [key: string]: string } = 
-            {
-                'flashcards.alreadyKnown': 'Already Known',
-                'flashcards.notKnownYet': 'Not Known Yet'
-            };
-            return translations[key] || key;
-        }
-    })
-}));
+// Mock fetch
+global.fetch = vi.fn();
 
 describe('FlashcardKnownStatus', () => 
 {
@@ -79,7 +67,7 @@ describe('FlashcardKnownStatus', () =>
             const knownFlashcard = { ...mockFlashcard, known: true };
             const propsWithKnownCard = { ...mockProps, flashcard: knownFlashcard };
             
-            render(<FlashcardKnownStatus {...propsWithKnownCard} />);
+            renderWithProviders(<FlashcardKnownStatus {...propsWithKnownCard} />);
             
             expect(screen.getByText('Already Known')).toBeInTheDocument();
             expect(screen.getByText('Already Known')).toHaveClass('known-label', 'known');
@@ -87,7 +75,7 @@ describe('FlashcardKnownStatus', () =>
 
         it('Renders unknown status label when flashcard is not known', () => 
         {
-            render(<FlashcardKnownStatus {...mockProps} />);
+            renderWithProviders(<FlashcardKnownStatus {...mockProps} />);
             
             expect(screen.getByText('Not Known Yet')).toBeInTheDocument();
             expect(screen.getByText('Not Known Yet')).toHaveClass('known-label', 'unknown');
@@ -98,7 +86,7 @@ describe('FlashcardKnownStatus', () =>
             const flashcardWithUndefinedKnown = { ...mockFlashcard, known: undefined as any };
             const propsWithUndefined = { ...mockProps, flashcard: flashcardWithUndefinedKnown };
             
-            render(<FlashcardKnownStatus {...propsWithUndefined} />);
+            renderWithProviders(<FlashcardKnownStatus {...propsWithUndefined} />);
             
             expect(screen.getByText('Not Known Yet')).toBeInTheDocument();
         });
@@ -110,7 +98,7 @@ describe('FlashcardKnownStatus', () =>
 
         it('Renders button with correct icon for unknown flashcard', () => 
         {
-            render(<FlashcardKnownStatus {...buttonProps} />);
+            renderWithProviders(<FlashcardKnownStatus {...buttonProps} />);
             
             const button = screen.getByRole('button');
             expect(button).toBeInTheDocument();
@@ -124,7 +112,7 @@ describe('FlashcardKnownStatus', () =>
             const knownFlashcard = { ...mockFlashcard, known: true };
             const propsWithKnownCard = { ...buttonProps, flashcard: knownFlashcard };
             
-            render(<FlashcardKnownStatus {...propsWithKnownCard} />);
+            renderWithProviders(<FlashcardKnownStatus {...propsWithKnownCard} />);
             
             const button = screen.getByRole('button');
             expect(button).toHaveClass('flashcard-known-button', 'known');
@@ -153,7 +141,7 @@ describe('FlashcardKnownStatus', () =>
                 json: () => Promise.resolve({ ...mockFlashcard, known: true })
             });
             
-            render(<FlashcardKnownStatus {...propsWithMock} />);
+            renderWithProviders(<FlashcardKnownStatus {...propsWithMock} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -187,7 +175,7 @@ describe('FlashcardKnownStatus', () =>
                 json: () => Promise.resolve({ ...knownFlashcard, known: false })
             });
             
-            render(<FlashcardKnownStatus {...propsWithKnownCard} />);
+            renderWithProviders(<FlashcardKnownStatus {...propsWithKnownCard} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -215,7 +203,7 @@ describe('FlashcardKnownStatus', () =>
                 json: () => Promise.resolve({})
             });
             
-            render(<FlashcardKnownStatus {...propsWithUndefined} />);
+            renderWithProviders(<FlashcardKnownStatus {...propsWithUndefined} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -245,7 +233,7 @@ describe('FlashcardKnownStatus', () =>
                 status: 404
             });
             
-            render(<FlashcardKnownStatus {...buttonProps} />);
+            renderWithProviders(<FlashcardKnownStatus {...buttonProps} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -262,7 +250,7 @@ describe('FlashcardKnownStatus', () =>
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
             mockFetch.mockRejectedValue(new Error('Network error'));
             
-            render(<FlashcardKnownStatus {...buttonProps} />);
+            renderWithProviders(<FlashcardKnownStatus {...buttonProps} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -284,7 +272,7 @@ describe('FlashcardKnownStatus', () =>
                 json: () => Promise.resolve({})
             });
             
-            render(<FlashcardKnownStatus {...buttonProps} />);
+            renderWithProviders(<FlashcardKnownStatus {...buttonProps} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -314,7 +302,7 @@ describe('FlashcardKnownStatus', () =>
                 json: () => Promise.resolve({})
             });
             
-            render(<FlashcardKnownStatus {...buttonProps} />);
+            renderWithProviders(<FlashcardKnownStatus {...buttonProps} />);
             
             const stopPropagationSpy = vi.fn();
             const mockEvent = { stopPropagation: stopPropagationSpy } as any;
@@ -330,7 +318,7 @@ describe('FlashcardKnownStatus', () =>
         it('Forwards ref correctly', () => 
         {
             const ref = { current: null };
-            render(<FlashcardKnownStatus {...mockProps} ref={ref} />);
+            renderWithProviders(<FlashcardKnownStatus {...mockProps} ref={ref} />);
             
             expect(ref.current).toBeDefined();
             expect(typeof ref.current).toBe('object');
@@ -362,7 +350,7 @@ describe('FlashcardKnownStatus', () =>
                 json: () => Promise.resolve(updatedFlashcard)
             });
             
-            render(<FlashcardKnownStatus {...buttonProps} />);
+            renderWithProviders(<FlashcardKnownStatus {...buttonProps} />);
             
             expect(screen.getByTestId('close-icon')).toBeInTheDocument();
             expect(screen.getByRole('button')).toHaveAttribute('aria-label', 'Mark as known');

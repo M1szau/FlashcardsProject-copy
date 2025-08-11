@@ -1,8 +1,9 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom';
 import FlashcardDeleteBtn from '../../components/flashcards/FlashcardDeleteBtn';
 import type { Flashcard } from '../../types and interfaces/types';
+import { renderWithProviders } from '../test-utils';
 
 vi.mock('react-icons/ai', () => (
 {
@@ -61,7 +62,7 @@ describe('FlashcardDeleteBtn', () =>
     {
         it('Renders delete button with icon and correct attributes', () => 
         {
-            render(<FlashcardDeleteBtn {...mockProps} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} />);
             
             const button = screen.getByRole('button', { name: /delete flashcard/i });
             expect(button).toBeInTheDocument();
@@ -81,7 +82,7 @@ describe('FlashcardDeleteBtn', () =>
         it('Prevents deletion when only one flashcard remains', () => 
         {
             const propsWithOneFlashcard = { ...mockProps, flashcardsLength: 1 };
-            render(<FlashcardDeleteBtn {...propsWithOneFlashcard} />);
+            renderWithProviders(<FlashcardDeleteBtn {...propsWithOneFlashcard} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -93,7 +94,7 @@ describe('FlashcardDeleteBtn', () =>
         it('Allows deletion when multiple flashcards exist', () => 
         {
             mockConfirm.mockReturnValue(false);
-            render(<FlashcardDeleteBtn {...mockProps} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -107,7 +108,7 @@ describe('FlashcardDeleteBtn', () =>
         it('Does not proceed when user cancels', () => 
         {
             mockConfirm.mockReturnValue(false);
-            render(<FlashcardDeleteBtn {...mockProps} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -125,7 +126,7 @@ describe('FlashcardDeleteBtn', () =>
                 json: () => Promise.resolve({})
             });
             
-            render(<FlashcardDeleteBtn {...mockProps} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -159,7 +160,7 @@ describe('FlashcardDeleteBtn', () =>
                 json: () => Promise.resolve({})
             });
             
-            render(<FlashcardDeleteBtn {...propsWithMock} />);
+            renderWithProviders(<FlashcardDeleteBtn {...propsWithMock} />);
             fireEvent.click(screen.getByRole('button'));
             
             await waitFor(() => 
@@ -177,7 +178,7 @@ describe('FlashcardDeleteBtn', () =>
                 json: () => Promise.resolve({})
             });
             
-            render(<FlashcardDeleteBtn {...mockProps} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} />);
             fireEvent.click(screen.getByRole('button'));
             
             await waitFor(() => 
@@ -193,7 +194,7 @@ describe('FlashcardDeleteBtn', () =>
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
             mockFetch.mockRejectedValue(new Error('Network error'));
             
-            render(<FlashcardDeleteBtn {...mockProps} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} />);
             fireEvent.click(screen.getByRole('button'));
             
             await waitFor(() => 
@@ -214,7 +215,7 @@ describe('FlashcardDeleteBtn', () =>
                 json: () => Promise.resolve({})
             });
             
-            render(<FlashcardDeleteBtn {...mockProps} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} />);
             fireEvent.click(screen.getByRole('button'));
             
             expect(mockLocalStorageGetItem).toHaveBeenCalledWith('token');
@@ -232,7 +233,7 @@ describe('FlashcardDeleteBtn', () =>
         it('Stops event propagation and handles click', () => 
         {
             mockConfirm.mockReturnValue(false);
-            render(<FlashcardDeleteBtn {...mockProps} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} />);
             
             fireEvent.click(screen.getByRole('button'));
             
@@ -245,7 +246,7 @@ describe('FlashcardDeleteBtn', () =>
         it('Forwards ref correctly', () => 
         {
             const ref = { current: null };
-            render(<FlashcardDeleteBtn {...mockProps} ref={ref} />);
+            renderWithProviders(<FlashcardDeleteBtn {...mockProps} ref={ref} />);
             
             expect(ref.current).toBeDefined();
             expect(typeof ref.current).toBe('object');
@@ -267,7 +268,7 @@ describe('FlashcardDeleteBtn', () =>
                 json: () => Promise.resolve({})
             });
             
-            render(<FlashcardDeleteBtn {...propsWithMock} />);
+            renderWithProviders(<FlashcardDeleteBtn {...propsWithMock} />);
             
             fireEvent.click(screen.getByRole('button'));
             

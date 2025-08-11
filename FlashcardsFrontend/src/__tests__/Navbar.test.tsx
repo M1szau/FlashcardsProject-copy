@@ -5,6 +5,20 @@ import Navbar from '../components/Navbar';
 import { MemoryRouter } from 'react-router-dom';
 import { I18nextProvider } from 'react-i18next';
 import i18n from 'i18next';
+import { AuthProvider } from '../contexts/AuthContext';
+
+// Mock localStorage
+const mockLocalStorage = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn()
+};
+Object.defineProperty(window, 'localStorage', {
+  value: mockLocalStorage,
+});
 
 // Setup i18n for testing
 i18n.init(
@@ -35,9 +49,11 @@ i18n.init(
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <MemoryRouter>
-    <I18nextProvider i18n={i18n}>
-      {children}
-    </I18nextProvider>
+    <AuthProvider>
+      <I18nextProvider i18n={i18n}>
+        {children}
+      </I18nextProvider>
+    </AuthProvider>
   </MemoryRouter>
 );
 
@@ -48,16 +64,11 @@ beforeEach(() =>
   //Force language to 'en' for consistent testing
   i18n.changeLanguage('en');
   
-  Object.defineProperty(window, 'localStorage', 
-  {
-    value: 
-    {
-      removeItem: vi.fn(),
-      getItem: vi.fn(),
-      setItem: vi.fn(),
-      clear: vi.fn(),
-    },
-    writable: true,
+  // Set default localStorage values
+  mockLocalStorage.getItem.mockImplementation((key: string) => {
+    if (key === 'token') return 'mock-token';
+    if (key === 'username') return 'testuser';
+    return null;
   });
 });
 

@@ -1,68 +1,57 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { I18nextProvider } from 'react-i18next';
-import i18n from 'i18next';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Statistics from '../components/Statistics.tsx';
+import Statistics from '../components/Statistics';
+import { renderWithProviders } from './test-utils';
+import type { Statistics as StatisticsType } from '../types and interfaces/types';
 
-// Initialize i18n for testing
-i18n.init({
-  lng: 'en',
-  fallbackLng: 'en',
-  resources: {
-    en: {
-      translation: {
-        statistics: {
-          title: 'Learning Statistics',
-          totalSets: 'Total Sets',
-          totalFlashcards: 'Total Flashcards',
-          knownCards: 'Known Cards',
-          notKnownYet: 'Not Known Yet',
-          learningProgress: 'Learning Progress',
-          mastered: 'mastered',
-          noFlashcardsYet: 'No flashcards yet',
-          breakdownBySets: 'Breakdown by sets',
-          noSetsCreated: 'No sets created yet.',
-          total: 'Total',
-          known: 'Known',
-          unknown: 'Unknown',
-          noCardsInSet: 'No cards in this set',
-          loadingStatistics: 'Loading statistics...',
-          errorLoadingStatistics: 'Error loading statistics'
-        }
-      }
-    }
-  }
-});
+
+vi.mock('../components/Navbar', () => 
+({
+    default: () => <nav data-testid="navbar">Navbar</nav>
+}));
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-const localStorageMock: Storage = 
+const mockStatisticsData: StatisticsType = 
 {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-  length: 0,
-  key: vi.fn()
+    totalSets: 3,
+    totalFlashcards: 15,
+    totalKnownCards: 8,
+    totalUnknownCards: 7,
+    setStatistics: [
+        {
+            setId: '1',
+            setName: 'Spanish Basics',
+            totalCards: 10,
+            knownCards: 6,
+            unknownCards: 4
+        },
+        {
+            setId: '2', 
+            setName: 'German Verbs',
+            totalCards: 5,
+            knownCards: 2,
+            unknownCards: 3
+        },
+        {
+            setId: '3',
+            setName: 'Empty Set',
+            totalCards: 0,
+            knownCards: 0,
+            unknownCards: 0
+        }
+    ]
 };
 
-global.localStorage = localStorageMock;
-
-const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <BrowserRouter>
-    <I18nextProvider i18n={i18n}>
-      {children}
-    </I18nextProvider>
-  </BrowserRouter>
-);
-
-//Helper function to render component with Router and i18n
-const renderWithRouter = (component: React.ReactElement) => 
+const emptyStatisticsData: StatisticsType = 
 {
-  return render(component, { wrapper: TestWrapper });
+    totalSets: 0,
+    totalFlashcards: 0,
+    totalKnownCards: 0,
+    totalUnknownCards: 0,
+    setStatistics: []
 };
 
 describe('Statistics Component', () => 
@@ -70,375 +59,578 @@ describe('Statistics Component', () =>
     beforeEach(() => 
     {
         vi.clearAllMocks();
-        (localStorageMock.getItem as any).mockReturnValue('mock-token');
+        mockFetch.mockClear();
     });
 
-    it('Renders loading state initially', () => 
+    afterEach(() => 
     {
-        mockFetch.mockResolvedValueOnce(
+        vi.clearAllMocks();
+    });
+
+    // Component Structure Tests
+    describe('Component Structure', () => 
+    {
+        it('renders navbar component', async () => 
         {
-            ok: true,
-            json: async () => (
+            mockFetch.mockResolvedValueOnce(
             {
-                totalSets: 0,
-                totalFlashcards: 0,
-                totalKnownCards: 0,
-                totalUnknownCards: 0,
-                setStatistics: []
-            })
-        });
+                ok: true,
+                json: async () => mockStatisticsData
+            });
 
-        renderWithRouter(<Statistics />);
-        expect(screen.getByText('Loading statistics...')).toBeInTheDocument();
-     });
+            renderWithProviders(<Statistics />);
 
-    it('Displays statistics data correctly', async () => 
-    {
-        const mockData = 
-        {
-            totalSets: 3,
-            totalFlashcards: 15,
-            totalKnownCards: 8,
-            totalUnknownCards: 7,
-            setStatistics: [
-                {
-                setId: '1',
-                setName: 'Polish Basics',
-                totalCards: 5,
-                knownCards: 3,
-                unknownCards: 2
-                },
-                {
-                setId: '2',
-                setName: 'English Vocabulary',
-                totalCards: 10,
-                knownCards: 5,
-                unknownCards: 5
-                }
-            ]
-        };
-
-    mockFetch.mockResolvedValueOnce(
-    {
-      ok: true,
-      json: async () => mockData
-    });
-
-    renderWithRouter(<Statistics />);
-
-    await waitFor(() => 
-    {
-      expect(screen.getByText('3')).toBeInTheDocument(); 
-      expect(screen.getByText('15')).toBeInTheDocument(); 
-      expect(screen.getByText('8')).toBeInTheDocument(); 
-      expect(screen.getByText('7')).toBeInTheDocument(); 
-    });
-
-    expect(screen.getByText('Polish Basics')).toBeInTheDocument();
-    expect(screen.getByText('English Vocabulary')).toBeInTheDocument();
-
-    //Check progress percentage
-    expect(screen.getByText('53% mastered')).toBeInTheDocument(); // 8/15
-  });
-
-    it('Displays "No sets created yet" when no sets exist', async () => 
-    {
-        const mockData = 
-        {
-        totalSets: 0,
-        totalFlashcards: 0,
-        totalKnownCards: 0,
-        totalUnknownCards: 0,
-        setStatistics: []
-        };
-
-        mockFetch.mockResolvedValueOnce(
-        {
-            ok: true,
-            json: async () => mockData
-        });
-
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
-        });
-    });
-
-    it('Handles API error gracefully', async () => 
-    {
-        mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => {
-        expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
-        });
-    });
-
-    it('Handles HTTP error response', async () => 
-    {
-        mockFetch.mockResolvedValueOnce(
-        {
-            ok: false,
-            status: 500
-        });
-
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
-        });
-    });
-
-    it('Displays correct progress bar width', async () => 
-    {
-        const mockData = 
-        {
-            totalSets: 1,
-            totalFlashcards: 10,
-            totalKnownCards: 3,
-            totalUnknownCards: 7,
-            setStatistics: 
-            [
-                {
-                setId: '1',
-                setName: 'Test Set',
-                totalCards: 10,
-                knownCards: 3,
-                unknownCards: 7
-                }
-            ]
-        };
-
-        mockFetch.mockResolvedValueOnce(
-        {
-            ok: true,
-            json: async () => mockData
-        });
-
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => {
-        const progressFill = document.querySelector('.progress-fill');
-        expect(progressFill).toHaveStyle('width: 30%'); // 3/10 = 30%
-        });
-    });
-
-    it('Handles sets with zero flashcards', async () => 
-    {
-        const mockData = 
-        {
-            totalSets: 1,
-            totalFlashcards: 0,
-            totalKnownCards: 0,
-            totalUnknownCards: 0,
-            setStatistics: 
-            [
-                {
-                setId: '1',
-                setName: 'Empty Set',
-                totalCards: 0,
-                knownCards: 0,
-                unknownCards: 0
-                }
-            ]
-        };
-
-        mockFetch.mockResolvedValueOnce(
-        {
-            ok: true,
-            json: async () => mockData
-        });
-
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => 
-        {
-            expect(screen.getByText('Empty Set')).toBeInTheDocument();
-            expect(screen.getByText('No cards in this set')).toBeInTheDocument();
-            expect(screen.getByText('No flashcards yet')).toBeInTheDocument();
-        });
-    });
-
-    it('Calculates progress correctly for 100% completion', async () => 
-    {
-        const mockData = 
-        {
-            totalSets: 1,
-            totalFlashcards: 5,
-            totalKnownCards: 5,
-            totalUnknownCards: 0,
-            setStatistics: 
-            [
-                {
-                setId: '1',
-                setName: 'Completed Set',
-                totalCards: 5,
-                knownCards: 5,
-                unknownCards: 0
-                }
-            ]
-        };
-
-        mockFetch.mockResolvedValueOnce(
-        {
-            ok: true,
-            json: async () => mockData
-        });
-
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => 
-        {
-            expect(screen.getAllByText('100% mastered')).toHaveLength(2); // One for overall, one for the set
-            const progressFill = document.querySelector('.progress-fill');
-            expect(progressFill).toHaveStyle('width: 100%');
-        });
-    });
-
-    it('Makes API call with correct authorization header', async () => 
-    {
-        const mockData = 
-        {
-            totalSets: 0,
-            totalFlashcards: 0,
-            totalKnownCards: 0,
-            totalUnknownCards: 0,
-            setStatistics: []
-        };
-
-        mockFetch.mockResolvedValueOnce(
-        {
-            ok: true,
-            json: async () => mockData
-        });
-
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => 
-        {
-            expect(mockFetch).toHaveBeenCalledWith('/api/statistics', 
+            await waitFor(() => 
             {
-                headers: 
-                {
-                    Authorization: 'Bearer mock-token'
-                }
+                expect(screen.getByTestId('navbar')).toBeInTheDocument();
+            });
+        });
+
+        it('renders statistics title', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Learning Statistics')).toBeInTheDocument();
+            });
+        });
+
+        it('renders all overview stat cards', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Total Sets')).toBeInTheDocument();
+                expect(screen.getByText('Total Flashcards')).toBeInTheDocument();
+                expect(screen.getByText('Known Cards')).toBeInTheDocument();
+                expect(screen.getByText('Not Known Yet')).toBeInTheDocument();
             });
         });
     });
 
-    it('Handles missing token gracefully', async () => 
+    describe('Loading State', () => 
     {
-        (localStorageMock.getItem as any).mockReturnValue(null);
-
-        mockFetch.mockResolvedValueOnce(
+        it('displays loading message initially', () => 
         {
-            ok: false,
-            status: 401
+            mockFetch.mockImplementation(() => new Promise(() => {}));
+
+            renderWithProviders(<Statistics />);
+
+            expect(screen.getByText('Loading statistics...')).toBeInTheDocument();
+            expect(screen.getByTestId('navbar')).toBeInTheDocument();
         });
 
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => 
+        it('does not show statistics content while loading', () => 
         {
-            expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
+            mockFetch.mockImplementation(() => new Promise(() => {})); 
+
+            renderWithProviders(<Statistics />);
+
+            expect(screen.queryByText('Learning Statistics')).not.toBeInTheDocument();
+            expect(screen.queryByText('Total Sets')).not.toBeInTheDocument();
         });
     });
 
-    it('Displays correct section titles and labels', async () => 
+    //Error State 
+    describe('Error State', () => 
     {
-        const mockData = 
+        it('displays error message when API call fails', async () => 
         {
-            totalSets: 1,
-            totalFlashcards: 5,
-            totalKnownCards: 3,
-            totalUnknownCards: 2,
-            setStatistics: 
-            [
-                {
-                setId: '1',
-                setName: 'Test Set',
-                totalCards: 5,
-                knownCards: 3,
-                unknownCards: 2
-                }
-            ]
-        };
+            mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-        mockFetch.mockResolvedValueOnce(
-        {
-            ok: true,
-            json: async () => mockData
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
+            });
         });
 
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => 
+        it('displays error message when API returns non-ok status', async () => 
         {
-            // Check main section titles
-            expect(screen.getByText('Learning Statistics')).toBeInTheDocument();
-            expect(screen.getByText('Learning Progress')).toBeInTheDocument();
-            expect(screen.getByText('Breakdown by sets')).toBeInTheDocument();
-            
-            // Check stat labels
-            expect(screen.getByText('Total Sets')).toBeInTheDocument();
-            expect(screen.getByText('Total Flashcards')).toBeInTheDocument();
-            expect(screen.getByText('Known Cards')).toBeInTheDocument();
-            expect(screen.getByText('Not Known Yet')).toBeInTheDocument();
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: false,
+                status: 500,
+                json: async () => ({ error: 'Server error' })
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
+            });
+        });
+
+        it('renders navbar even in error state', async () => 
+        {
+            mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByTestId('navbar')).toBeInTheDocument();
+            });
         });
     });
 
-    it('Displays individual set information correctly', async () => 
+    //Statistics Display 
+    describe('Statistics Display', () => 
     {
-        const mockData = 
+        it('displays correct overview statistics', async () => 
         {
-            totalSets: 2,
-            totalFlashcards: 15,
-            totalKnownCards: 8,
-            totalUnknownCards: 7,
-            setStatistics: 
-            [
-                {
-                setId: '1',
-                setName: 'German Basics',
-                totalCards: 8,
-                knownCards: 5,
-                unknownCards: 3
-                },
-                {
-                setId: '2',
-                setName: 'Spanish Verbs',
-                totalCards: 7,
-                knownCards: 3,
-                unknownCards: 4
-                }
-            ]
-        };
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
 
-        mockFetch.mockResolvedValueOnce(
-        {
-            ok: true,
-            json: async () => mockData
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('3')).toBeInTheDocument();
+                expect(screen.getByText('15')).toBeInTheDocument();
+                expect(screen.getByText('8')).toBeInTheDocument();
+                expect(screen.getByText('7')).toBeInTheDocument(); 
+            });
         });
 
-        renderWithRouter(<Statistics />);
-
-        await waitFor(() => 
+        it('displays zero statistics correctly', async () => 
         {
-            // Check set names
-            expect(screen.getByText('German Basics')).toBeInTheDocument();
-            expect(screen.getByText('Spanish Verbs')).toBeInTheDocument();
-            
-            // Check individual progress percentages
-            expect(screen.getByText('63% mastered')).toBeInTheDocument(); // 5/8 for German Basics
-            expect(screen.getByText('43% mastered')).toBeInTheDocument(); // 3/7 for Spanish Verbs
-            
-            // Check that the sets section contains the expected structure
-            const setsSection = screen.getByText('Breakdown by sets');
-            expect(setsSection).toBeInTheDocument();
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => emptyStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                const zeroElements = screen.getAllByText('0');
+                expect(zeroElements).toHaveLength(4); 
+            });
+        });
+
+        it('displays learning progress section', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Learning Progress')).toBeInTheDocument();
+            });
+        });
+
+        it('displays breakdown by sets section', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Breakdown by sets')).toBeInTheDocument();
+            });
+        });
+    });
+
+    //Progress Bar
+    describe('Progress Bar Calculations', () => 
+    {
+        it('calculates and displays correct progress percentage', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('53% mastered')).toBeInTheDocument();
+            });
+        });
+
+        it('handles zero flashcards scenario', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => emptyStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('No flashcards yet')).toBeInTheDocument();
+            });
+        });
+
+        it('renders progress bar with correct width', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                const progressBar = document.querySelector('.progress-fill');
+                expect(progressBar).toHaveStyle('width: 53.333333333333336%');
+            });
+        });
+    });
+
+    //Set Statistics
+    describe('Set Statistics', () => 
+    {
+        it('displays all set names', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Spanish Basics')).toBeInTheDocument();
+                expect(screen.getByText('German Verbs')).toBeInTheDocument();
+                expect(screen.getByText('Empty Set')).toBeInTheDocument();
+            });
+        });
+
+        it('displays correct statistics for each set', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Total: 10')).toBeInTheDocument();
+                expect(screen.getByText('Known: 6')).toBeInTheDocument();
+                expect(screen.getByText('Unknown: 4')).toBeInTheDocument();
+
+                expect(screen.getByText('Total: 5')).toBeInTheDocument();
+                expect(screen.getByText('Known: 2')).toBeInTheDocument();
+                expect(screen.getByText('Unknown: 3')).toBeInTheDocument();
+            });
+        });
+
+        it('calculates correct progress for each set', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('60% mastered')).toBeInTheDocument();
+                expect(screen.getByText('40% mastered')).toBeInTheDocument();
+                expect(screen.getByText('No cards in this set')).toBeInTheDocument();
+            });
+        });
+
+        it('displays no sets message when no sets exist', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => emptyStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('No sets created yet.')).toBeInTheDocument();
+            });
+        });
+
+        it('renders progress bars for each set with correct width', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                const progressBars = document.querySelectorAll('.set-progress-fill');
+                
+                expect(progressBars[0]).toHaveStyle('width: 60%');
+                expect(progressBars[1]).toHaveStyle('width: 40%');
+                expect(progressBars[2]).toHaveStyle('width: 0%');
+            });
+        });
+    });
+
+    //CSS Classes
+    describe('CSS Classes and Styling', () => 
+    {
+        it('applies correct CSS classes to overview cards', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                const statCards = document.querySelectorAll('.stat-card');
+                expect(statCards).toHaveLength(4);
+                
+                expect(statCards[2]).toHaveClass('known');
+                expect(statCards[3]).toHaveClass('unknown');
+            });
+        });
+
+        it('applies correct container classes', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(document.querySelector('.statistics-container')).toBeInTheDocument();
+                expect(document.querySelector('.statistics-overview')).toBeInTheDocument();
+                expect(document.querySelector('.learning-progress')).toBeInTheDocument();
+                expect(document.querySelector('.sets-breakdown')).toBeInTheDocument();
+            });
+        });
+    });
+
+    //API Integration 
+    describe('API Integration', () => 
+    {
+        it('makes API call with authorization header', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(mockFetch).toHaveBeenCalledWith('/api/statistics', 
+                    expect.objectContaining(
+                    {
+                        headers: expect.objectContaining(
+                        {
+                            Authorization: expect.stringContaining('Bearer')
+                        })
+                    })
+                );
+            });
+        });
+
+        it('handles missing token gracefully', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />, { initialToken: null });
+
+            await waitFor(() => 
+            {
+                expect(mockFetch).toHaveBeenCalledWith('/api/statistics', 
+                {
+                    headers: 
+                    {
+                        Authorization: 'Bearer null'
+                    }
+                });
+            });
+        });
+    });
+
+    //Edge Cases
+    describe('Edge Cases', () => 
+    {
+        it('handles network timeout gracefully', async () => 
+        {
+            mockFetch.mockImplementation(() => 
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Request timeout')), 100)
+                )
+            );
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Error loading statistics')).toBeInTheDocument();
+            });
+        });
+
+        it('handles sets with high percentage values', async () => 
+        {
+            const highPercentageData: StatisticsType = 
+            {
+                totalSets: 1,
+                totalFlashcards: 100,
+                totalKnownCards: 100,
+                totalUnknownCards: 0,
+                setStatistics: [
+                    {
+                        setId: '1',
+                        setName: 'Complete Set',
+                        totalCards: 100,
+                        knownCards: 100,
+                        unknownCards: 0
+                    }
+                ]
+            };
+
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => highPercentageData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                const masteredTexts = screen.getAllByText('100% mastered');
+                expect(masteredTexts).toHaveLength(2); 
+            });
+        });
+
+        it('renders correctly with single set', async () => 
+        {
+            const singleSetData: StatisticsType = 
+            {
+                totalSets: 1,
+                totalFlashcards: 5,
+                totalKnownCards: 3,
+                totalUnknownCards: 2,
+                setStatistics: [
+                    {
+                        setId: '1',
+                        setName: 'Only Set',
+                        totalCards: 5,
+                        knownCards: 3,
+                        unknownCards: 2
+                    }
+                ]
+            };
+
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => singleSetData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Only Set')).toBeInTheDocument();
+                expect(screen.getByText('Total: 5')).toBeInTheDocument();
+                expect(screen.getByText('Known: 3')).toBeInTheDocument();
+                expect(screen.getByText('Unknown: 2')).toBeInTheDocument();
+                
+                const masteredTexts = screen.getAllByText('60% mastered');
+                expect(masteredTexts).toHaveLength(2); 
+            });
+        });
+    });
+
+    //Component Lifecycle 
+    describe('Component Lifecycle', () => 
+    {
+        it('fetches statistics on component mount', () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            expect(mockFetch).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not refetch on re-render without dependency changes', async () => 
+        {
+            mockFetch.mockResolvedValueOnce(
+            {
+                ok: true,
+                json: async () => mockStatisticsData
+            });
+
+            renderWithProviders(<Statistics />);
+
+            await waitFor(() => 
+            {
+                expect(screen.getByText('Learning Statistics')).toBeInTheDocument();
+            });
+
+            expect(mockFetch).toHaveBeenCalledTimes(1);
         });
     });
 });

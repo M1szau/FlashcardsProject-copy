@@ -1,12 +1,13 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import '@testing-library/jest-dom';
+import { MemoryRouter } from 'react-router-dom';
 import AddFlashcardButton from '../../components/flashcards/AddFlashcardButton';
-import type { Flashcard } from '../../types and interfaces/types.ts';
+import { AuthProvider, FlashcardsProvider } from '../../contexts';
 import { I18nextProvider } from 'react-i18next';
 import i18n from 'i18next';
 
-// Mock i18n setup
+//Mock i18n setup
 i18n.init(
 {
     lng: 'en',
@@ -35,69 +36,47 @@ i18n.init(
     }
 });
 
-// Helper function to render component with i18n
-const renderWithI18n = (component: React.ReactElement) => 
+// Mock localStorage
+const mockLocalStorage = {
+    getItem: vi.fn(),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+};
+Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
+
+// Helper function to render component with all necessary providers
+const renderWithProviders = (component: React.ReactElement, { initialToken = 'mock-token', initialUser = { username: 'testuser' } }: { initialToken?: string | null, initialUser?: { username: string } } = {}) => 
 {
+    // Mock localStorage to return the initial auth state
+    mockLocalStorage.getItem.mockImplementation((key: string) => {
+        if (key === 'token') return initialToken;
+        if (key === 'username') return initialUser.username;
+        return null;
+    });
+
     return render(
-        <I18nextProvider i18n={i18n}>
-            {component}
-        </I18nextProvider>
+        <MemoryRouter>
+            <I18nextProvider i18n={i18n}>
+                <AuthProvider>
+                    <FlashcardsProvider>
+                        {component}
+                    </FlashcardsProvider>
+                </AuthProvider>
+            </I18nextProvider>
+        </MemoryRouter>
     );
 };
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-const mockLocalStorage = 
-{
-    getItem: vi.fn(),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-};
-Object.defineProperty(window, 'localStorage', 
-{
-    value: mockLocalStorage
-});
-
 describe('AddFlashcardButton component', () => 
 {
-    const mockSetFlashcards = vi.fn();
-    const mockSetCurrent = vi.fn();
-    const mockSetFlipped = vi.fn();
-
-    const mockFlashcards: Flashcard[] = 
-    [
-        {
-            id: '1',
-            setId: 'set-1',
-            language: 'EN',
-            content: 'Hello',
-            translation: 'Hola',
-            translationLang: 'ES',
-            owner: 'testuser',
-            known: false
-        },
-        {
-            id: '2',
-            setId: 'set-1',
-            language: 'EN',
-            content: 'World',
-            translation: 'Mundo',
-            translationLang: 'ES',
-            owner: 'testuser',
-            known: true
-        }
-    ];
-
     const defaultProps = 
     {
         selectedSetId: 'set-1',
-        currentUser: 'testuser',
-        flashcards: mockFlashcards,
-        setFlashcards: mockSetFlashcards,
-        setCurrent: mockSetCurrent,
-        setFlipped: mockSetFlipped
+        currentUser: 'testuser'
     };
 
     beforeEach(() => 
@@ -131,7 +110,7 @@ describe('AddFlashcardButton component', () =>
     {
         it('Renders add flashcard button', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             expect(addButton).toBeInTheDocument();
@@ -140,14 +119,14 @@ describe('AddFlashcardButton component', () =>
 
         it('Does not show modal initially', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             expect(screen.queryByText('Add new flashcard')).not.toBeInTheDocument();
         });
 
         it('Has proper accessibility attributes', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             expect(addButton).toHaveAttribute('aria-label', 'Add Flashcard');
@@ -155,7 +134,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Has correct CSS class', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             expect(addButton).toHaveClass('flashcard-add-button');
@@ -166,7 +145,7 @@ describe('AddFlashcardButton component', () =>
     {
         it('Opens modal when add button is clicked', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -177,7 +156,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Closes modal when cancel button is clicked', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -191,7 +170,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Resets form values when opening modal', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -210,7 +189,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Shows modal with correct CSS class', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -229,7 +208,7 @@ describe('AddFlashcardButton component', () =>
     {
         beforeEach(() => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -343,7 +322,7 @@ describe('AddFlashcardButton component', () =>
     {
         beforeEach(() => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -407,7 +386,7 @@ describe('AddFlashcardButton component', () =>
     {
         beforeEach(() => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -472,18 +451,18 @@ describe('AddFlashcardButton component', () =>
             
             await waitFor(() => 
             {
-                expect(mockSetFlashcards).toHaveBeenCalledWith(
-                [
-                    ...mockFlashcards,
-                    expect.objectContaining(
-                    {
-                        id: '3',
-                        content: 'Test',
-                        translation: 'Prueba'
+                // Since the component now uses context, we verify the API call was made
+                expect(mockFetch).toHaveBeenCalledWith(
+                    '/api/sets/set-1/flashcards',
+                    expect.objectContaining({
+                        method: 'POST',
+                        headers: expect.objectContaining({
+                            'Content-Type': 'application/json',
+                            Authorization: 'Bearer mock-token'
+                        }),
+                        body: expect.any(String)
                     })
-                ]);
-                expect(mockSetCurrent).toHaveBeenCalledWith(mockFlashcards.length);
-                expect(mockSetFlipped).toHaveBeenCalledWith(false);
+                );
             });
         });
 
@@ -544,7 +523,7 @@ describe('AddFlashcardButton component', () =>
         it('Handles null selectedSetId', () => 
         {
             const props = { ...defaultProps, selectedSetId: null };
-            renderWithI18n(<AddFlashcardButton {...props} />);
+            renderWithProviders(<AddFlashcardButton {...props} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -555,7 +534,7 @@ describe('AddFlashcardButton component', () =>
         it('Handles empty flashcards array', () => 
         {
             const props = { ...defaultProps, flashcards: [] };
-            renderWithI18n(<AddFlashcardButton {...props} />);
+            renderWithProviders(<AddFlashcardButton {...props} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             expect(addButton).toBeInTheDocument();
@@ -563,7 +542,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Handles whitespace-only inputs', async () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -582,7 +561,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Validates trimmed content and translation', async () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -604,9 +583,8 @@ describe('AddFlashcardButton component', () =>
 
         it('Handles missing localStorage token', async () => 
         {
-            mockLocalStorage.getItem.mockReturnValue(null);
-            
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            // Render with no token provided
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />, { initialToken: null });
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -636,7 +614,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Resets form properly when reopening modal', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             // Open modal and fill form
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
@@ -662,7 +640,7 @@ describe('AddFlashcardButton component', () =>
     {
         it('Has proper form labels', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -673,7 +651,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Has proper button labels', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -684,7 +662,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Supports "Enter" key submission', async () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -708,7 +686,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Has proper form structure', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -720,7 +698,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Has semantic HTML structure', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -735,7 +713,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Provides proper input context with character counters', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -754,7 +732,7 @@ describe('AddFlashcardButton component', () =>
     {
         it('Uses translation keys for all text content', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             expect(addButton).toHaveTextContent('+ Add new flashcard');
@@ -772,7 +750,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Shows translated language options', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
@@ -786,7 +764,7 @@ describe('AddFlashcardButton component', () =>
 
         it('Shows translated placeholder options', () => 
         {
-            renderWithI18n(<AddFlashcardButton {...defaultProps} />);
+            renderWithProviders(<AddFlashcardButton {...defaultProps} />);
             
             const addButton = screen.getByRole('button', { name: /add flashcard/i });
             fireEvent.click(addButton);
