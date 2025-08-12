@@ -13,7 +13,7 @@ export default function App()
 {
     const { t } = useTranslation();
     const { setId } = useParams<{ setId: string }>();
-    const { user } = useAuth();
+    const { user, token } = useAuth();
     const {
         flashcards,
         current,
@@ -101,8 +101,6 @@ export default function App()
             editValues.translationLang.trim() &&
             editValues.translation.trim()
         ) {
-            const { token } = useAuth();
-            
             fetch(`/api/sets/${setId}/flashcards/${editValues.id}`, 
             {
                 method: 'PUT',

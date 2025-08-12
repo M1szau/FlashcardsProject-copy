@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { GB, PL, DE } from "country-flag-icons/react/3x2";
 import { useAuth } from "../contexts";
+import { AiOutlineMenu, AiOutlineClose } from "react-icons/ai";
 
 export default function Navbar() 
 {
@@ -10,6 +11,7 @@ export default function Navbar()
     const { t, i18n } = useTranslation();
     const { logout } = useAuth();
     const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const languages = [
@@ -24,6 +26,7 @@ export default function Navbar()
     function handleLogout() 
     {
         logout();
+        setShowMobileMenu(false);
     }
 
     //language change functionality
@@ -32,7 +35,14 @@ export default function Navbar()
         i18n.changeLanguage(languageCode);
         localStorage.setItem('selectedLanguage', languageCode);
         setShowLanguageDropdown(false);
+        setShowMobileMenu(false);
     }
+
+    // Navigation with mobile menu close
+    const handleNavigation = (path: string) => {
+        navigate(path);
+        setShowMobileMenu(false);
+    };
 
     //close dropdown
     useEffect(() => 
@@ -49,6 +59,18 @@ export default function Navbar()
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
+    }, []);
+
+    // Close mobile menu on window resize
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth > 768) {
+                setShowMobileMenu(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     return (
@@ -69,7 +91,18 @@ export default function Navbar()
                 >
                     {t('navbar.appName')}
                 </span>
+                
+                {/* Mobile Menu Button */}
+                <button 
+                    className="mobileMenuButton"
+                    onClick={() => setShowMobileMenu(!showMobileMenu)}
+                    aria-label="Toggle mobile menu"
+                >
+                    {showMobileMenu ? <AiOutlineClose /> : <AiOutlineMenu />}
+                </button>
             </div>
+            
+            {/* Desktop Navigation */}
             <div className="navbarRight">
                 <button className="navButton" onClick={() => navigate('/learnForm')}>
                     {t('navbar.learn')}
@@ -112,6 +145,39 @@ export default function Navbar()
                     {t('navbar.logout')}
                 </button>
             </div>
+
+            {/* Mobile Navigation Menu */}
+            {showMobileMenu && (
+                <div className="mobileNav">
+                    <button className="mobileNavButton" onClick={() => handleNavigation('/learnForm')}>
+                        {t('navbar.learn')}
+                    </button>
+                    <button className="mobileNavButton" onClick={() => handleNavigation('/statistics')}>
+                        {t('navbar.statistics')}
+                    </button>
+                    
+                    {/* Mobile Language Options */}
+                    <div className="mobileLanguageSection">
+                        <span className="mobileLanguageLabel">{t('navbar.language')}:</span>
+                        <div className="mobileLanguageOptions">
+                            {languages.map((language) => (
+                                <button
+                                    key={language.code}
+                                    className={`mobileLanguageButton ${language.code === i18n.language ? 'active' : ''}`}
+                                    onClick={() => handleLanguageChange(language.code)}
+                                >
+                                    <language.flag className="flagIcon" />
+                                    <span>{language.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <button className="mobileNavButton" onClick={handleLogout}>
+                        {t('navbar.logout')}
+                    </button>
+                </div>
+            )}
         </nav>
     );
 }

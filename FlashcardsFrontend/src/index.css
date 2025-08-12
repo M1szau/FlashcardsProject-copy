@@ -170,6 +170,105 @@ form button:hover
   background-color: #EAB2F0;
 }
 
+/* Mobile menu button */
+.mobileMenuButton 
+{
+    display: none;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: auto;
+}
+
+/* Mobile navigation styles */
+.mobileNav 
+{
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #8F00BF;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.mobileNavButton 
+{
+    display: block;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    border: none;
+    background: #EEC0E3;
+    color: #141414;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.mobileNavButton:hover
+{
+    background: #EAB2F0;
+}
+
+/* Mobile language section */
+.mobileLanguageSection 
+{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mobileLanguageLabel 
+{
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.mobileLanguageOptions 
+{
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.mobileLanguageButton 
+{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    background: #EEC0E3;
+    color: #141414;
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    flex: 1;
+    min-width: fit-content;
+    justify-content: center;
+}
+
+.mobileLanguageButton:hover,
+.mobileLanguageButton.active 
+{
+    background: #EAB2F0;
+}
+
 /*Dashboard blocks styles */
 
 .setsRow
@@ -546,7 +645,6 @@ form button:hover
   min-height: 260px;
   background: transparent;
   border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(143,0,191,0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -612,37 +710,345 @@ form button:hover
   margin-bottom: 0.8rem;
 }
 
-/*Mobile devices*/
-@media (max-width: 600px) 
+/*Mobile devices - Enhanced flashcard navigation*/
+/* Desktop - hide mobile menu button */
+@media (min-width: 769px) 
 {
-  .flashcard-box 
+  .mobileMenuButton 
   {
-    min-width: 90vw;
-    max-width: 98vw;
-    min-height: 140px;
-    padding: 1.2rem 0.5rem;
+    display: none !important;
   }
-  .flashcard-content 
+  
+  .navbarLeft 
   {
-    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
   }
-  .flashcard-language 
+}
+
+@media (max-width: 768px) 
+{
+  /* Mobile navbar */
+  .navbar 
   {
-    font-size: 0.95rem;
+    position: relative;
   }
+  
+  .dashboardNavbar 
+  {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+  
+  .navbarLeft 
+  {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .mobileMenuButton 
+  {
+    display: block;
+  }
+  
+  .navbarRight 
+  {
+    display: none;
+  }
+  
   .flashcard-center 
   {
-    gap: 0.5rem;
+    gap: 1rem;
+    height: 60vh;
+    padding: 0 0.5rem;
+    justify-content: space-between;
+    align-items: center;
   }
+  
+  .flashcard-box 
+  {
+    min-width: 75vw;
+    max-width: 85vw;
+    min-height: 180px;
+    max-height: 250px;
+    padding: 1.5rem 1rem;
+    flex: 1;
+    max-width: none;
+    margin: 0 0.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .flashcard-inner 
+  {
+    min-width: 75vw;
+    min-height: 180px;
+    max-height: 250px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .flashcard-center .flashcard-front, 
+  .flashcard-center .flashcard-back 
+  {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1rem;
+  }
+  
+  .flashcard-center .flashcard-content 
+  {
+    font-size: 1.4rem;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .flashcard-language 
+  {
+    font-size: 1rem;
+  }
+  
   .flashcard-arrow 
   {
     font-size: 2rem;
+    color: #8F00BF;
+    z-index: 10;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    user-select: none;
+    flex-shrink: 0;
   }
+  
+  .flashcard-arrow:hover:not(:disabled) 
+  {
+    color: #B900F7;
+  }
+  
+  .flashcard-arrow:disabled 
+  {
+    color: #999;
+  }
+  
   .flashcard-counter 
   {
     margin: 1rem 1rem 0 0;
-    font-size: 1rem;
+    font-size: 0.9rem;
     padding: 0.3rem 0.7em;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+  
+  .flashcard-add-button 
+  {
+    top: 1rem;
+    left: 1rem;
+    font-size: 1rem;
+    padding: 0.3rem 1rem;
+  }
+  
+  .flashcard-center .flashcard-actions-bottom 
+  {
+    position: static;
+    margin-top: 0;
+    margin-bottom: 0;
+    gap: 1rem;
+    width: 100%;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .flashcard-known-button 
+  {
+    font-size: 1.5rem;
+  }
+  
+  /* Learning modal mobile styles */
+  .flashcard-add-form 
+  {
+    margin: 2rem 1rem 1rem 1rem;
+    padding: 2rem 1.5rem;
+    width: auto;
+    justify-content: center;
+  }
+  
+  .flashcard-add-form h2 
+  {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .flashcard-add-form label 
+  {
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .flashcard-add-form input, .flashcard-add-form select 
+  {
+    font-size: 1rem;
+    padding: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) 
+{
+  .flashcard-center 
+  {
+    gap: 0.75rem;
+    height: 55vh;
+    padding: 0 0.25rem;
+    justify-content: space-between;
+  }
+  
+  .flashcard-box 
+  {
+    min-width: 70vw;
+    max-width: 80vw;
+    min-height: 160px;
+    max-height: 220px;
+    padding: 1.2rem 0.8rem;
+    margin: 0 0.25rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .flashcard-inner 
+  {
+    min-width: 70vw;
+    min-height: 160px;
+    max-height: 220px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .flashcard-center .flashcard-front, 
+  .flashcard-center .flashcard-back 
+  {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 0.8rem;
+  }
+  
+  .flashcard-center .flashcard-content 
+  {
+    font-size: 1.2rem;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .flashcard-language 
+  {
+    font-size: 0.9rem;
+  }
+  
+  .flashcard-arrow 
+  {
+    font-size: 1.8rem;
+    color: #8F00BF;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  
+  .flashcard-arrow:hover:not(:disabled) 
+  {
+    color: #B900F7;
+  }
+  
+  .flashcard-arrow:disabled 
+  {
+    color: #999;
+  }
+  
+  .flashcard-counter 
+  {
+    margin: 0.5rem 0.5rem 0 0;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5em;
+  }
+  
+  .flashcard-add-button 
+  {
+    top: 0.5rem;
+    left: 0.5rem;
+    font-size: 0.9rem;
+    padding: 0.2rem 0.8rem;
+  }
+  
+  .flashcard-center .flashcard-actions-bottom 
+  {
+    position: static;
+    margin-top: 0;
+    margin-bottom: 0;
+    gap: 0.8rem;
+    width: 100%;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .flashcard-known-button 
+  {
+    font-size: 1.3rem;
+  }
+  
+  /* Learning modal small mobile styles */
+  .flashcard-add-form 
+  {
+    margin: 1.5rem 0.5rem 0.5rem 0.5rem;
+    padding: 1.5rem 1rem;
+    min-width: 260px;
+    max-width: calc(100vw - 1rem);
+    width: calc(100% - 1rem);
+  }
+  
+  .flashcard-add-form h2 
+  {
+    font-size: 1.3rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .flashcard-add-form label 
+  {
+    font-size: 0.85rem;
+    margin-bottom: 0.7rem;
+  }
+  
+  .flashcard-add-form input, .flashcard-add-form select 
+  {
+    font-size: 0.95rem;
+    padding: 0.5rem;
   }
 }
 
@@ -674,6 +1080,7 @@ form button:hover
 .flashcard-add-modal 
 {
   position: fixed;
+  margin: auto;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.25);
   display: flex;
