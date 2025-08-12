@@ -78,7 +78,7 @@
       "translation": "aa",
       "translationLang": "EN",
       "owner": "admin",
-      "known": false,
+      "known": true,
       "createdAt": "2025-08-06T10:50:05.784Z"
     },
     {
@@ -89,7 +89,7 @@
       "translation": "aaa",
       "translationLang": "EN",
       "owner": "admin",
-      "known": true,
+      "known": false,
       "createdAt": "2025-08-06T10:50:12.745Z"
     },
     {
