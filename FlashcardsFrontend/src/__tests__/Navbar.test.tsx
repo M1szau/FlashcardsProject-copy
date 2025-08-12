@@ -40,7 +40,8 @@ i18n.init(
           appName: "Flashcards",
           learn: "Learn",
           statistics: "Statistics",
-          logout: "Log out"
+          logout: "Log out",
+          language: "Language"
         }
       }
     }
@@ -180,7 +181,7 @@ describe('Navbar component', () =>
         
         //Check if language selector shows current language (EN by default)
         expect(screen.getByText('EN')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /EN/i })).toBeInTheDocument();
+        expect(screen.getByText('EN').closest('button')).toBeInTheDocument();
     });
 
     it('Shows language dropdown on hover', () => 
@@ -191,7 +192,7 @@ describe('Navbar component', () =>
             </TestWrapper>
         );
         
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         
         fireEvent.mouseEnter(languageButton);
         
@@ -210,7 +211,7 @@ describe('Navbar component', () =>
             </TestWrapper>
         );
         
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         
         //Dropdown
         fireEvent.mouseEnter(languageButton);
@@ -233,7 +234,7 @@ describe('Navbar component', () =>
             </TestWrapper>
         );
         
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         
         // Initially dropdown should not be visible
         expect(screen.queryByText('PL')).not.toBeInTheDocument();
@@ -257,7 +258,7 @@ describe('Navbar component', () =>
             </TestWrapper>
         );
         
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         
         // Show dropdown
         fireEvent.mouseEnter(languageButton);
@@ -281,7 +282,7 @@ describe('Navbar component', () =>
             </TestWrapper>
         );
         
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         
         // Show dropdown
         fireEvent.click(languageButton);
@@ -302,7 +303,7 @@ describe('Navbar component', () =>
             </TestWrapper>
         );
         
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         
         // Show dropdown
         fireEvent.mouseEnter(languageButton);
@@ -324,7 +325,7 @@ describe('Navbar component', () =>
         );
         
         // Check if flag icon is present (GB flag for EN language)
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         const flagIcon = languageButton.querySelector('.flagIcon');
         
         expect(flagIcon).toBeInTheDocument();
@@ -339,7 +340,7 @@ describe('Navbar component', () =>
             </TestWrapper>
         );
         
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         
         // Show dropdown
         fireEvent.mouseEnter(languageButton);
@@ -364,12 +365,231 @@ describe('Navbar component', () =>
         );
         
         // Should fall back to first language in array (EN)
-        const languageButton = screen.getByRole('button', { name: /EN/i });
+        const languageButton = screen.getByText('EN').closest('button')!;
         expect(languageButton).toBeInTheDocument();
         expect(languageButton).toHaveTextContent('EN');
         
         // Reset language for other tests
         i18n.changeLanguage('en');
+    });
+
+    // Mobile Navigation Tests
+    describe('Mobile Navigation', () => {
+        beforeEach(() => {
+            // Mock mobile viewport
+            Object.defineProperty(window, 'innerWidth', {
+                writable: true,
+                configurable: true,
+                value: 600,
+            });
+        });
+
+        it('Shows mobile menu button on mobile viewport', () => {
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            expect(mobileMenuButton).toBeInTheDocument();
+        });
+
+        it('Initially hides mobile navigation menu', () => {
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            // Mobile navigation should not be visible initially
+            expect(screen.queryByText('Language:')).not.toBeInTheDocument();
+        });
+
+        it('Shows mobile navigation menu when mobile menu button is clicked', () => {
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            fireEvent.click(mobileMenuButton);
+
+            // Check if mobile menu items are visible
+            const mobileLearnButtons = screen.getAllByText('Learn');
+            const mobileStatisticsButtons = screen.getAllByText('Statistics');
+            const mobileLogoutButtons = screen.getAllByText('Log out');
+            
+            expect(mobileLearnButtons.length).toBeGreaterThan(1); // Desktop + Mobile
+            expect(mobileStatisticsButtons.length).toBeGreaterThan(1);
+            expect(mobileLogoutButtons.length).toBeGreaterThan(1);
+            expect(screen.getByText('Language:')).toBeInTheDocument();
+        });
+
+        it('Hides mobile navigation menu when mobile menu button is clicked again', () => {
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            
+            // Show menu
+            fireEvent.click(mobileMenuButton);
+            expect(screen.getByText('Language:')).toBeInTheDocument();
+            
+            // Hide menu
+            fireEvent.click(mobileMenuButton);
+            expect(screen.queryByText('Language:')).not.toBeInTheDocument();
+        });
+
+        it('Navigates correctly when mobile Learn button is clicked', () => {
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            fireEvent.click(mobileMenuButton);
+
+            // Find mobile navigation buttons (excluding desktop ones)
+            const learnButtons = screen.getAllByText('Learn');
+            const mobileLearnButton = learnButtons.find(button => 
+                button.closest('.mobileNav')
+            );
+
+            expect(mobileLearnButton).toBeInTheDocument();
+            fireEvent.click(mobileLearnButton!);
+            expect(navigateMock).toHaveBeenCalledWith('/learnForm');
+        });
+
+        it('Navigates correctly when mobile Statistics button is clicked', () => {
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            fireEvent.click(mobileMenuButton);
+
+            const statisticsButtons = screen.getAllByText('Statistics');
+            const mobileStatisticsButton = statisticsButtons.find(button => 
+                button.closest('.mobileNav')
+            );
+
+            expect(mobileStatisticsButton).toBeInTheDocument();
+            fireEvent.click(mobileStatisticsButton!);
+            expect(navigateMock).toHaveBeenCalledWith('/statistics');
+        });
+
+        it('Logs out correctly when mobile logout button is clicked', () => {
+            const removeItemMock = vi.spyOn(window.localStorage, 'removeItem');
+            
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            fireEvent.click(mobileMenuButton);
+
+            const logoutButtons = screen.getAllByText('Log out');
+            const mobileLogoutButton = logoutButtons.find(button => 
+                button.closest('.mobileNav')
+            );
+
+            expect(mobileLogoutButton).toBeInTheDocument();
+            fireEvent.click(mobileLogoutButton!);
+            
+            expect(removeItemMock).toHaveBeenCalledWith('token');
+            expect(navigateMock).toHaveBeenCalledWith('/login');
+            
+            removeItemMock.mockRestore();
+        });
+
+        it('Changes language correctly when mobile language option is clicked', () => {
+            const changeLanguageSpy = vi.spyOn(i18n, 'changeLanguage');
+            const setItemSpy = vi.spyOn(localStorage, 'setItem');
+            
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            fireEvent.click(mobileMenuButton);
+
+            // Find mobile language buttons
+            const languageButtons = screen.getAllByText('PL');
+            const mobileLanguageButton = languageButtons.find(button => 
+                button.closest('.mobileNav')
+            );
+
+            expect(mobileLanguageButton).toBeInTheDocument();
+            fireEvent.click(mobileLanguageButton!);
+
+            expect(changeLanguageSpy).toHaveBeenCalledWith('pl');
+            expect(setItemSpy).toHaveBeenCalledWith('selectedLanguage', 'pl');
+            
+            changeLanguageSpy.mockRestore();
+            setItemSpy.mockRestore();
+        });
+
+        it('Closes mobile menu when window is resized to desktop size', () => {
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            fireEvent.click(mobileMenuButton);
+
+            // Verify mobile menu is open
+            expect(screen.getByText('Language:')).toBeInTheDocument();
+
+            // Simulate window resize to desktop size
+            Object.defineProperty(window, 'innerWidth', {
+                writable: true,
+                configurable: true,
+                value: 800,
+            });
+            
+            fireEvent(window, new Event('resize'));
+
+            // Mobile menu should close automatically
+            expect(screen.queryByText('Language:')).not.toBeInTheDocument();
+        });
+
+        it('Closes mobile menu when navigation button is clicked', () => {
+            render(
+                <TestWrapper>
+                    <Navbar />
+                </TestWrapper>
+            );
+
+            const mobileMenuButton = screen.getByRole('button', { name: 'Toggle mobile menu' });
+            fireEvent.click(mobileMenuButton);
+
+            // Verify mobile menu is open
+            expect(screen.getByText('Language:')).toBeInTheDocument();
+
+            // Click a navigation button
+            const learnButtons = screen.getAllByText('Learn');
+            const mobileLearnButton = learnButtons.find(button => 
+                button.closest('.mobileNav')
+            );
+            fireEvent.click(mobileLearnButton!);
+
+            // Mobile menu should close after navigation
+            expect(screen.queryByText('Language:')).not.toBeInTheDocument();
+        });
     });
 
 });
