@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts';
@@ -24,7 +25,7 @@ export default function Register()
         
         try 
         {
-            const response = await fetch('/api/register', 
+            const response = await fetch(`${API_BASE_URL}/api/register`, 
             {
                 method: 'POST', 
                 headers: {'Content-Type': 'application/json'}, 

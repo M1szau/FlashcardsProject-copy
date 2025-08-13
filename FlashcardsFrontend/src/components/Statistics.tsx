@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../apiBaseUrl";
 import Navbar from "./Navbar";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,7 +15,7 @@ export default function Statistics()
 
     useEffect(() => 
     {
-        fetch('/api/statistics', 
+    fetch(`${API_BASE_URL}/api/statistics`, 
         {
             headers: 
             {

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../apiBaseUrl";
 import Navbar from "./Navbar";
 import FlashcardViewer from "./flashcards/FlashcardViewer";
 import React, { useEffect, useState } from "react";
@@ -43,7 +44,7 @@ export default function FlashcardLearning()
             setLoading(true);
             const token = localStorage.getItem('token');
             
-            fetch(`/api/sets/${selectedSetId}/flashcards`, 
+            fetch(`${API_BASE_URL}/api/sets/${selectedSetId}/flashcards`, 
             {
                 headers: 
                 {
@@ -145,7 +146,7 @@ export default function FlashcardLearning()
         
         const token = localStorage.getItem('token');
         
-        fetch(`/api/sets/${selectedSetId}/flashcards/${currentCard.id}/known`, 
+    fetch(`${API_BASE_URL}/api/sets/${selectedSetId}/flashcards/${currentCard.id}/known`, 
         {
             method: 'PATCH',
             headers: 

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { useTranslation } from "react-i18next";
 import type { DashboardExportProps, DashboardExportRef } from '../../types and interfaces/interfaces.ts';
@@ -38,7 +39,7 @@ const DashboardExport = forwardRef<DashboardExportRef, DashboardExportProps>(({ 
         try 
         {
             const token = localStorage.getItem('token');
-            const response = await fetch(`/api/sets/${exportingSetId}/export?format=${exportFormat}`, {
+            const response = await fetch(`${API_BASE_URL}/api/sets/${exportingSetId}/export?format=${exportFormat}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 

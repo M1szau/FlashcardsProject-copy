@@ -62,9 +62,12 @@ export default function Navbar()
     }, []);
 
     // Close mobile menu on window resize
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth > 768) {
+    useEffect(() => 
+    {
+        const handleResize = () => 
+        {
+            if (window.innerWidth > 768) 
+            {
                 setShowMobileMenu(false);
             }
         };

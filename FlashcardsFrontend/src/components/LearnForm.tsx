@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../apiBaseUrl";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
@@ -28,7 +29,7 @@ export default function LearnForm()
         {
             try
             {
-                const res = await fetch('/api/sets',
+                const res = await fetch(`${API_BASE_URL}/api/sets`,
                     {
                         headers: 
                         {

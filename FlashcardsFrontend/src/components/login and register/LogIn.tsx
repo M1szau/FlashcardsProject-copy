@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts';
@@ -24,7 +25,7 @@ export default function LogIn()
         
         try 
         {
-            const response = await fetch('/api/login', 
+            const response = await fetch(`${API_BASE_URL}/api/login`, 
             {
                 method: 'POST', 
                 headers: {'Content-Type': 'application/json'}, 

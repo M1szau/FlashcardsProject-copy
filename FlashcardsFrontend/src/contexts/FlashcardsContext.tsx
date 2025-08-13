@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../apiBaseUrl";
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import type { Flashcard } from '../types and interfaces/types';
@@ -49,7 +50,7 @@ export function FlashcardsProvider({ children }: FlashcardsProviderProps)
         setLoading(true);
         try 
         {
-            const res = await fetch(`/api/sets/${setId}/flashcards`, 
+            const res = await fetch(`${API_BASE_URL}/api/sets/${setId}/flashcards`, 
             {
                 headers: { Authorization: `Bearer ${token}` }
             });

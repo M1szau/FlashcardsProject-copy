@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { useTranslation } from "react-i18next";
 import DashboardImportModal from './DashboardImportModal.tsx';
@@ -92,7 +93,7 @@ const DashboardImport = forwardRef<DashboardImportRef, DashboardImportProps>(({ 
                 throw new Error(t('dashboard.import.missingSetInfo'));
             }
 
-            const response = await fetch('/api/sets/import', 
+            const response = await fetch(`${API_BASE_URL}/api/sets/import`, 
             {
                 method: 'POST',
                 headers: 
