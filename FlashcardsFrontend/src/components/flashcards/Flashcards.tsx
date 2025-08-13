@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import Navbar from "../Navbar";
 import AddFlashcardButton from "./AddFlashcardButton";
 import FlashcardViewer from "./FlashcardViewer";
@@ -93,7 +94,8 @@ export default function App()
         }
     };
 
-    const handleEditSave = () => {
+    const handleEditSave = () => 
+    {
         if (
             editValues &&
             editValues.language.trim() &&
@@ -101,7 +103,7 @@ export default function App()
             editValues.translationLang.trim() &&
             editValues.translation.trim()
         ) {
-            fetch(`/api/sets/${setId}/flashcards/${editValues.id}`, 
+            fetch(`${API_BASE_URL}/api/sets/${setId}/flashcards/${editValues.id}`, 
             {
                 method: 'PUT',
                 headers: 

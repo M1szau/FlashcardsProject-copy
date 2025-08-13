@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../apiBaseUrl";
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
@@ -41,7 +42,7 @@ export function SetsProvider({ children }: SetsProviderProps)
         setLoading(true);
         try 
         {
-            const res = await fetch('/api/sets', 
+            const res = await fetch(`${API_BASE_URL}/api/sets`, 
             {
                 headers: { Authorization: `Bearer ${token}` }
             });

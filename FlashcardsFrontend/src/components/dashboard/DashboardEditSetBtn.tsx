@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { AiFillEdit } from "react-icons/ai";
 import { useTranslation } from "react-i18next";
@@ -24,7 +25,7 @@ const DashboardEditSetBtn = forwardRef<DashboardEditSetBtnRef, DashboardEditSetB
         if (editSetName.trim() === '') return;
         
         const token = localStorage.getItem('token');
-        const res = await fetch(`/api/sets/${set.id}`, 
+    const res = await fetch(`${API_BASE_URL}/api/sets/${set.id}`, 
         {
             method: 'PUT',
             headers: 

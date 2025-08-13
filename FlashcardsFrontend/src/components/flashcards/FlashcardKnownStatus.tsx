@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { AiFillCheckCircle, AiFillCloseCircle } from "react-icons/ai";
 import { useTranslation } from "react-i18next";
@@ -18,7 +19,7 @@ const FlashcardKnownStatus = forwardRef<FlashcardKnownStatusRef, FlashcardKnownS
         const currentKnownStatus = flashcard.known || false; // Undefined as false
         const newKnownStatus = !currentKnownStatus;
         
-        fetch(`/api/sets/${selectedSetId}/flashcards/${flashcard.id}/known`, 
+    fetch(`${API_BASE_URL}/api/sets/${selectedSetId}/flashcards/${flashcard.id}/known`, 
         {
             method: 'PATCH',
             headers: { 

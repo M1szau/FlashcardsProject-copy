@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import { useState, forwardRef, useImperativeHandle } from 'react';
 import { useTranslation } from "react-i18next";
 import { AiOutlineDownload } from "react-icons/ai";
@@ -44,7 +45,7 @@ const DashboardAddNewSet = forwardRef<DashboardAddNewSetRef, DashboardAddNewSetP
         setAddingLoading(true);
         try 
         {
-            const res = await fetch('/api/sets', 
+            const res = await fetch(`${API_BASE_URL}/api/sets`, 
                 {
                 method: 'POST',
                 headers: 

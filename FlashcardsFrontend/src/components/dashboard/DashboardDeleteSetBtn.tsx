@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import { forwardRef, useImperativeHandle } from 'react';
 import { AiFillDelete } from "react-icons/ai";
 import { useTranslation } from "react-i18next";
@@ -13,7 +14,7 @@ const DashboardDeleteSetBtn = forwardRef<DashboardDeleteSetBtnRef, DashboardDele
         if (window.confirm(t('dashboard.deleteSet'))) 
         {
             const token = localStorage.getItem('token');
-            await fetch(`/api/sets/${set.id}`, 
+            await fetch(`${API_BASE_URL}/api/sets/${set.id}`, 
             {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }

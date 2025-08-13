@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import React, { forwardRef, useImperativeHandle } from 'react';
 import { AiFillDelete } from "react-icons/ai";
 import { useAuth } from '../../contexts';
@@ -22,7 +23,7 @@ const FlashcardDeleteBtn = forwardRef<FlashcardDeleteBtnRef, FlashcardDeleteBtnP
         
         if (window.confirm("Are you sure you want to delete this flashcard?")) 
         {
-            fetch(`/api/sets/${selectedSetId}/flashcards/${flashcard.id}`, 
+            fetch(`${API_BASE_URL}/api/sets/${selectedSetId}/flashcards/${flashcard.id}`, 
             {
                 method: 'DELETE',
                 headers: 

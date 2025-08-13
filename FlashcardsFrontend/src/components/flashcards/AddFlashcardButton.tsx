@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../../apiBaseUrl";
 import React, { useState } from "react";
 import type { Flashcard } from "../../types and interfaces/types";
 import type { AddFlashcardButtonProps } from "../../types and interfaces/interfaces.ts";
@@ -63,7 +64,7 @@ export default function AddFlashcardButton({ selectedSetId, currentUser }: AddFl
                 owner: currentUser
             };
 
-            fetch(`/api/sets/${selectedSetId}/flashcards`, 
+            fetch(`${API_BASE_URL}/api/sets/${selectedSetId}/flashcards`, 
             {
                 method: 'POST',
                 headers: 
