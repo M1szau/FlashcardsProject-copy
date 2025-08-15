@@ -166,3 +166,5 @@ FlashcardsProject/
 └── README.md                  # This file
 ```
 
+### Deployment ###
+Link to deployed website on Render: https://flashcardsproject-nkb7.onrender.com
