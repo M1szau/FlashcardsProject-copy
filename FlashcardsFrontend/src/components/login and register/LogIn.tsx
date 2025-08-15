@@ -63,14 +63,14 @@ export default function LogIn()
                         <input id='password' type='password' ref={passwordRef} />
                         {loginError && <div className='error-box' style={{color: 'red', marginTop: '5px', fontSize: '14px'}}>{loginError}</div>}
                     </p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-                        <div>
-                            <button type="submit">Log in</button>
-                        </div>
-                        <div>
-                            <label htmlFor='register' style={{ marginRight: '0.5rem', marginTop: '1rem' }}>Not yet with us?</label>
-                            <button type="button" onClick={() => navigate('/register')} style={{ whiteSpace: 'nowrap', marginTop: '0.5rem'}}>Join us!</button>
-                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '1rem', gap: '1rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <button type="submit" style={{ minWidth: '120px', padding: '0.75rem 1.5rem' }}>Log in</button>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <label htmlFor='register' style={{ marginTop: '1rem', marginBottom: '-2rem', textAlign: 'center', fontWeight: 'bold', color: '#dfd9be', fontSize: '0.95rem', textTransform: 'uppercase' }}>Not yet with us?</label>
+                                <button type="button" onClick={() => navigate('/register')} style={{ minWidth: '120px', padding: '0.75rem 1.5rem' }}>Join us!</button>
+                            </div>
                     </div>
                 </div>
             </form>
